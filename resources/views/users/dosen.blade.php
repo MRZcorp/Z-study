@@ -3,7 +3,7 @@
 <x-sidebar>dosen</x-sidebar>
 
 
-<main class="main-content">
+
     <div class="p-6">
   
   
@@ -28,7 +28,7 @@
             </div>
             <div class="ml-4">
               <h4 class="text-2xl font-semibold text-gray-700">12</h4>
-              <p class="text-gray-500">Tugas Aktif</p>
+              <p class="text-gray-500">Total Materi</p>
             </div>
           </div>
       
@@ -39,18 +39,18 @@
             </div>
             <div class="ml-4">
               <h4 class="text-2xl font-semibold text-gray-700">3</h4>
-              <p class="text-gray-500">Kuis / Ujian Aktif</p>
+              <p class="text-gray-500">Total Tugas</p>
             </div>
           </div>
       
           <!-- Rata-rata Nilai -->
           <div class="flex items-center p-6 bg-white rounded-lg shadow-sm">
             <div class="p-3 rounded-lg bg-green-200 text-green-600">
-              <span class="material-symbols-rounded text-3xl">grade</span>
+              <span class="material-symbols-rounded text-3xl">quiz</span>
             </div>
             <div class="ml-4">
-              <h4 class="text-2xl font-semibold text-gray-700">82.5</h4>
-              <p class="text-gray-500">Rata-rata Nilai</p>
+              <h4 class="text-2xl font-semibold text-gray-700">8</h4>
+              <p class="text-gray-500">Total Kuis & Ujian</p>
             </div>
           </div>
       
@@ -104,7 +104,7 @@
           <!-- TUGAS TERDEKAT -->
           <div class="bg-white rounded-lg shadow-sm p-6">
             <h3 class="text-lg font-semibold text-gray-700 mb-4">
-              Tugas Terdekat
+              Jadwal Kelas
             </h3>
       
             <ul class="space-y-4">

@@ -3,70 +3,30 @@
   <nav class="sidebar-nav">
     <!-- Primary Top Nav -->
     <ul class="nav-list primary-nav">
-      <li class="nav-item menu-item {{ request()->is('mahasiswa') ? 'active' : '' }}">
-        <a href="{{ url('mahasiswa') }}" class="nav-link">
-            <span class="material-symbols-rounded">dashboard</span>
-            <span class="nav-label">Dashboard</span>
-        </a>
-    
-        <ul class="dropdown-menu">
-            <li class="nav-item">
-                <a class="nav-link dropdown-title">Dashboard</a>
-            </li>
-        </ul>
-    </li>
+
+      <x-side-link link="mahasiswa" icon="dashboard" label="Dashboard"></x-side-link>
+      <x-side-link link="mahasiswa/kelas" icon="Add_Home" label="Kelas"></x-side-link>
+      <x-side-link link="mahasiswa/materi" icon="Menu_Book" label="Materi"></x-side-link>
+      <x-side-link link="mahasiswa/tugas" icon="Assignment_Add" label="Tugas"></x-side-link>
+      <x-side-link link="mahasiswa/ujian" icon="Contract_Edit" label="Kuis / Ujian"></x-side-link>
+      <x-side-link link="mahasiswa/nilai" icon="School" label="Nilai"></x-side-link>
+      <x-side-link link="mahasiswa/pengaturan" icon="settings" label="Pengaturan"></x-side-link>
+      <x-side-link link="mahasiswa/nilai" icon="School" label="Nilai"></x-side-link>
     
 
-    <li class="nav-item menu-item {{ request()->is('mahasiswa/kelas') ? 'active' : '' }}">
-      <a href="{{ url('mahasiswa/kelas') }}" class="nav-link">
-      <span class="material-symbols-rounded">Add_Home</span>
-          <span class="nav-label">Kelas</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Kelas</a></li>
-        </ul>
-      </li>
+    </ul>
+    <!-- Secondary Bottom Nav -->
+    
+    <ul class="nav-list secondary-nav">
 
-      <li class="nav-item menu-item {{ request()->is('mahasiswa/materi') ? 'active' : '' }}">
-        <a href="{{ url('mahasiswa/materi') }}" class="nav-link">
-          <span class="material-symbols-rounded">Menu_Book</span>
-          <span class="nav-label">Materi Pembejaran</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Materi</a></li>
-        </ul>
-      </li>
-      <li class="nav-item menu-item {{ request()->is('mahasiswa/tugas') ? 'active' : '' }}">
-        <a href="{{ url('mahasiswa/tugas') }}" class="nav-link">
-          <span class="material-symbols-rounded">Assignment_Add</span>
-          <span class="nav-label">Tugas</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Tugas</a></li>
-        </ul>
-      </li>
-      <li class="nav-item menu-item {{ request()->is('mahasiswa/ujian') ? 'active' : '' }}">
-        <a href="{{ url('mahasiswa/ujian') }}" class="nav-link">
-          <span class="material-symbols-rounded">Contract_Edit</span>
-          <span class="nav-label">Kuis / Ujian</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Kuis / Ujian</a></li>
-        </ul>
-      </li>
-      <li class="nav-item menu-item {{ request()->is('mahasiswa/nilai') ? 'active' : '' }}">
-        <a href="{{ url('mahasiswa/nilai') }}" class="nav-link">
-          <span class="material-symbols-rounded">School</span>
-          <span class="nav-label">Nilai</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Nilai</a></li>
-        </ul>
-      </li>
+      <x-side-link link="mahasiswa/Bantuan" icon="help" label="Bantuan"></x-side-link>
+      <x-side-link link="logout" icon="logout" label="Sign Out"></x-side-link>
 
 
-
-      <li class="nav-item menu-item {{ request()->is('mahasiswa/pengaturan') ? 'active' : '' }}">
+      
+    </ul>
+  </nav>
+   {{-- <li class="nav-item menu-item {{ request()->is('mahasiswa/pengaturan') ? 'active' : '' }}">
         <a href="{{ url('mahasiswa/pengaturan') }}" class="nav-link">
           <span class="material-symbols-rounded">settings</span>
           <span class="nav-label">Pengaturan</span>
@@ -75,28 +35,4 @@
           <li class="nav-item"><a class="nav-link dropdown-title">Pengaturan</a></li>
         </ul>
       </li>
-    </ul>
-
-    <!-- Secondary Bottom Nav -->
-    
-    <ul class="nav-list secondary-nav">
-      <li class="nav-item menu-item {{ request()->is('mahasiswa/bantuan') ? 'active' : '' }}">
-        <a href="{{ url('mahasiswa/bantuan') }}" class="nav-link">
-          <span class="material-symbols-rounded">help</span>
-          <span class="nav-label">Bantuan</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Bantuan</a></li>
-        </ul>
-      </li>
-      <li class="nav-item menu-item {{ request()->is('logout') ? 'active' : '' }}">
-        <a href="logout" class="nav-link">
-          <span class="material-symbols-rounded">logout</span>
-          <span class="nav-label">Sign Out</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Sign Out</a></li>
-        </ul>
-      </li>
-    </ul>
-  </nav>
+    </ul> --}}

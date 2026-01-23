@@ -44,3 +44,4 @@
 </aside>
 
 <script src="{{ asset('js/script.js') }}"></script>
+<div class="main-content">

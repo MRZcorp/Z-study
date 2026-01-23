@@ -1,98 +1,68 @@
-
-
-  <nav class="sidebar-nav">
+<nav class="sidebar-nav">
     <!-- Primary Top Nav -->
     <ul class="nav-list primary-nav">
-      <li class="nav-item">
-        <a href="#" class="nav-link">
-          <span class="material-symbols-rounded">dashboard</span>
-          <span class="nav-label">Dashboard</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Dashboard</a></li>
-        </ul>
-      </li>
-
-      <li class="nav-item">
-        <a href="#" class="nav-link">
-          <span class="material-symbols-rounded">Add_Home</span>
-          <span class="nav-label">Kelas</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Kelas</a></li>
-        </ul>
-      </li>
-
-      <li class="nav-item">
-        <a href="#" class="nav-link">
-          <span class="material-symbols-rounded">Menu_Book</span>
-          <span class="nav-label">Materi Pembejaran</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Materi Pembejaran</a></li>
-        </ul>
-      </li>
-      <li class="nav-item">
-        <a href="#" class="nav-link">
-          <span class="material-symbols-rounded">Assignment_Add</span>
-          <span class="nav-label">Tugas</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Tugas</a></li>
-        </ul>
-      </li>
-      <li class="nav-item">
-        <a href="#" class="nav-link">
-          <span class="material-symbols-rounded">Contract_Edit</span>
-          <span class="nav-label">Kuis / Ujian</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Kuis / Ujian</a></li>
-        </ul>
-      </li>
-      <li class="nav-item">
-        <a href="#" class="nav-link">
-          <span class="material-symbols-rounded">Grading</span>
-          <span class="nav-label">Rekap Nilai</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Rekap Nilai</a></li>
-        </ul>
-      </li>
 
 
+      <x-side-link 
+      link="dosen" 
+      icon="dashboard" 
+      label="Dashboard"
+      ></x-side-link>
 
-      <li class="nav-item">
-        <a href="#" class="nav-link">
-          <span class="material-symbols-rounded">settings</span>
-          <span class="nav-label">Pengaturan</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Pengaturan</a></li>
-        </ul>
-      </li>
-    </ul>
+      <x-side-link 
+      link="dosen/kelas" 
+      icon="Add_Home" 
+      label="Kelas"
+      ></x-side-link>
+
+      <x-side-link 
+      link="dosen/materi" 
+      icon="Menu_Book" 
+      label="Materi Pembejaran"
+      ></x-side-link>
+
+      <x-side-link 
+      link="dosen/tugas" 
+      icon="Assignment_Add" 
+      label="Tugas"
+      ></x-side-link>
+
+      <x-side-link 
+      link="dosen/ujian" 
+      icon="Contract_Edit" 
+      label="Kuis / Ujian"
+      ></x-side-link>
+
+      <x-side-link 
+      link="dosen/rekap" 
+      icon="Grading" 
+      label="Rekap Nilai"
+      ></x-side-link>
+
+      <x-side-link 
+      link="dosen/pengaturan" 
+      icon="settings" 
+      label="Pengaturan"
+      ></x-side-link>
+      </ul>
 
     <!-- Secondary Bottom Nav -->
-    
     <ul class="nav-list secondary-nav">
-      <li class="nav-item">
-        <a href="#" class="nav-link">
-          <span class="material-symbols-rounded">help</span>
-          <span class="nav-label">Bantuan</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Bantuan</a></li>
-        </ul>
-      </li>
-      <li class="nav-item">
-        <a href="#" class="nav-link">
-          <span class="material-symbols-rounded">logout</span>
-          <span class="nav-label">Sign Out</span>
-        </a>
-        <ul class="dropdown-menu">
-          <li class="nav-item"><a class="nav-link dropdown-title">Sign Out</a></li>
-        </ul>
-      </li>
-    </ul>
+
+    <x-side-link 
+    link="dosen/bantuan" 
+    icon="help" 
+    label="Bantuan"
+    ></x-side-link>
+
+    <x-side-link 
+    link="logout" 
+    icon="logout" 
+    label="Sign Out"
+    ></x-side-link>
+
+    
+   
+
+  </ul>
   </nav>

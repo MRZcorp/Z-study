@@ -106,19 +106,19 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="#" class="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center transition-colors duration-200">
+                        <a href="admin" class="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center transition-colors duration-200">
                             <span class="material-symbols-rounded">Account_Circle</span>
                              <i class="fas fa-user-circle text-gray-400 mr-3 w-5 text-center"></i>
                              My Profile
                         </a>
-                        <a href="#" class="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center transition-colors duration-200">
+                        <a href="dosen" class="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center transition-colors duration-200">
                             <span class="material-symbols-rounded">Settings</span> 
                             <i class="fas fa-cog text-gray-400 mr-3 w-5 text-center"></i>
                             Account Settings
                         </a>
                         
                         <div class="border-t border-gray-100 my-1"></div>
-                        <a href="#" class="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center transition-colors duration-200">
+                        <a href="mahasiswa" class="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center transition-colors duration-200">
                             <span class="material-symbols-rounded">logout</span>
                             <i class="fas fa-sign-out-alt text-gray-400 mr-3 w-5 text-center"></i>
                             Sign out

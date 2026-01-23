@@ -8,7 +8,7 @@
     {{-- <div class="dashboard">
         
   --}}
-  <style>
+  {{-- <style>
 
             /* Main Content Styles */
             .main-content {
@@ -16,9 +16,9 @@
                 padding: 20px;
             }
             
-            </style>
+            </style> --}}
         <!-- Main Content -->
-        <div class="main-content">
+        {{-- <div class="main-content"> --}}
             <!-- Header -->
             
             

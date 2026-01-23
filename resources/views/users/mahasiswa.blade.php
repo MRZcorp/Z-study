@@ -3,7 +3,7 @@
 
 
 
-  <main class="main-content">
+  
     <div class="p-6">
   
   
