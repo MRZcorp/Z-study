@@ -39,7 +39,7 @@
         <tbody class="text-sm text-slate-700 divide-y divide-slate-200">
           <!-- ROW -->
           <tr class="hover:bg-slate-50 transition">
-            <td class="px-4 py-3 font-medium">Pemrograman Web</td>
+            <td class="px-4 py-3 font-medium">{{ $mapel }}</td>
             <td class="px-4 py-3">Kelas A</td>
             <td class="px-4 py-3">Dr. Budi Santoso, M.Kom</td>
             <td class="px-4 py-3">Genap 2025/2026</td>

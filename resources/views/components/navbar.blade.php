@@ -90,7 +90,7 @@
                         </div>
                         <div class="hidden lg:flex flex-col items-start">
                             <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors duration-200">M. Zaky Nugraha A R</span>
-                            <span class="text-xs text-gray-500">Mahasiswa</span>
+                            <span class="text-xs text-gray-500">mahaiswa</span>
                         </div>
                         <i class="fas fa-chevron-down text-xs text-gray-500 hidden lg:inline transition-transform duration-200 group-hover:text-blue-600"></i>
                     </button>

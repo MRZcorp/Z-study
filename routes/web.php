@@ -21,10 +21,10 @@ Route::get('/about', function () {
 // USER MAHASISWA
 
 Route::get('/mahasiswa', function () {
-    return view('/users/mahasiswa');
+    return view('/users/mahasiswa', ['nama' => 'M. Zaky Nugraha A.R', 'role' => 'mahasiswa']);
 });
 Route::get('/mahasiswa/kelas', function () {
-    return view('/mahasiswa/kelas');
+    return view('/mahasiswa/kelas', ['mapel' => 'pemograman web'] );
 });
 Route::get('/mahasiswa/materi', function () {
     return view('/mahasiswa/materi');

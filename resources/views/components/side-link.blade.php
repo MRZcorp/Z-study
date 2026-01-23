@@ -10,11 +10,12 @@
         @endisset
     </a>
 
+    
     <ul class="dropdown-menu">
         <li class="nav-item"><a class="nav-link dropdown-title">{{ $label }}</a></li>
 
         @isset($drop1, $link1,)
-        <li class="nav-item" {{ request()->is($link, $link1) ? 'active' : '' }}><a href="{{ url($link, $link1) }}" class="nav-link dropdown-link">{{ $drop1 }}</a></li>
+        <li class="nav-item"><a href="{{ url($link, $link1) }}" class="nav-link dropdown-link">{{ $drop1 }}</a></li>
         @endisset
         @isset($drop2, $link2)
         <li class="nav-item"><a href="{{ url($link, $link2) }}" class="nav-link dropdown-link">{{ $drop2 }}</a></li>
