@@ -1,6 +1,29 @@
 <?php
 
+use App\Models\MateriKelas;
+use App\Models\Kelas;
+use App\Http\Controllers\MateriController;
+use App\Http\Controllers\TugasController;
+use App\Models\Tugas;
 use Illuminate\Support\Facades\Route;
+
+
+
+
+
+
+
+
+
+
+Route::get('/mahasiswa/materi', [MateriController::class, 'index']);
+Route::get('/create', [MateriController::class, 'create']);
+Route::post('/mahasiswa/materi', [MateriController::class, 'store']);
+
+
+
+
+
 
 Route::get('/', function () {
     return view('home');
@@ -19,18 +42,48 @@ Route::get('/about', function () {
 
 
 // USER MAHASISWA
+Route::get('/mahasiswa', function () {
+    return view('/users/mahasiswa');
+});
+Route::get('/users_setting', function () {
+    return view('/users_setting');
+});
+Route::get('/users_profile', function () {
+    return view('/users_profile');
+});
+
+
 
 Route::get('/mahasiswa', function () {
     return view('/users/mahasiswa', ['nama' => 'M. Zaky Nugraha A.R', 'role' => 'mahasiswa']);
 });
 Route::get('/mahasiswa/kelas', function () {
-    return view('/mahasiswa/kelas', ['mapel' => 'pemograman web'] );
+    return view('/mahasiswa/kelas', 
+    ['pilih_kelas' => Kelas::all()],
+     );
+
+
+
+
+
+
+
+
 });
 Route::get('/mahasiswa/materi', function () {
-    return view('/mahasiswa/materi');
+    return view('/mahasiswa/materi', 
+    ['materi_kelas' => MateriKelas::all()
+]
+
+
+);
 });
 Route::get('/mahasiswa/tugas', function () {
-    return view('/mahasiswa/tugas');
+    return view('/mahasiswa/tugas', 
+ 
+    ['tugas_kelas' => Tugas::all()]
+);
+
 });
 Route::get('/mahasiswa/ujian', function () {
     return view('/mahasiswa/ujian');

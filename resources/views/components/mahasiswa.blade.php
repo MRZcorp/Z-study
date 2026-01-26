@@ -11,7 +11,7 @@
       <x-side-link link="mahasiswa/ujian" icon="Contract_Edit" label="Kuis / Ujian"></x-side-link>
       <x-side-link link="mahasiswa/nilai" icon="School" label="Nilai"></x-side-link>
       <x-side-link link="mahasiswa/pengaturan" icon="settings" label="Pengaturan"></x-side-link>
-      <x-side-link link="mahasiswa/nilai" icon="School" label="Nilai"></x-side-link>
+     
     
 
     </ul>

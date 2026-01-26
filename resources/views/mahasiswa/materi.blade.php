@@ -19,69 +19,109 @@
   <!-- CARD LIST -->
   <div class="space-y-5">
 
+
+
+    @foreach ($materi_kelas as $materi)
+        
+   
       <!-- CARD PDF -->
       <div class="bg-white rounded-xl border p-5 flex justify-between items-start gap-4">
           <div class="flex gap-4">
-              <div class="bg-red-100 text-red-600 p-2 rounded-lg h-fit">
-                  <span class="material-symbols-rounded">description</span>
+              
+            
+
+            
+            @php
+            $tipe_file = strtolower($materi['file_type']);
+        
+            // 1️⃣ FILE TYPE → ICON
+            $nameicon = match($tipe_file) {
+                'pdf' => 'description',
+                'zip' => 'folder_zip',
+                'mp4', 'video' => 'videocam',
+                default => 'insert_drive_file',
+            };
+        
+            // 2️⃣ ICON → WARNA
+            $bgicon = match($nameicon) {
+                'description' => 'bg-red-100 text-red-600',
+                'videocam' => 'bg-purple-100 text-purple-600',
+                'folder_zip' => 'bg-green-100 text-green-600',
+                default => 'bg-slate-100 text-slate-700',
+            };
+        @endphp
+        
+                    <div class="{{ $bgicon }} p-2 rounded-lg h-fit">
+                  <span class="material-symbols-rounded">{{ $nameicon }}</span>
               </div>
 
               <div>
                   <h3 class="font-semibold text-slate-800">
-                      Pengantar Algoritma dan Struktur Data
+                      {{$materi ['judul_materi']}}
+                      <p class="text-sm text-slate-500 mt-1 max-w-xl">
+                        {{$materi ['matkul']}}
+                    </p>
                   </h3>
                   <p class="text-sm text-slate-500 mt-1 max-w-xl">
-                      Materi pengantar tentang konsep dasar algoritma,
-                      kompleksitas waktu, dan struktur data fundamental.
+                      {{$materi ['deskripsi']}}
                   </p>
 
                   <div class="flex items-center gap-4 mt-3 text-sm text-slate-500">
-                      <span class="bg-red-50 text-red-600 px-2 py-0.5 rounded-md text-xs font-medium">
-                          PDF
+                      <span class="{{ $bgicon }} px-2 py-0.5 rounded-md text-xs font-medium">
+                          {{$materi ['file_type']}}
                       </span>
-                      <span>15 Jan 2026</span>
+                      <span>{{$materi ['created_at']}}</span>
                   </div>
               </div>
           </div>
 
           <button
-              class="flex items-center gap-2 border px-4 py-2 rounded-lg text-sm hover:bg-slate-100 transition">
-              <span class="material-symbols-rounded text-base">download</span>
-              Download
-          </button>
-      </div>
+          
+              {{-- class="flex items-center gap-2 border px-4 py-2 rounded-lg text-sm hover:bg-slate-100 transition"> --}}
+              class="mb-6  transform-gpu rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-8 py-4 font-bold text-white transition-transform hover:-translate-y-1 hover:shadow-lg">
+              <a href="{{ asset('storage/' . $materi->file_path) }}" target="_blank">
+            
+           
+            <span class="material-symbols-rounded text-base">Download</span>
+            <span class="nav-label">Download</span>
+              
+            </a>
+         
+      {{-- @php
+      $fileUrl = asset('storage/' . $materi->file_path);
+      $type = strtolower($materi->file_type);
+  @endphp
+  
+  
+      <!-- 👁️ LIHAT / PREVIEW -->
+      <a 
+          href="{{ $fileUrl }}" 
+          target="_blank"
+          class="inline-flex items-center gap-2 px-3 py-1.5 
+                 bg-blue-100 text-blue-700 rounded-md 
+                 hover:bg-blue-200 transition text-sm"
+          title="Lihat Materi"
+      >
+          <span class="material-symbols-rounded text-base">
+              visibility
+          </span>
+          Lihat
+      </a>--}}
+    </button> 
+</div>
+      @endforeach
 
-      <!-- CARD VIDEO -->
-      <div class="bg-white rounded-xl border p-5 flex justify-between items-start gap-4">
-          <div class="flex gap-4">
-              <div class="bg-purple-100 text-purple-600 p-2 rounded-lg h-fit">
-                  <span class="material-symbols-rounded">videocam</span>
-              </div>
 
-              <div>
-                  <h3 class="font-semibold text-slate-800">
-                      Tutorial Big O Notation
-                  </h3>
-                  <p class="text-sm text-slate-500 mt-1 max-w-xl">
-                      Video tutorial menjelaskan konsep Big O Notation
-                      untuk analisis kompleksitas algoritma.
-                  </p>
 
-                  <div class="flex items-center gap-4 mt-3 text-sm text-slate-500">
-                      <span class="bg-purple-50 text-purple-600 px-2 py-0.5 rounded-md text-xs font-medium">
-                          Video
-                      </span>
-                      <span>14 Jan 2026</span>
-                  </div>
-              </div>
-          </div>
 
-          <button
-              class="flex items-center gap-2 border px-4 py-2 rounded-lg text-sm hover:bg-slate-100 transition">
-              <span class="material-symbols-rounded text-base">download</span>
-              Download
-          </button>
-      </div>
+
+
+
+
+
+      
+
+
 
   </div>
 </main>

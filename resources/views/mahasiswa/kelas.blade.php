@@ -2,138 +2,184 @@
 <x-navbar></x-navbar>
 <x-sidebar>mahasiswa</x-sidebar>
 
+<!-- PROFIL MAHASISWA -->
+<div class="mb-6 bg-white rounded-xl shadow p-5">
 
-<style>
-    .badge{padding:.25rem .5rem;border-radius:.375rem;font-size:.75rem;font-weight:500}
-    .badge-success{background:#dcfce7;color:#166534}
-    .badge-info{background:#e0f2fe;color:#075985}
-    .badge-default{background:#f1f5f9;color:#475569}
-    .badge-muted{background:#e5e7eb;color:#374151}
-    .btn-primary{padding:.4rem .75rem;border-radius:.375rem;background:#0f172a;color:white;font-size:.75rem}
-    </style>
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+  
+      <!-- KIRI -->
+      <div class="flex items-center gap-4">
+        <img src="/img/zaky.jpeg"
+             class="w-16 h-16 rounded-full object-cover border-2 border-blue-500"
+             alt="Foto Mahasiswa">
+  
+        <div>
+          <h2 class="text-lg font-semibold text-gray-800">
+            M. Zaky Nugraha A R
+          </h2>
+          <p class="text-sm text-gray-500">NIM: 202201234</p>
+          <p class="text-sm text-gray-500">
+            Fakultas Teknik · Informatika
+          </p>
+        </div>
+      </div>
+  
+      <!-- KANAN -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+  
+        
+  
+        <div class="bg-gray-100 rounded-lg px-3 py-2">
+            <p class="text-gray-500">Tahun Ajar</p>
+            <p class="font-semibold text-gray-800">2024 / 2025</p>
+          </div>
+
+        <div class="bg-gray-100 rounded-lg px-3 py-2">
+          <p class="text-gray-500">Semester</p>
+          <p class="font-semibold text-gray-800">Genap : 6</p>
+        </div>
+  
+        
+  
+        <div class="bg-gray-100 rounded-lg px-3 py-2 col-span-2 sm:col-span-1">
+          <p class="text-gray-500">Dosen Wali</p>
+          <p class="font-semibold text-gray-800">Dr. Budi Yono</p>
+        </div>
+
+        <div class="bg-gray-100 rounded-lg px-3 py-2">
+            <p class="text-gray-500">IPK</p>
+            <p class="font-semibold text-gray-800">3.75</p>
+          </div>
     
-    <div class="space-y-10">
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm">
-    <div class="p-5 border-b border-slate-200">
-      <h2 class="font-semibold text-slate-800">Kelas yang Tersedia</h2>
-      <p class="text-sm text-slate-500">
-        Pilih kelas yang ingin Anda ikuti dan ajukan permohonan bergabung
-      </p>
-    </div>
+          <div class="bg-gray-100 rounded-lg px-3 py-2">
+            <p class="text-gray-500">SKS Ditempuh</p>
+            <p class="font-semibold text-gray-800"> 64 / 144</p>
+          </div>
+
+          <div class="bg-gray-100 rounded-lg px-3 py-2">
+            <p class="text-gray-500">Max SKS</p>
+            <p class="font-semibold text-gray-800"> 0 / 24</p>
+          </div>
   
-    <div class="overflow-x-auto">
-      <table class="w-full border-collapse">
-        <thead class="bg-slate-50 border-b border-slate-200">
-          <tr class="text-left text-sm text-slate-600">
-            <th class="px-4 py-3 border-r border-slate-200">Mata Kuliah</th>
-            <th class="px-4 py-3 border-r border-slate-200">Nama Kelas</th>
-            <th class="px-4 py-3 border-r border-slate-200">Dosen Pengampu</th>
-            <th class="px-4 py-3 border-r border-slate-200">Semester</th>
-            <th class="px-4 py-3 border-r border-slate-200">Kuota</th>
-            <th class="px-4 py-3 border-r border-slate-200">Status Pendaftaran</th>
-            <th class="px-4 py-3 border-r border-slate-200">Status Enrollment</th>
-            <th class="px-4 py-3 text-center">Aksi</th>
-          </tr>
-        </thead>
-  
-        <tbody class="text-sm text-slate-700 divide-y divide-slate-200">
-          <!-- ROW -->
-          <tr class="hover:bg-slate-50 transition">
-            <td class="px-4 py-3 font-medium">{{ $mapel }}</td>
-            <td class="px-4 py-3">Kelas A</td>
-            <td class="px-4 py-3">Dr. Budi Santoso, M.Kom</td>
-            <td class="px-4 py-3">Genap 2025/2026</td>
-            <td class="px-4 py-3">35/40</td>
-            <td class="px-4 py-3">
-              <span class="px-2 py-1 text-xs rounded-md bg-emerald-100 text-emerald-700">
-                Terbuka
-              </span>
-            </td>
-            <td class="px-4 py-3">
-              <span class="px-2 py-1 text-xs rounded-md bg-emerald-100 text-emerald-700">
-                Disetujui
-              </span>
-            </td>
-            <td class="px-4 py-3 text-center">
-              <span class="px-3 py-1 text-xs rounded-md bg-slate-200 text-slate-600">
-                Sudah Terdaftar
-              </span>
-            </td>
-          </tr>
-  
-          <!-- ROW -->
-          <tr class="hover:bg-slate-50 transition">
-            <td class="px-4 py-3 font-medium">Basis Data</td>
-            <td class="px-4 py-3">Kelas B</td>
-            <td class="px-4 py-3">Prof. Siti Rahma, Ph.D</td>
-            <td class="px-4 py-3">Genap 2025/2026</td>
-            <td class="px-4 py-3">28/35</td>
-            <td class="px-4 py-3">
-              <span class="px-2 py-1 text-xs rounded-md bg-emerald-100 text-emerald-700">
-                Terbuka
-              </span>
-            </td>
-            <td class="px-4 py-3">
-              <span class="px-2 py-1 text-xs rounded-md bg-amber-100 text-amber-700">
-                Menunggu Persetujuan
-              </span>
-            </td>
-            <td class="px-4 py-3 text-center">
-              <span class="px-3 py-1 text-xs rounded-md bg-slate-300 text-slate-700">
-                Menunggu
-              </span>
-            </td>
-          </tr>
-  
-        </tbody>
-      </table>
+      </div>
     </div>
   </div>
   
-
-
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
-    <div class="p-5 border-b border-slate-200">
-      <h2 class="font-semibold text-slate-800">Kelas yang Diikuti</h2>
-      <p class="text-sm text-slate-500">
-        Daftar kelas yang telah disetujui dan sedang Anda ikuti
-      </p>
-    </div>
+<!-- SUB NAVBAR -->
+<div class="mb-6">
+    <div class="flex items-center gap-2 rounded-xl bg-white p-1 shadow w-fit">
   
-    <div class="overflow-x-auto">
-      <table class="w-full border-collapse">
-        <thead class="bg-slate-50 border-b border-slate-200">
-          <tr class="text-left text-sm text-slate-600">
-            <th class="px-4 py-3 border-r border-slate-200">Mata Kuliah</th>
-            <th class="px-4 py-3 border-r border-slate-200">Kelas</th>
-            <th class="px-4 py-3 border-r border-slate-200">Dosen</th>
-            <th class="px-4 py-3 border-r border-slate-200">Semester</th>
-            <th class="px-4 py-3 text-center">Status</th>
-          </tr>
-        </thead>
+      <!-- TAB 1 -->
+      <a href="#"
+         class="px-4 py-2 text-sm font-semibold rounded-lg
+                bg-blue-800 text-white shadow">
+        Kelas Saya 
+      </a>
   
-        <tbody class="divide-y divide-slate-200 text-sm">
-          <tr class="hover:bg-slate-50">
-            <td class="px-4 py-3 font-medium">Pemrograman Web</td>
-            <td class="px-4 py-3">A</td>
-            <td class="px-4 py-3">Dr. Budi Santoso, M.Kom</td>
-            <td class="px-4 py-3">Genap 2025/2026</td>
-            <td class="px-4 py-3 text-center">
-              <span class="badge badge-info">Disetujui</span>
-            </td>
-          </tr>
+      <!-- TAB 2 -->
+      <a href="{#"
+         class="px-4 py-2 text-sm font-semibold rounded-lg
+                text-gray-600 hover:bg-gray-100">
+        Kelas Tersedia
+      </a>
   
-          <tr class="hover:bg-slate-50">
-            <td class="px-4 py-3 font-medium">Basis Data</td>
-            <td class="px-4 py-3">B</td>
-            <td class="px-4 py-3">Prof. Siti Rahma, Ph.D</td>
-            <td class="px-4 py-3">Genap 2025/2026</td>
-            <td class="px-4 py-3 text-center">
-              <span class="badge badge-info">Aktif</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
     </div>
   </div>
   
+<div class="p-6 bg-gray-100 min-h-screen">
+    {{-- <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"> --}}
+        <div class="grid gap-6"
+        style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+   
+
+        @foreach ($pilih_kelas as $kelas)
+            
+        
+      <!-- CARD -->
+      <div class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
+  
+        <!-- HEADER (BACKGROUND UPLOADABLE) -->
+        <div
+          class="relative h-28 bg-cover bg-center"
+          style="background-image: url({{$kelas->kelas_image}});"
+        > <!-- Overlay -->
+        <div class="absolute inset-0 bg-black/30"></div>
+      
+        <!-- SKS TAG -->
+        <div
+          class="absolute top-1 left-0 z-9 flex items-center gap-1 
+                 bg-amber-50 text-gray-800 text-sm font-semibold
+                 px-2 py-1 rounded-r-full shadow"
+        >
+          <span class="material-symbols-rounded text-base text-blue-600">
+            attach_file
+          </span>
+          {{$kelas->sks}}
+        </div>
+          <div class="absolute inset-0 bg-black/30"></div>
+  
+          <div class="absolute bottom-3 left-2 text-white z-10">
+            
+            <h3 class="text-sm font-semibold">{{ $kelas->mata_kuliah }}</h3>
+          </div>
+  
+          <!-- AVATAR -->
+          <img
+            src="{{$kelas->bg_image}}"
+            class="absolute -bottom-10 right-4 w-20 h-20 rounded-full border-4 border-white object-cover z-10"
+            alt="Avatar"
+          />
+        </div>
+  
+        <!-- BODY -->
+        <div class="pt-4 px-4 pb-4 space-y-1 text-sm text-gray-700">
+          <p>Kelas {{$kelas->nama_kelas}}</p>
+          <p>{{$kelas->jadwal_kelas}}</p>
+  
+          <!-- spacer tanpa titik -->
+          <div class="h-2"></div>
+  
+          <p>{{$kelas->hari_kelas}}</p>
+          <p>{{ \Carbon\Carbon::parse($kelas->jam_mulai)->format('H:i') }}
+ - {{ \Carbon\Carbon::parse($kelas->jam_selesai)->format('H:i') }}</p>
+  
+          <div class="h-2"></div>
+  
+          <p class="font-medium text-gray-900">{{$kelas->dosens->dosen ?? '-' }}</p>
+        </div>
+  
+        <!-- FOOTER -->
+        <div class="flex items-center justify-between px-4 py-3 border-t">
+  
+          <!-- PEOPLE + KUOTA -->
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-rounded text-blue-600 text-lg">
+              people
+            </span>
+  
+            <!-- KUOTA (DINAMIS) -->
+            <span class="text-sm font-semibold text-green-600">
+              {{$kelas->kuota_terdaftar}} / {{$kelas->kuota_maksimal}}
+            </span>
+          </div>
+  
+          <!-- BUTTON -->
+          <button
+            class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-1.5 text-sm font-semibold text-white transition hover:-translate-y-2 hover:shadow-lg"
+          >
+            <span class="material-symbols-rounded text-base">add_circle</span>
+            Ikuti
+          </button>
+        </div>
+  
+      </div>
+      <!-- END CARD -->
+      @endforeach
+
+
+
+
+    </div>
+  </div>
+
+

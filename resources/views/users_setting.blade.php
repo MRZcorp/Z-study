@@ -1,6 +1,6 @@
 <x-header></x-header>
 <x-navbar></x-navbar>
-<x-sidebar>mahasiswa</x-sidebar>
+<x-sidebar></x-sidebar>
 
 
 <div class="p-6 bg-gray-100 min-h-screen">
