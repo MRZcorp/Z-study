@@ -19,7 +19,7 @@ return new class extends Migration
                   ->onDelete('cascade');
 
             $table->foreignId('mata_kuliah_id')
-                  ->constrained('mata_kuliah')
+                  ->constrained('mata_kuliahs')
                   ->onDelete('cascade');
         
             // DATA TUGAS

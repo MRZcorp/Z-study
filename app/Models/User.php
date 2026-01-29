@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -17,10 +18,16 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    protected $table = 'users';
     protected $fillable = [
         'name',
-        'email',
+        'username',
+        'nim',
+        'nidn',
+        'role_id',
         'password',
+        'email',
+        'status',
     ];
 
     /**
@@ -45,9 +52,24 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function mataKuliah()
+    {
+        return $this->belongsTo(Matakuliah::class);
+    }
+
     public function role()
-{
-    return $this->belongsTo(Role::class);
-}
+    {
+        return $this->belongsTo(Role::class, ('role_id'));
+    }
+    public function dosens()
+    {
+        return $this->hasOne(Dosen::class);
+    }
+    public function mahasiswa()
+    {
+        return $this->hasOne(Mahasiswa::class);
+    }
+   
+
 
 }

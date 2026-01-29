@@ -12,12 +12,13 @@ class Dosen extends Model
     protected $table = 'dosens';
 
     protected $fillable = [
-        'nidn',
+        'user_id',
         'dosen',
         'email',
         'no_hp',
         'gelar',
         'status',
+        'poto_profil',
     ];
     // RELASI
     public function mataKuliah()
@@ -31,5 +32,10 @@ class Dosen extends Model
     public function kelas()
     {
         return $this->hasMany(kelas::class, 'dosen_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

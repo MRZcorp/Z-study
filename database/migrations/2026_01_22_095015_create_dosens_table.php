@@ -13,12 +13,15 @@ return new class extends Migration
     {
         Schema::create('dosens', function (Blueprint $table) {
             $table->id();
-            $table->string('dosen');
-            $table->string('nidn')->unique();
+            $table->foreignId('user_id')
+      ->constrained('users')
+      ->cascadeOnDelete();
             
+            $table->string('nidn')->unique();
             $table->string('email')->unique();
             $table->string('no_hp')->nullable();
             $table->string('gelar')->nullable();
+            $table->string('poto_profil')->nullable();
             $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
             $table->timestamps();
         });

@@ -1,0 +1,3 @@
+@foreach ($tugas_kelas as $item)
+    <p>{{ $item->nama_tugas }}</p>
+@endforeach

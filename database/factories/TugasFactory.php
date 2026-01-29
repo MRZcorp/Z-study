@@ -22,9 +22,8 @@ class TugasFactory extends Factory
     {
         return [
             //
-        'nama_kelas_id'=> Kelas::inRandomOrder()->first()->id
-        ?? Kelas::factory(),
-            'mata_kuliah_id' => MataKuliah::factory(),
+        'nama_kelas_id'=> 1,
+            'mata_kuliah_id' => 1,
             'nama_tugas' => 'Tugas ' . $this->faker->word(),
             'detail_tugas' => $this->faker->sentence(6),
             'file_tugas' => 'tugas/' . $this->faker->uuid() . '.pdf',

@@ -10,19 +10,24 @@ class Kelas extends Model
     /** @use HasFactory<\Database\Factories\KelasFactory> */
     use HasFactory;
     protected $fillable = [
-        'mata_kuliah',
-        'sks',
+        'dosen_id',
         'nama_kelas',
+        'mata_kuliah',
+        'jadwal_kelas',
         'hari_kelas',
         'jam_mulai',
         'jam_selesai',
-        'dosen_id',
         'kuota_maksimal',
         'kuota_terdaftar',
         'bg_image',
-        'kelas_image',
+        
     ];
     protected $table = 'kelas';
+
+
+
+
+    //Relasi
     public function tugass()
     {
         return $this->hasMany(Tugas::class, 'nama_kelas');
@@ -31,4 +36,18 @@ class Kelas extends Model
     {
         return $this->belongsTo(Dosen::class, 'dosen_id');
     }
+    public function mahasiswas()
+{
+    return $this->belongsToMany(Mahasiswa::class, 'kelas_mahasiswa')
+    ->withTimestamps();
+}
+
+
+//fungsi baru
+public function mataKuliah()
+{
+    return $this->belongsTo(MataKuliah::class);
+}
+
+
 }

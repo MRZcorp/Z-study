@@ -15,17 +15,15 @@
         <li class="nav-item"><a class="nav-link dropdown-title">{{ $label }}</a></li>
 
         @isset($drop1, $link1,)
-        <li class="nav-item"><a href="{{ url($link, $link1) }}" class="nav-link dropdown-link">{{ $drop1 }}</a></li>
+        <li class="nav-item"><a href="{{ url($link1) }}" class="nav-link dropdown-link">{{ $drop1 }}</a></li>
         @endisset
         @isset($drop2, $link2)
-        <li class="nav-item"><a href="{{ url($link, $link2) }}" class="nav-link dropdown-link">{{ $drop2 }}</a></li>
+        <li class="nav-item"><a href="{{ url($link2) }}" class="nav-link dropdown-link">{{ $drop2 }}</a></li>
         @endisset
         @isset($drop3, $link3)
-        <li class="nav-item"><a href="{{ url($link) }}/{{ $link3 }}" class="nav-link dropdown-link">{{ $drop3 }}</a></li>
+        <li class="nav-item"><a href="{{ url($link3) }}" class="nav-link dropdown-link">{{ $drop3 }}</a></li>
         @endisset
-        @isset($drop4, $link4)
-        <li class="nav-item"><a href="{{ url($link) }}/{{ $link4 }}" class="nav-link dropdown-link">{{ $drop4 }}</a></li>
-        @endisset
+        
 
 
        

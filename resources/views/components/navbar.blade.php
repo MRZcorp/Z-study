@@ -116,15 +116,32 @@
                             <i class="fas fa-cog text-gray-400 mr-3 w-5 text-center"></i>
                             Account Settings
                         </a>
+                        {{-- <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit"
+                                class="w-full block px-4 py-2.5 text-gray-700
+                                       hover:bg-blue-50 hover:text-blue-600
+                                       flex items-center transition-colors duration-200"
+                                onclick="return confirm('Yakin ingin logout?')">
+                        
+                                <span class="material-symbols-rounded mr-3">logout</span>
+                                Sign out
+                            </button>
+                        </form> --}}
+
                         
                         <div class="border-t border-gray-100 my-1"></div>
-                        <a href="mahasiswa" class="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center transition-colors duration-200">
-                            <span class="material-symbols-rounded">logout</span>
+
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center transition-colors duration-200">
+                            
+                            <span class="material-symbols-rounded mr-3">logout</span>
                             <i class="fas fa-sign-out-alt text-gray-400 mr-3 w-5 text-center"></i>
                             Sign out
-                        </a>
-                    </div>
-                </div>
+                        </button>
+                    </form>
   
                 <button id="mobile-menu-button" class="md:hidden p-2 text-gray-600 hover:text-blue-600 rounded-lg hover:bg-gray-100 transition-colors duration-200">
                     <i class="fas fa-bars text-xl"></i>

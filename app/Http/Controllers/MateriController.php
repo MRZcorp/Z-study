@@ -8,18 +8,23 @@ use App\Models\MateriKelas;
 class MateriController extends Controller
 {
     // Tampilkan daftar materi
-    public function index()
+    public function dosen()
     {
-        return view('mahasiswa.materi', [
+        return view('dosen.materi.materi', [
             'materi_kelas' => MateriKelas::latest()->get()
         ]);
     }
 
-    // Tampilkan form upload
-    public function create()
+
+
+
+    public function mahasiswa()
     {
-        return view('create');
+        return view('mahasiswa.materi.materi', [
+            'materi_kelas' => MateriKelas::latest()->get()
+        ]);
     }
+    
 
     // SIMPAN DATA & FILE (INI STORE)
     public function store(Request $request)
@@ -50,7 +55,15 @@ class MateriController extends Controller
     ]);
 
     // 5️⃣ Redirect
-    return redirect('/create')
+    return redirect('/dosen/materi')
         ->with('success', 'Materi berhasil diupload!');
 }
+
+
+
+
+
+
+
+
 }

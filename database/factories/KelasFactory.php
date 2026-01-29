@@ -62,8 +62,8 @@ class KelasFactory extends Factory
             'kuota_maksimal' => 15,
             'kuota_terdaftar' => $this->faker->numberBetween(0, 15),
 
-            'bg_image' => '/img/zaky.jpeg',
-            'kelas_image' => '/img/zaky.jpeg',
+            'bg_image' => $this->faker->randomElement([
+                'img/bg1.jpg', 'img/bg2.jpg', 'img/bg3.jpg', 'img/bg4.jpg', 'img/bg5.jpg', '']),
        
         ];
         

@@ -18,8 +18,10 @@ return new class extends Migration
             $table->foreignId('dosen_id')
                   ->constrained('dosens')
                   ->onDelete('cascade');
-            $table->string('mata_kuliah');
-            $table->unsignedTinyInteger('sks'); // 1–6 SKS
+            $table->foreignId('mata_kuliah_id')
+                    ->constrained('mata_kuliahs')
+                    ->cascadeOnDelete();
+            
         
             // Kelas
             $table->string('nama_kelas'); // A, B, C
@@ -37,8 +39,7 @@ return new class extends Migration
             $table->unsignedSmallInteger('kuota_terdaftar')->default(0);
         
             $table->string('bg_image')->nullable();      // background header card
-            $table->string('kelas_image')->nullable();   // foto profil kelas (avatar)
-
+            $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
             $table->timestamps();
         });
         

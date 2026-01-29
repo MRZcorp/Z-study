@@ -10,10 +10,20 @@ class TugasController extends Controller
     //
     // Tampilkan daftar materi
 
-    public function index()
+    public function dosen()
     {
-        $tugaskelas = Tugas::with(['mataKuliah', 'kelas'])->get();
-        return view('mahasiswa.tugas',compact('tugas_kelas'));
+        $tugas_kelas = Tugas::with(['mataKuliah', 'kelas'])->get();
+        return view('dosen.tugas.tugas',compact('tugas_kelas'));
         
     }
+
+
+    public function mahasiswa()
+    {
+        $tugas_kelas = Tugas::with(['mataKuliah', 'kelas'])->get();
+        return view('mahasiswa.tugas.tugas',compact('tugas_kelas'));
+        
+    }
+
+    
 }

@@ -9,15 +9,16 @@ class MataKuliah extends Model
 {
     use HasFactory;
 
-    protected $table = 'mata_kuliah';
+    protected $table = 'mata_kuliahs';
 
     protected $fillable = [
         'kode_mata_kuliah',
         'mata_kuliah',
+        'program_studi_id',
         'semester',
         'sks',
-        'dosen_pengampu',
-        'deskripsi',
+        // 'dosen_pengampu',
+        // 'deskripsi',
         'status',
     ];
 
@@ -29,4 +30,21 @@ class MataKuliah extends Model
     {
         return $this->belongsTo(Dosen::class);
     }
+
+
+    //fungsi baru
+    public function kelas()
+{
+    return $this->hasMany(Kelas::class);
+}
+public function prodi()
+{
+    return $this->belongsTo(ProgramStudi::class);
+}
+
+public function programStudi()
+{
+    return $this->belongsTo(ProgramStudi::class, 'nama_prodi_id');
+}
+
 }

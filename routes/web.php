@@ -1,171 +1,230 @@
 <?php
-
-use App\Models\MateriKelas;
-use App\Models\Kelas;
-use App\Http\Controllers\MateriController;
-use App\Http\Controllers\TugasController;
-use App\Models\Tugas;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\KelasController;
+use App\Http\Controllers\MahasiswaController;
+use App\Http\Controllers\MateriController;
+use App\Http\Controllers\PengumumanController;
+use App\Http\Controllers\TugasController;
+use App\Http\Controllers\BantuanController;
+use App\Http\Controllers\DiskusiController;
+use App\Http\Controllers\DosenController;
+use App\Http\Controllers\JadwalKelasController;
+use App\Http\Controllers\KelolaKelasController;
+use App\Http\Controllers\KelolaUserController;
+use App\Http\Controllers\KoreksiTugasController;
+use App\Http\Controllers\MataKuliahController;
+use App\Http\Controllers\NilaiController;
+use App\Http\Controllers\RekapNilaiController;
+use App\Http\Controllers\SessionController;
+use App\Http\Controllers\UjianController;
+use App\Http\Controllers\UserProfilController;
+use App\Http\Controllers\UserSettingController;
+use App\Http\Middleware\RoleMiddleware;
+
+// Route::middleware(['auth','role:admin'])->group(function () {
+//     Route::get('/admin', function () {
+//         return view('admin.dashboard');
+//     });
+// });
+
+// Route::middleware(['auth','role:dosen'])->group(function () {
+//     Route::get('/dosen', function () {
+//         return view('dosen.dashboard');
+//     });
+// });
+
+// Route::middleware(['auth','role:mahasiswa'])->group(function () {
+//     Route::get('/mahasiswa', function () {
+//         return view('mahasiswa.dashboard');
+//     });
+// });
 
 
 
 
+/*
+|--------------------------------------------------------------------------
+| AUTH (LOGIN)
+|--------------------------------------------------------------------------
+*/
+Route::get('/', [SessionController::class, 'index'])
+    ->name('login');
+
+Route::post('/', [SessionController::class, 'authenticate'])
+    ->name('login.process');
+
+Route::post('/logout', [SessionController::class, 'logout'])
+    ->name('logout');
 
 
+// Route::resource('/admin', AdminController::class)->middleware('superadmin');
 
 
-
-
-Route::get('/mahasiswa/materi', [MateriController::class, 'index']);
-Route::get('/create', [MateriController::class, 'create']);
-Route::post('/mahasiswa/materi', [MateriController::class, 'store']);
-
-
-
-
-
-
-Route::get('/', function () {
-    return view('home');
+Route::middleware(['auth.session', 'role.session:admin'])->group(function () {
+    Route::get('/admin', [AdminController::class, 'index'])
+        ->name('admin.dashboard');
 });
-Route::get('/signup', function () {
-    return view('/signup');
-});
-Route::get('/login', function () {
-    return view('/login');
-});
-Route::get('/about', function () {
-    return view('dashboard_mhs');
+
+Route::middleware(['auth.session', 'role.session:dosen'])->group(function () {
+    Route::get('/dosen', [DosenController::class, 'index'])
+        ->name('dosen.dashboard');
 });
 
-
-
-
-// USER MAHASISWA
-Route::get('/mahasiswa', function () {
-    return view('/users/mahasiswa');
-});
-Route::get('/users_setting', function () {
-    return view('/users_setting');
-});
-Route::get('/users_profile', function () {
-    return view('/users_profile');
-});
-
-
-
-Route::get('/mahasiswa', function () {
-    return view('/users/mahasiswa', ['nama' => 'M. Zaky Nugraha A.R', 'role' => 'mahasiswa']);
-});
-Route::get('/mahasiswa/kelas', function () {
-    return view('/mahasiswa/kelas', 
-    ['pilih_kelas' => Kelas::all()],
-     );
-
-
-
-
-
-
-
-
-});
-Route::get('/mahasiswa/materi', function () {
-    return view('/mahasiswa/materi', 
-    ['materi_kelas' => MateriKelas::all()
-]
-
-
-);
-});
-Route::get('/mahasiswa/tugas', function () {
-    return view('/mahasiswa/tugas', 
- 
-    ['tugas_kelas' => Tugas::all()]
-);
-
-});
-Route::get('/mahasiswa/ujian', function () {
-    return view('/mahasiswa/ujian');
-});
-Route::get('/mahasiswa/nilai', function () {
-    return view('/mahasiswa/nilai');
-});
-Route::get('/mahasiswa/diskupesi', function () {
-    return view('/mahasiswa/diskupesi');
-});
-Route::get('/mahasiswa/ngumuman', function () {
-    return view('/mahasiswa/pengumuman');
-});
-Route::get('/mahasiswa/pengaturan', function () {
-    return view('/mahasiswa/pengaturan');
-});
-Route::get('/mahasiswa/bantuan', function () {
-    return view('/mahasiswa/bantuan');
+Route::middleware(['auth.session', 'role.session:mahasiswa'])->group(function () {
+    Route::get('/mahasiswa', [MahasiswaController::class, 'index'])
+        ->name('mahasiswa.dashboard');
 });
 
 
 
-// USER ADMIN
-
-Route::get('/admin', function () {
-    return view('users/admin');
-});
-Route::get('/admin/kelola_admin', function () {
-    return view('/admin/kelola_admin');
-});
-Route::get('/admin/kelola_dosen', function () {
-    return view('/admin/kelola_dosen');
-});
-Route::get('/admin/kelola_mahasiswa', function () {
-    return view('/admin/kelola_mahasiswa');
-});
-Route::get('/admin/kelola_matakuliah', function () {
-    return view('/admin/kelola_matakuliah');
-});
-Route::get('/admin/kelola_jadwal', function () {
-    return view('/admin/kelola_jadwal');
-});
-Route::get('/admin/kelola_kelas', function () {
-    return view('/admin/Kelola_kelas');
-});
-Route::get('/admin/pengumuman', function () {
-    return view('/admin/pengumuman');
-});
-Route::get('/admin/pengaturan', function () {
-    return view('/admin/pengaturan');
-});
-Route::get('/admin/bantuan', function () {
-    return view('/admin/bantuan');
-});
 
 
-//USER DOSEN
 
-Route::get('/dosen', function () {
-    return view('users/dosen');
-});
-Route::get('/dosen/kelas', function () {
-    return view('/dosen/kelas');
-});
-Route::get('/dosen/materi', function () {
-    return view('/dosen/materi');
-});
-Route::get('/dosen/tugas', function () {
-    return view('/dosen/tugas');
-});
-Route::get('/dosen/ujian', function () {
-    return view('/dosen/ujian');
-});
-Route::get('/dosen/koreksi_tugas', function () {
-    return view('/dosen/koreksi_tugas');
-});
-Route::get('/dosen/rekap', function () {
-    return view('/dosen/rekap');
-});
-Route::get('/dosen/pengaturan', function () {
-    return view('/dosen/pengaturan');
-});
-Route::get('/dosen/bantuan', function () {
-    return view('/dosen/bantuan');
+
+// USER MAHASISWA////////////////////////////////////////////////////
+//route get
+
+Route::get('/mahasiswa/kelas', [KelasController::class, 'mahasiswa'])->name('mahasiswa.kelas_saya');
+Route::get('/mahasiswa/kelas_tersedia', [KelasController::class, 'mahasiswakelas'])->name('mahasiswa.kelas_tersedia');
+Route::get('/mahasiswa/materi', [MateriController::class, 'mahasiswa']);
+Route::get('/mahasiswa/tugas', [TugasController::class, 'mahasiswa']);
+Route::get('/mahasiswa/ujian', [UjianController::class, 'mahasiswa']);
+Route::get('/mahasiswa/nilai', [NilaiController::class, 'mahasiswa']);
+Route::get('/mahasiswa/pengaturan', [UserSettingController::class, 'mahasiswa']);
+Route::get('/mahasiswa/profil', [UserProfilController::class, 'mahasiswa']);
+Route::get('/mahasiswa/diskusi', [DiskusiController::class, 'mahasiswa']);
+Route::get('/mahasiswa/bantuan', [BantuanController::class, 'mahasiswa']);
+
+// Route::prefix('mahasiswa')
+//     ->name('mahasiswa.')
+//     ->group(function () {
+
+//         Route::get('/', [MahasiswaController::class, 'index'])
+//             ->name('mahasiswa');
+
+//         Route::get('/kelas', [KelasController::class, 'mahasiswa'])
+//             ->name('kelas_saya');
+
+//         Route::get('/kelas-tersedia', [KelasController::class, 'mahasiswakelas'])
+//             ->name('kelas_tersedia');
+
+//         Route::get('/materi', [MateriController::class, 'mahasiswa'])
+//             ->name('materi');
+
+//         Route::get('/tugas', [TugasController::class, 'mahasiswa'])
+//             ->name('tugas');
+
+//         Route::get('/ujian', [UjianController::class, 'mahasiswa'])
+//             ->name('ujian');
+
+//         Route::get('/nilai', [NilaiController::class, 'mahasiswa'])
+//             ->name('nilai');
+
+//         Route::get('/pengaturan', [UserSettingController::class, 'mahasiswa'])
+//             ->name('pengaturan');
+
+//         Route::get('/profil', [UserProfilController::class, 'mahasiswa'])
+//             ->name('profil');
+
+//         Route::get('/diskusi', [DiskusiController::class, 'mahasiswa'])
+//             ->name('diskusi');
+
+//         Route::get('/bantuan', [BantuanController::class, 'mahasiswa'])
+//             ->name('bantuan');
+//     });
+
+
+//route post
+Route::post('/mahasiswa/kelas/{kelas}/ikuti', [KelasController::class, 'ikuti'])
+    ->name('mahasiswa.kelas.ikuti');
+
+
+
+
+
+
+
+
+/////// USER DOSEN  /////////////////////
+/// route get
+
+Route::get('/dosen/kelas', [KelasController::class, 'dosen'])->name('dosen.kelas');
+Route::get('/dosen/buat_kelas', [KelasController::class, 'dosen1'])->name('dosen.buat_kelas');
+Route::get('/dosen/materi', [MateriController::class, 'dosen']);
+Route::get('/dosen/tugas', [TugasController::class, 'dosen']);
+Route::get('/dosen/ujian', [UjianController::class, 'dosen']);
+Route::get('/dosen/koreksi_tugas', [KoreksiTugasController::class, 'index']);
+Route::get('/dosen/rekap', [RekapNilaiController::class, 'index']);
+Route::get('/dosen/dikusi', [DiskusiController::class, 'dosen']);
+Route::get('/dosen/pengaturan', [UserSettingController::class, 'dosen']);
+Route::get('/dosen/user_profil', [UserProfilController::class, 'dosen']);
+Route::get('/dosen/bantuan', [BantuanController::class, 'dosen']);
+
+
+
+
+
+Route::post('/dosen/kelas', [KelasController::class, 'store'])
+    ->name('dosen.kelas');
+
+Route::post('/dosen/materi', [MateriController::class, 'store']);
+
+
+
+
+
+
+
+
+
+
+/////////// USER ADMIN /////////////////
+//Route get
+
+
+
+
+
+
+
+
+
+
+Route::resource('/admin/user_setting', KelolaUserController::class);
+
+
+
+
+
+
+
+
+
+
+
+Route::get('/admin/kelola_dosen', [DosenController::class, 'admin']);
+Route::get('/admin/kelola_mahasiswa', [MahasiswaController::class, 'admin']);
+Route::get('/admin/kelola_mata_kuliah', [MataKuliahController::class, 'index']);
+Route::get('/admin/data_kelas', [KelolaKelasController::class, 'index']);
+Route::get('/admin/kelola_jadwal', [JadwalKelasController::class, 'index']);
+Route::get('/admin/pengumuman', [PengumumanController::class, 'index']);
+Route::get('/admin/pengaturan', [UserSettingController::class, 'index']);
+Route::get('/admin/bantuan', [BantuanController::class, 'admin']);
+Route::get('/admin/user_profil', [UserProfilController::class, 'admin']);
+
+
+
+
+
+
+
+
+
+
+
+
+
+Route::get('/tes', function () {
+    return view('tes');
 });
