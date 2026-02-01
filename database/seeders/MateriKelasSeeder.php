@@ -16,4 +16,7 @@ class MateriKelasSeeder extends Seeder
         //
         MateriKelas::factory()->count(10)->create();
     }
+
+
+  
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class UserSettingController extends Controller
@@ -20,7 +21,11 @@ class UserSettingController extends Controller
 
 }
    public function dosen() {
-    return view('dosen.pengaturan_akun');
+    $user = User::with(['mahasiswa', 'dosens'])
+    ->findOrFail(session('user_id'));
+
+return view('dosen.pengaturan_akun', compact('user'));
+    
 
 }
 }

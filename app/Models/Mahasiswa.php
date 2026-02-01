@@ -17,6 +17,7 @@ class Mahasiswa extends Model
         'angkatan',
         'email',
         'status',
+        'poto_profil',
     ];
 
 

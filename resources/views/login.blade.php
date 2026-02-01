@@ -1,133 +1,374 @@
-<x-header>Login Z-Study</x-header>
+<x-header></x-header>
 
-<div class="grid min-h-screen w-full grid-cols-12 overflow-hidden bg-[#422ED0]">
-    <!-- Left Section -->
-    <div class="element z-3 col-span-7 flex p-32 text-white" style="">
-      <div class="w-full min-w-sm flex flex-col justify-between ">
-        <div>
-          <!-- <h1 class="flex items-center text-2xl font-bold">Tapconnect <span class="ml-2 text-sm font-light">Over 3k+ users</span></h1> -->
-          <img src="https://www.psit.ac.in/assets/webp/PSIT_logo_Red.svg" alt="" style="filter: brightness(0) invert(1);" />
-        </div>
-        <div>
-          <h1 class="my-8 text-7xl leading-20 font-bold text-indigo-50">Enter your account and discover new experiences</h1>
-          <p class="mb-2 text-xl">You do not have an account?</p> 
-          <div class="flex h-12 justify-start items-center gap-x-6 dark:text-white">
-              <a class="group flex h-min items-center disabled:opacity-50 disabled:hover:opacity-50 hover:opacity-95 justify-center ring-none rounded-lg shadow-lg font-semibold py-2 px-4 font-dm focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-violet-500 border-b-violet-700 disabled:border-0 disabled:bg-violet-500 disabled:text-white ring-white text-white border-b-4 hover:border-0 active:border-0 hover:text-gray-100 active:bg-violet-800 active:text-gray-300 focus-visible:outline-violet-500 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-700 dark:border-b-gray-900"
-                  href="">
-                 Create New User ( New Registration )
-              </a>
-              <a class="group flex h-min ring-none items-center justify-center hover:opacity-95 disabled:opacity-50 rounded-lg py-2 px-4 font-dm focus:outline-none !ring-transparent text-violet-800 border border-violet-500 border-b-violet-400 border-b-4 hover:border active:border bg-white hover:text-violet-900 hover:bg-gray-50 active:bg-gray-100 active:text-violet-600 focus-visible:outline-violet-600 focus-visible:ring-violet-700 text-sm sm:text-base dark:bg-gray-700 dark:border-gray-700 dark:border-b-gray-900 dark:text-white"
-                  href="">
-                  <svg aria-hidden="true" class="h-3 w-3 flex-none fill-violet-600 group-active:fill-current">
-                      <path
-                          d="m9.997 6.91-7.583 3.447A1 1 0 0 1 1 9.447V2.553a1 1 0 0 1 1.414-.91L9.997 5.09c.782.355.782 1.465 0 1.82Z">
-                      </path>
-                  </svg>
-                  <span class="ml-3">Create Parent Login</span>
-              </a>
-          </div>
+<style>
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>
+<!-- TOP RIGHT TOGGLE -->
+<div class="flex justify-between items-center ">
 
-        </div>
-        <div class="mb-0 hidden">
-          <h2 class="mb-4 text-4xl font-bold text-indigo-50">Welcome to <span class="text-4xl" style='font-family: "Times New Roman", Times, serif;'>PSIT</span></h2>
-          <p class="text-xl text-indigo-50">The access to this website is limited to the institute Management, Faculty and Students only (Login to your accounts to navigate the website). Visitors may kindly visit <a href="#" class="text-xl text-indigo-100"> www.psit.ac.in</a> for information about the institutes.</p>
-
-          <!-- <p class="mt-4 text-indigo-50">Vision : To achieve excellence in professional education and create an ecosystem for the holistic development of all stakeholders <br>
-          Mission
-To provide an environment of effective learning and innovation transforming students into dynamic, responsible and productive professionals in their respective fields, who are capable of adapting to the changing needs of the industry and society.
-          </p> -->
-        </div>
-      </div>
+  <!-- LEFT BRAND -->
+  <div class="flex items-center">
+    <div class="h-20 w-20 flex items-center justify-center overflow-hidden mr-3">
+      <img src="{{ asset('img/Logo_Zstudy.png') }}" class="h-15 w-15 object-contain" />
     </div>
-
-
-
-
-    <!-- Right Section -->
-    
-  
-    <div class="relative z-3 col-span-5 flex rounded-tl-[44px] bg-white">
-      <div class="absolute top-4 right-0 -left-4 z-2 h-full w-full rounded-tl-[44px] bg-white/50"></div>
-      <div class="z-10 w-full">
-        <div class="z-4 mx-auto mt-20 max-w-sm bg-white p-4 sm:p-10 lg:max-w-lg xl:max-w-xl">
-          <h2 class="mb-10 text-4xl font-bold text-slate-600">Hai, Selamat datang di</h2>
-          <h2 class="mb-10 text-4xl font-bold text-slate-600">Z-Study! 👋</h2>
-          <!-- <p class="mb-6 text-gray-500">Pranveer Singh Institute of Technology</p> -->
-          
-      
-         
-          <form action="{{ route('login.process') }}" method="POST">
-            @csrf
-        
-            {{-- ERROR GLOBAL --}}
-            @if(session('error'))
-                <div class="mb-4 rounded-lg bg-red-100 px-4 py-3 text-sm text-red-700">
-                    {{ session('error') }}
-                </div>
-            @endif
-        
-            {{-- USERNAME / NIM / NIDN --}}
-            <input 
-                type="text"
-                name="username"
-                value="{{ old('username') }}"
-                placeholder="Username / NIM / NIDN"
-                class="mb-2 w-full border-b border-gray-300 px-4 py-5 text-lg font-medium text-slate-700
-                       focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-            />
-            @error('username')
-                <p class="mb-4 text-sm text-red-600">{{ $message }}</p>
-            @enderror
-        
-            {{-- PASSWORD --}}
-            <input 
-                type="password"
-                name="password"
-                placeholder="Password"
-                class="mb-2 w-full border-b border-gray-300 px-4 py-5 text-lg font-medium text-slate-700
-                       focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-            />
-            @error('password')
-                <p class="mb-4 text-sm text-red-600">{{ $message }}</p>
-            @enderror
-        
-            {{-- REMEMBER ME --}}
-            <div class="mb-10 flex items-center justify-between">
-                <label class="flex items-center space-x-2">
-                    <input 
-                        type="checkbox" 
-                        name="remember" 
-                        class="form-checkbox text-indigo-600"
-                    />
-                    <span class="font-medium text-gray-600">Remember me</span>
-                </label>
-                <a href="#" class="text-lg font-medium text-indigo-600 hover:underline">
-                    Forgot password?
-                </a>
-            </div>
-        
-            {{-- SUBMIT --}}
-            <button 
-                type="submit"
-                class="mb-6 w-full transform-gpu rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-8 py-4 font-bold text-white transition-transform hover:-translate-y-1 hover:shadow-lg">
-                Masuk
-            </button>
-        </form>
-
-          <!-- Or -->
-          <div class="mb-6 flex items-center justify-center">
-            <span class="w-1/5 border-b border-white lg:w-1/4"></span>
-            <span class="mx-2 text-xs text-gray-400">OR</span>
-            <span class="w-1/5 border-b border-white lg:w-1/4"></span>
-          </div>
-
-         
-
-          <!-- Sign Up -->
-          <p class="mt-12 text-center text-sm text-gray-500">Don’t have an account? <a href="#" class="text-indigo-600 hover:underline">Sign up</a></p>
-        </div>
-      </div>
+    <div>
+      <p class="font-medium text-gray-900">Z-Study</p>
+      <p class="text-sm text-gray-500">Online Learning System</p>
     </div>
   </div>
 
-  
+  <!-- RIGHT BUTTON -->
+  <button
+    onclick="toggleLogin()"
+    class="rounded-full bg-gradient-to-r from-indigo-500 to-purple-500
+           px-6 py-3 mr-3 text-sm font-semibold text-white
+           transition hover:-translate-y-1 hover:shadow-xl"
+  >
+    Login
+  </button>
+
+</div>
+
+
+
+<!-- Main Conten -->
+<div class="w-full bg-gray-100 flex justify-center pt-6 pb-7">
+
+  <!-- FRAME -->
+  <div class="relative w-full max-w-6xl h-[550px] overflow-hidden rounded-2xl shadow-xl bg-black">
+
+    <!-- PROGRESS BAR -->
+    <div class="absolute top-3 left-1/2 -translate-x-1/2 w-[80%] h-1 bg-white/30 rounded-full z-30">
+      <div
+        id="progressBar"
+        class="h-full w-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-300"
+      ></div>
+    </div>
+
+    <!-- TEXT OVERLAY -->
+    <div
+      id="overlay"
+      class="absolute z-20 max-w-md
+            bg-white/30 backdrop-blur-md
+             rounded-xl p-6
+             transition-all duration-700 ease-out
+         transform-gpu"
+    >
+      <h1
+        id="overlayTitle"
+        class="text-3xl font-bold text-yellow-500 mb-3"
+      >
+         Z-Study
+      </h1>
+      <p
+        id="overlayText"
+        class="text-gray-800 leading-relaxed"
+      >
+      Z-Study menggabungkan inovasi teknologi dan pembelajaran
+        fleksibel untuk mendorong pertumbuhan intelektual mahasiswa.
+      </p>
+    </div>
+
+    <!-- SLIDER -->
+    <div
+      id="slider"
+      class="flex h-full overflow-x-scroll scroll-smooth snap-x snap-mandatory no-scrollbar"
+    >
+
+      <!-- SLIDE 1 -->
+      <div
+        class="min-w-full h-full snap-center"
+        data-title="Z-Study"
+        data-text="Z-Study menggabungkan inovasi teknologi dan pembelajaran fleksibel untuk 
+        mendorong pertumbuhan intelektual mahasiswa."
+        data-x="left-10"
+        data-y="top-[60%]"
+      
+        >
+        <img src="/img/bg1.jpg" class="w-full h-full object-cover" />
+      </div>
+
+      <!-- SLIDE 2 -->
+      <div
+        class="min-w-full h-full snap-center"
+        data-title="FASILITAS MODERN"
+        data-text="Lingkungan belajar modern dengan fasilitas lengkap untuk mendukung 
+        kreativitas dan kolaborasi mahasiswa."
+        data-x="left-10"
+        data-y="top-10"
+      >
+        <img src="/img/bg2.jpg" class="w-full h-full object-cover" />
+      </div>
+
+      <!-- SLIDE 3 -->
+      <div
+        class="min-w-full h-full snap-center"
+        data-title="KAMPUS HIJAU"
+        data-text="Ruang terbuka hijau yang nyaman dan asri untuk menciptakan suasana 
+        belajar yang seimbang dan produktif."
+        data-x="left-[58%]"
+        data-y="top-[60%]"
+      >
+        <img src="/img/bg3.jpg" class="w-full h-full object-cover" />
+      </div>
+
+      <!-- SLIDE 4 -->
+      <div
+        class="min-w-full h-full snap-center"
+        data-title="KAMPUS HIJAU"
+        data-text="Ruang terbuka hijau yang nyaman dan asri untuk menciptakan suasana 
+        belajar yang seimbang dan produktif."
+        
+        data-x="left-[58%]"
+        data-y="top-10"
+      >
+        <img src="/img/bg3.jpg" class="w-full h-full object-cover" />
+      </div>
+
+      <!-- SLIDE 5 -->
+      <div
+        class="min-w-full h-full snap-center"
+        data-title="KAMPUS HIJAU"
+        data-text="Ruang terbuka hijau yang nyaman dan asri untuk menciptakan suasana 
+        belajar yang seimbang dan produktif."
+        
+        data-x="left-10"
+        data-y="top-10"
+      >
+        <img src="/img/bg3.jpg" class="w-full h-full object-cover" />
+      </div>
+
+      <!-- SLIDE 6 -->
+      <div
+        class="min-w-full h-full snap-center"
+        data-title="KAMPUS HIJAU"
+        data-text="Ruang terbuka hijau yang nyaman dan asri untuk menciptakan
+         suasana belajar yang seimbang dan produktif."
+
+         
+        data-x="left-[58%]"
+        data-y="top-[60%]"
+      >
+        <img src="/img/bg3.jpg" class="w-full h-full object-cover" />
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+ <!-- LOGIN -->
+<!-- OVERLAY + BLUR -->
+<div
+id="loginOverlay"
+class="fixed inset-0 z-30 hidden
+       items-center justify-center
+       bg-black/40 backdrop-blur-sm">
+
+<!-- LOGIN CARD -->
+<div
+  class="relative w-full max-w-md rounded-3xl
+         bg-white/20 backdrop-blur-xl
+         p-8
+         shadow-[0_25px_50px_-15px_rgba(0,0,0,0.4)]
+         border border-white/30">
+
+  <!-- CLOSE BUTTON -->
+  <button
+    onclick="toggleLogin()"
+    class="absolute right-4 top-4
+           text-white/70 hover:text-white text-xl">
+    ✕
+  </button>
+
+ 
+  <!-- TITLE -->
+<div class="flex flex-col items-center text-center mb-2">
+
+<!-- LOGO -->
+<div class="h-20 w-20 mb-4 flex items-center justify-center overflow-hidden">
+<img src="{{ asset('img/Logo_Zstudy.png') }}" class="h-20 w-20 object-contain" />
+</div>
+
+
+<!-- WELCOME TEXT -->
+<h2 class="mb-1 text-2xl font-semibold text-white">
+Hai, Selamat datang di
+</h2>
+<h2 class="mb-4 text-2xl font-bold text-white">
+Z-Study! 👋
+</h2>
+</div>
+<!--  TEXT -->
+{{-- <p class="text-sm text-gray-900 mb-4">Sistem terintegrasi untuk pengelolaan data dan layanan dosen 
+  serta mahasiswa. </p>
+  <p>Hanya dapat diakses oleh pengguna terdaftar.</p> --}}
+
+
+
+  <!-- FORM -->
+  <form action="{{ route('login.process') }}" method="POST" class="space-y-5">
+    @csrf
+
+    @if(session('error'))
+      <div class="rounded-lg bg-red-100 px-4 py-3 text-sm text-red-700">
+        {{ session('error') }}
+      </div>
+    @endif
+
+    <!-- USERNAME -->
+    <input
+      type="text"
+      name="username"
+      placeholder="Username / ID"
+      class="w-full border-b border-white/40 bg-transparent
+             px-2 py-3 text-white placeholder-white/70
+             focus:border-indigo-400 focus:outline-none"
+    />
+
+    <!-- PASSWORD -->
+    <input
+      type="password"
+      name="password"
+      placeholder="Password"
+      class="w-full border-b border-white/40 bg-transparent
+             px-2 py-3 text-white placeholder-white/70
+             focus:border-indigo-400 focus:outline-none"
+    />
+
+    <!-- OPTIONS -->
+    <div class="flex items-center justify-between text-sm text-white/80">
+      <label class="flex items-center gap-2">
+        <input type="checkbox" name="remember" class="rounded text-indigo-600">
+        Ingat Saya
+      </label>
+
+      <a href="#" class="hover:text-white">
+        Lupa Password?
+      </a>
+    </div>
+
+    <!-- BUTTON -->
+    <button
+      type="submit"
+      class="mt-4 w-full rounded-full
+             bg-gradient-to-r from-indigo-700 to-purple-700
+             px-6 py-3 text-sm font-semibold text-white
+             transition hover:-translate-y-1 hover:shadow-xl">
+      Masuk
+    </button>
+  </form>
+</div>
+</div>
+</div>
+
+
+
+<!-- SCRIPT -->
+<script>
+const slider = document.getElementById("slider")
+const progressBar = document.getElementById("progressBar")
+const overlayTitle = document.getElementById("overlayTitle")
+const overlayText = document.getElementById("overlayText")
+const slides = slider.children
+
+let currentIndex = 0
+let isScrolling = false
+
+function updateProgress() {
+  const percent = ((currentIndex + 1) / slides.length) * 100
+  progressBar.style.width = percent + "%"
+}
+function toggleLogin() {
+    const overlay = document.getElementById('loginOverlay');
+    overlay.classList.toggle('hidden');
+    overlay.classList.toggle('flex');
+  }
+
+function updateOverlay() {
+  const activeSlide = slides[currentIndex]
+  const title = activeSlide.dataset.title
+  const text = activeSlide.dataset.text
+
+  // Animate OUT
+  overlay.classList.add("opacity-0", "scale-95", "translate-y-4")
+
+  setTimeout(() => {
+    overlayTitle.textContent = title
+    overlayText.textContent = text
+
+    // Animate IN
+    overlay.classList.remove("opacity-0", "scale-95", "translate-y-4")
+  }, 300)
+}
+
+function goToSlide(index) {
+  if (index < 0) index = 0
+  if (index >= slides.length) index = slides.length - 1
+
+  currentIndex = index
+
+  const slideWidth = slider.clientWidth
+  slider.scrollTo({
+    left: slideWidth * currentIndex,
+    behavior: "smooth"
+  })
+
+  updateProgress()
+  updateOverlay()
+  updateOverlayPosition()
+}
+function updateOverlayPosition() {
+  const activeSlide = slides[currentIndex]
+
+  const x = activeSlide.dataset.x || "left-10"
+  const y = activeSlide.dataset.y || "top-1/2"
+
+  // Hanya posisi berbasis TOP (biar bisa dianimasikan)
+  const positions = [
+    "left-[58%]", "right-10",
+    "top-10", "top-1/2",
+    "top-3/4", "top-[60%]",
+    "-translate-y-1/2"
+  ]
+
+  // Bersihkan semua dulu
+  overlay.classList.remove(...positions)
+
+  // Pasang posisi baru
+  overlay.classList.add(x, y)
+
+  // Auto center kalau pakai top-1/2
+  if (y === "top-1/2") {
+    overlay.classList.add("-translate-y-1/2")
+  }
+}
+
+slider.addEventListener("wheel", (e) => {
+  e.preventDefault()
+  if (isScrolling) return
+
+  isScrolling = true
+
+  if (e.deltaY > 0) {
+    goToSlide(currentIndex + 1)
+  } else {
+    goToSlide(currentIndex - 1)
+  }
+
+  setTimeout(() => {
+    isScrolling = false
+  }, 600)
+}, { passive: false })
+
+// INIT
+updateProgress()
+updateOverlay()
+updateOverlayPosition()
+</script>

@@ -22,23 +22,7 @@ use App\Http\Controllers\UserProfilController;
 use App\Http\Controllers\UserSettingController;
 use App\Http\Middleware\RoleMiddleware;
 
-// Route::middleware(['auth','role:admin'])->group(function () {
-//     Route::get('/admin', function () {
-//         return view('admin.dashboard');
-//     });
-// });
 
-// Route::middleware(['auth','role:dosen'])->group(function () {
-//     Route::get('/dosen', function () {
-//         return view('dosen.dashboard');
-//     });
-// });
-
-// Route::middleware(['auth','role:mahasiswa'])->group(function () {
-//     Route::get('/mahasiswa', function () {
-//         return view('mahasiswa.dashboard');
-//     });
-// });
 
 
 
@@ -69,6 +53,30 @@ Route::middleware(['auth.session', 'role.session:admin'])->group(function () {
 Route::middleware(['auth.session', 'role.session:dosen'])->group(function () {
     Route::get('/dosen', [DosenController::class, 'index'])
         ->name('dosen.dashboard');
+        Route::get('/dosen/kelas', [KelasController::class, 'dosen'])->name('dosen.kelas');
+        Route::get('/dosen/buat_kelas', [KelasController::class, 'dosen1'])->name('dosen.buat_kelas');
+        Route::get('/dosen/materi', [MateriController::class, 'dosen']);
+        Route::get('/dosen/tugas', [TugasController::class, 'dosen']);
+        Route::get('/dosen/ujian', [UjianController::class, 'dosen']);
+        Route::get('/dosen/koreksi_tugas', [KoreksiTugasController::class, 'index']);
+        Route::get('/dosen/rekap', [RekapNilaiController::class, 'index']);
+        Route::get('/dosen/dikusi', [DiskusiController::class, 'dosen']);
+        Route::get('/dosen/pengaturan', [UserSettingController::class, 'dosen']);
+        Route::get('/dosen/user_profil', [UserProfilController::class, 'dosen']);
+        Route::get('/dosen/bantuan', [BantuanController::class, 'dosen']);
+        
+        
+        
+        
+        
+        Route::post('/dosen/kelas', [KelasController::class, 'store'])
+            ->name('dosen.kelas');
+        
+        Route::post('/dosen/materi', [MateriController::class, 'store']);
+        
+
+
+
 });
 
 Route::middleware(['auth.session', 'role.session:mahasiswa'])->group(function () {
@@ -149,26 +157,6 @@ Route::post('/mahasiswa/kelas/{kelas}/ikuti', [KelasController::class, 'ikuti'])
 /////// USER DOSEN  /////////////////////
 /// route get
 
-Route::get('/dosen/kelas', [KelasController::class, 'dosen'])->name('dosen.kelas');
-Route::get('/dosen/buat_kelas', [KelasController::class, 'dosen1'])->name('dosen.buat_kelas');
-Route::get('/dosen/materi', [MateriController::class, 'dosen']);
-Route::get('/dosen/tugas', [TugasController::class, 'dosen']);
-Route::get('/dosen/ujian', [UjianController::class, 'dosen']);
-Route::get('/dosen/koreksi_tugas', [KoreksiTugasController::class, 'index']);
-Route::get('/dosen/rekap', [RekapNilaiController::class, 'index']);
-Route::get('/dosen/dikusi', [DiskusiController::class, 'dosen']);
-Route::get('/dosen/pengaturan', [UserSettingController::class, 'dosen']);
-Route::get('/dosen/user_profil', [UserProfilController::class, 'dosen']);
-Route::get('/dosen/bantuan', [BantuanController::class, 'dosen']);
-
-
-
-
-
-Route::post('/dosen/kelas', [KelasController::class, 'store'])
-    ->name('dosen.kelas');
-
-Route::post('/dosen/materi', [MateriController::class, 'store']);
 
 
 

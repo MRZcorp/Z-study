@@ -1,3 +1,8 @@
+
+
+
+
+
 <!-- Premium Professional Navigation Bar -->
 <nav class="bg-white shadow-lg sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,40 +62,63 @@
     </form>
 </div>
 
-<script>
-    const searchBtn = document.getElementById('searchBtn');
-    const searchForm = document.getElementById('searchForm');
-    const searchInput = searchForm.querySelector('input');
 
-    searchBtn.addEventListener('click', function (e) {
-        if (!searchInput.value) {
-            e.preventDefault(); // cegah submit saat masih kosong
-            searchInput.focus();
-        }
-    });
-</script>
 
   
-                <button class="p-2 text-gray-600 hover:text-blue-600 rounded-full hover:bg-gray-100 transition-colors duration-200 relative">
+                <button class="p-2 text-gray-600 hover:text-blue-600 rounded-full 
+                hover:bg-gray-100 transition-colors duration-200 relative">
                     <i class="fas fa-bell"></i>
                     
                     <span class="material-symbols-rounded">Notifications</span>
-                    <span class="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white"></span>
+                    <span class="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-red-500 
+                    border-2 border-white"></span>
                 </button>
-  
+  {{-- mode --}}
+
+{{--   
+    <button onclick="(() => document.body.classList.toggle('dark'))()"
+          class="h-12 w-12 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+          <svg class="fill-violet-700 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+          </svg>
+          <svg class="fill-yellow-500 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                  d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                  fill-rule="evenodd" clip-rule="evenodd"></path>
+          </svg>
+      </button> --}}
+
+
+  {{-- mode --}}
+
+
                 <div class="hidden md:block h-6 w-px bg-gray-200"></div>
   
                 <div class="dropdown relative">
                     <button class="flex items-center space-x-2 focus:outline-none group">
                         <div class="relative">
-                            <div class="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 overflow-hidden avatar-ring">
-                                <img src="{{ asset('img/zaky.jpeg') }}" alt="User" class="h-full w-full object-cover">
+                            <div class="h-9 w-9 rounded-full bg-blue-100 flex items-center 
+                            justify-center text-blue-600 overflow-hidden avatar-ring">
+                               
+                               
+                               
+                                <img
+                                src="{{ $foto 
+                                    ? asset('storage/' . $foto) 
+                                    : asset('img/Logo_Zstudy.png') }}"
+                                class="h-10 w-10 rounded-full object-cover"
+                                alt="Foto Profil"
+                            />
+                            
+                            
                             </div>
-                            <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white"></span>
+                            <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full 
+                            bg-green-500 border-2 border-white"></span>
                         </div>
                         <div class="hidden lg:flex flex-col items-start">
-                            <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors duration-200">M. Zaky Nugraha A R</span>
-                            <span class="text-xs text-gray-500">mahaiswa</span>
+                            <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600 
+                            transition-colors duration-200">{{$nama}}</span>
+                            <span class="text-xs text-gray-500">{{ $role}}</span>
                         </div>
                         <i class="fas fa-chevron-down text-xs text-gray-500 hidden lg:inline transition-transform duration-200 group-hover:text-blue-600"></i>
                     </button>
@@ -98,20 +126,35 @@
                         <div class="px-4 py-3 border-b border-gray-100">
                             <div class="flex items-center">
                                 <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 overflow-hidden mr-3">
-                                    <img src="{{ asset('img/zaky.jpeg') }}" alt="User" class="h-full w-full object-cover">
+                                  
+                                  
+                                    
+                                    <img
+                                    src="{{ $foto 
+                                        ? asset('storage/' . $foto) 
+                                        : asset('img/Logo_Zstudy.png') }}"
+                                    class="h-10 w-10 rounded-full object-cover"
+                                    alt="Foto Profil"
+                                />
+
+
+
+
+                                
                                 </div>
                                 <div>
-                                    <p class="font-medium text-gray-900">M. Zaky Nugraha A R</p>
-                                    <p class="text-sm text-gray-500">2143013</p>
+                                    <p class="font-medium text-gray-900"> {{$nama}} </p>
+                                    <p class="text-sm text-gray-500"> {{$id_user}} </p>
                                 </div>
                             </div>
                         </div>
-                        <a href="admin" class="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center transition-colors duration-200">
+                        <a href="{{$profil}}" class="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 
+                        hover:text-blue-600 flex items-center transition-colors duration-200">
                             <span class="material-symbols-rounded">Account_Circle</span>
                              <i class="fas fa-user-circle text-gray-400 mr-3 w-5 text-center"></i>
                              My Profile
                         </a>
-                        <a href="dosen" class="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center transition-colors duration-200">
+                        <a href="{{$setting}}" class="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 flex items-center transition-colors duration-200">
                             <span class="material-symbols-rounded">Settings</span> 
                             <i class="fas fa-cog text-gray-400 mr-3 w-5 text-center"></i>
                             Account Settings
@@ -153,3 +196,16 @@
   
     
   </nav>
+
+  <script>
+    const searchBtn = document.getElementById('searchBtn');
+    const searchForm = document.getElementById('searchForm');
+    const searchInput = searchForm.querySelector('input');
+
+    searchBtn.addEventListener('click', function (e) {
+        if (!searchInput.value) {
+            e.preventDefault(); // cegah submit saat masih kosong
+            searchInput.focus();
+        }
+    });
+</script>

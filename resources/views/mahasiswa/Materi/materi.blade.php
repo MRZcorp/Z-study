@@ -1,4 +1,4 @@
-<x-header> </x-header>
+<x-header>Materi Pembelajaran</x-header>
 <x-navbar></x-navbar>
 <x-sidebar>mahasiswa</x-sidebar>
 <div class="bg-white rounded-xl border p-5 flex flex-col lg:flex-row

@@ -55,11 +55,11 @@
     label="Bantuan"
     ></x-side-link>
 
-    <x-side-link 
+    {{-- <x-side-link 
     link="logout" 
     icon="logout" 
     label="Sign Out"
-    ></x-side-link>
+    ></x-side-link> --}}
 
     
    

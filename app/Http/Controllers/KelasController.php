@@ -20,6 +20,14 @@ class KelasController extends Controller
     return view('dosen.kelas.kelas', compact('pilih_kelas'));
        
     }
+    public function dosen1()
+     {
+
+        $pilih_kelas = Kelas::with('dosens', 'mataKuliah')->latest()->get();
+
+    return view('dosen.kelas.buat_kelas', compact('pilih_kelas'));
+       
+    }
     public function admin()
      {
         $pilih_kelas = Kelas::with('dosens')->latest()->get();

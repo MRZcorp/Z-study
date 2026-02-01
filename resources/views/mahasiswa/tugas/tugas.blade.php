@@ -1,4 +1,4 @@
-<x-header></x-header>
+<x-header>Tugas Mahasiswa</x-header>
 <x-navbar></x-navbar>
 <x-sidebar>mahasiswa</x-sidebar>
 

@@ -24,14 +24,18 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        return [
-            'name' => fake()->name(),
-           
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => bcrypt('password'),
+       
+            return [
+                'name'     => $this->faker->name(),
+                'username' => $this->faker->unique()->userName(),
+                'nim'      => null,
+                'nidn'     => null,
+                'email'    => $this->faker->unique()->safeEmail(),
+                'password' => Hash::make('123'),
+                'role_id'  => null, // ❗ sengaja dikosongkan
+            ];
         
-        ];
+        
     }
 
     /**
@@ -43,4 +47,25 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    // ✅ STATE DOSEN
+    public function dosen()
+    {
+        return $this->state(fn () => [
+            'role_id' => 2,
+            'nidn'    => $this->faker->unique()->numerify('##########'),
+            'nim'     => null,
+        ]);
+    }
+
+    // ✅ STATE MAHASISWA
+    public function mahasiswa()
+    {
+        return $this->state(fn () => [
+            'role_id' => 3,
+            'nim'     => $this->faker->unique()->numerify('23########'),
+            'nidn'    => null,
+        ]);
+    }
+
 }

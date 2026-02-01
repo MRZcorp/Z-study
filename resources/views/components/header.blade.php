@@ -19,3 +19,7 @@
 
 </head>
 <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+
+@php
+    $user = \App\Models\User::find(session('user_id'));
+@endphp

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('prodi');
             $table->year('angkatan');
             $table->string('email')->unique();
+            $table->string('poto_profil')->nullable();
             $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
             $table->timestamps();
         });

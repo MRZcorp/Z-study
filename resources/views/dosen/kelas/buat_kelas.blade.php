@@ -1,8 +1,8 @@
-<x-header></x-header>
+<x-header>Buat Kelas</x-header>
 <x-navbar></x-navbar>
 <x-sidebar>dosen</x-sidebar>
 
-<!-- PROFIL MAHASISWA -->
+<!-- PROFIL Dosen -->
 <!-- CARD PROFILE WITH BACKGROUND -->
 <div 
   id="profileCard"

@@ -97,9 +97,9 @@ Tambah Kelas
 
       <tbody class="divide-y">
 
-        <!-- ROW 1 -->
+        {{-- <!-- ROW 1 --> {{ $loop->iteration }} --}}
         <tr class="hover:bg-slate-50">
-          <td class="px-4 py-3">{{ $loop->iteration }}</td>
+          <td class="px-4 py-3">1</td>
           <td class="px-4 py-3 font-medium">
             Pemrograman Dasar
           </td>

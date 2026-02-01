@@ -17,12 +17,14 @@
       <div class="bg-white rounded-2xl shadow p-6">
         <div class="flex flex-col items-center text-center">
           <img
-            src="/img/zaky.jpeg"
+            src="{{ $foto 
+          ? asset('storage/' . $foto) 
+          : asset('img/Logo_Zstudy.png') }}"
             class="w-28 h-28 rounded-full object-cover border-4 border-blue-600"
             alt="Profile"
           >
-          <h3 class="mt-4 text-lg font-semibold">M. Zaky Nugraha A R</h3>
-          <p class="text-sm text-gray-500">Mahasiswa</p>
+          <h3 class="mt-4 text-lg font-semibold"> {{$nama}} </h3>
+          <p class="text-sm text-gray-500"> {{$role}} </p>
   
           <button
             class="mt-4 px-4 py-2 text-sm font-semibold rounded-full
@@ -32,10 +34,10 @@
         </div>
   
         <div class="mt-6 border-t pt-4 text-sm text-gray-600 space-y-1">
-          <p><span class="font-medium">NIM:</span> 210123456</p>
-          <p><span class="font-medium">Fakultas:</span> Teknik</p>
-          <p><span class="font-medium">Jurusan:</span> Informatika</p>
-          <p><span class="font-medium">IPK:</span> 3.75</p>
+          <p><span class="font-medium">NIM:</span> {{$id_user}}</p>
+          <p><span class="font-medium">Fakultas:</span> {{$fakultas}}</p>
+          <p><span class="font-medium">Jurusan:</span> {{$prodi}}</p>
+          <p><span class="font-medium">IPK:</span> null</p>
         </div>
       </div>
   
@@ -54,7 +56,7 @@
               <input type="text"
                      class="w-full rounded-lg border-gray-300
                             focus:ring-blue-500 focus:border-blue-500"
-                     value="M. Zaky Nugraha A R">
+                     value="{{$nama}}">
             </div>
   
             <div>
@@ -62,7 +64,7 @@
               <input type="email"
                      class="w-full rounded-lg border-gray-300
                             focus:ring-blue-500 focus:border-blue-500"
-                     value="zaky@kampus.ac.id">
+                     value="{{$email}}">
             </div>
   
             <div>
@@ -78,7 +80,7 @@
               <input type="text"
                      class="w-full rounded-lg border-gray-300
                             focus:ring-blue-500 focus:border-blue-500"
-                     value="zaky">
+                     value="null">
             </div>
           </div>
         </div>

@@ -74,10 +74,10 @@
         </thead>
 
         <tbody class="divide-y">
-
+          {{-- {{ $loop->iteration }} --}}
           <!-- ROW -->
           <tr class="hover:bg-slate-50">
-            <td class="px-4 py-3">{{ $loop->iteration }}</td>
+            <td class="px-4 py-3">1</td>
 
             <td class="px-4 py-3 font-medium truncate max-w-xs">
               Libur Nasional Hari Raya Idul Fitri

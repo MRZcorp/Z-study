@@ -1,12 +1,3 @@
-<x-layout>
-
-    <main class="main-content">
-      
-
-
-
-
-        
-      </main>
-  
-  </x-layout>
+<x-header>Bantuan</x-header>
+<x-navbar></x-navbar>
+<x-sidebar>mahasiswa</x-sidebar>

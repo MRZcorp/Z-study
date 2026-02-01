@@ -1,6 +1,28 @@
 <x-header></x-header>
 <x-navbar></x-navbar>
 <x-sidebar>dosen</x-sidebar>
+@php
+    use App\Models\Dosen;
+    use App\Models\Mahasiswa;
+
+    $role   = session('nama_role');
+    $userId = session('user_id');
+
+    $profil = null;
+    $user   = auth()->user(); // lebih aman
+
+    if ($role === 'dosen') {
+        $profil = Dosen::with('user')
+            ->where('user_id', $userId)
+            ->first();
+    } elseif ($role === 'mahasiswa') {
+        $profil = Mahasiswa::with('user')
+            ->where('user_id', $userId)
+            ->first();
+    }
+
+    $foto = $profil?->poto_profil;
+@endphp
 
 
 <div class="p-6 bg-gray-100 min-h-screen">
@@ -17,12 +39,18 @@
       <div class="bg-white rounded-2xl shadow p-6">
         <div class="flex flex-col items-center text-center">
           <img
-            src="/img/zaky.jpeg"
-            class="w-28 h-28 rounded-full object-cover border-4 border-blue-600"
-            alt="Profile"
-          >
-          <h3 class="mt-4 text-lg font-semibold">M. Zaky Nugraha A R</h3>
-          <p class="text-sm text-gray-500">Mahasiswa</p>
+          src="{{ $foto 
+              ? asset('storage/' . $foto) 
+              : asset('img/Logo_Zstudy.png') }}"
+          class="w-28 h-28 rounded-full object-cover border-4 border-blue-600"
+          alt="Foto Profil"
+      />
+
+
+        
+      <h3 class="mt-4 text-lg font-semibold">
+        {{ $profil?->user?->name ?? '-' }}{{ $profil?->user?->gelar}}
+    </h3>
   
           <button
             class="mt-4 px-4 py-2 text-sm font-semibold rounded-full
@@ -32,7 +60,7 @@
         </div>
   
         <div class="mt-6 border-t pt-4 text-sm text-gray-600 space-y-1">
-          <p><span class="font-medium">NIM:</span> 210123456</p>
+          <p><span class="font-medium">NIDN :</span> {{ $profil?->user?->nidn ?? '-' }}</p>
           <p><span class="font-medium">Fakultas:</span> Teknik</p>
           <p><span class="font-medium">Jurusan:</span> Informatika</p>
           <p><span class="font-medium">IPK:</span> 3.75</p>
@@ -54,7 +82,7 @@
               <input type="text"
                      class="w-full rounded-lg border-gray-300
                             focus:ring-blue-500 focus:border-blue-500"
-                     value="M. Zaky Nugraha A R">
+                     value="{{ $profil?->user?->name ?? '-' }}">
             </div>
   
             <div>
@@ -62,7 +90,7 @@
               <input type="email"
                      class="w-full rounded-lg border-gray-300
                             focus:ring-blue-500 focus:border-blue-500"
-                     value="zaky@kampus.ac.id">
+                     value="{{ $profil?->user?->email ?? '-' }}">
             </div>
   
             <div>
@@ -70,15 +98,16 @@
               <input type="text"
                      class="w-full rounded-lg border-gray-300
                             focus:ring-blue-500 focus:border-blue-500"
-                     placeholder="08xxxxxxxxxx">
+                     placeholder="{{ $profil?->users?->no_hp ?? '-' }}">
             </div>
   
             <div>
-              <label class="block text-sm font-medium mb-1">Username</label>
+              <label class="block text-sm font-medium mb-1">{{ $profil?->user?->username ?? '-' }}</label>
+             
               <input type="text"
                      class="w-full rounded-lg border-gray-300
                             focus:ring-blue-500 focus:border-blue-500"
-                     value="zaky">
+                     value="******">
             </div>
           </div>
         </div>

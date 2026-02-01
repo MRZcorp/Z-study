@@ -11,12 +11,18 @@ use Illuminate\Http\Request;
 class DosenController extends Controller
 {
     //
+    
     public function index() 
-        { $pengumuman = Pengumuman::where('is_active', true)
+        {
+            
+            $pengumuman = Pengumuman::where('is_active', true)
             ->orderBy('tanggal_publish', 'desc')
             ->get();
     
-        return view('dosen.dashboard', compact('pengumuman'));
+    $poto = Kelas::with('dosens', 'mataKuliah')->latest()->get();
+
+    
+        return view('dosen.dashboard', compact('pengumuman', 'poto'));
        
 
     }

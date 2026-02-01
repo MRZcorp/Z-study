@@ -22,25 +22,7 @@ class MahasiswaFactory extends Factory
             //
 
                 return [
-                    'user_id' => User::factory(), // 🔥 INI KUNCI
-                    'nim' => $this->faker->unique()->numerify('23########'),
-                    'fakultas' => $this->faker->randomElement([
-                        'Teknik',
-                        'Ekonomi',
-                        'Ilmu Komputer',
-                        'Hukum',
-                        'Keguruan'
-                    ]),
-                    'prodi' => $this->faker->randomElement([
-                        'Informatika',
-                        'Sistem Informasi',
-                        'Manajemen',
-                        'Akuntansi',
-                        'Teknik Elektro'
-                    ]),
-                    'angkatan' => $this->faker->numberBetween(2019, 2024),
-                    'email' => $this->faker->unique()->safeEmail(),
-                    'status' => $this->faker->randomElement(['aktif', 'nonaktif']),
+                    
                 ];
             
         

@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
            
             'auth.session' => \App\Http\Middleware\AuthSession::class,
             'role.session' => \App\Http\Middleware\RoleSession::class,
+            
+
 
         ]);
     })

@@ -2,7 +2,7 @@
 <x-navbar></x-navbar>
 <x-sidebar>dosen</x-sidebar>
 
-<!-- PROFIL MAHASISWA -->
+<!-- PROFIL Dosen -->
 <!-- CARD PROFILE WITH BACKGROUND -->
 <div 
   id="profileCard"
@@ -29,16 +29,18 @@
       <!-- KIRI -->
       <div class="flex items-center gap-4">
         <img 
-          src="/img/zaky.jpeg"
+        src="{{ $foto 
+        ? asset('storage/' . $foto) 
+        : asset('img/Logo_Zstudy.png') }}"
           class="w-26 h-26 rounded-full object-cover border-2 border-white"
-          alt="Foto Mahasiswa"
+          alt="Foto Profil"
         >
 
         <div>
           <h2 class="text-lg font-semibold">
-            M. Zaky Nugraha A R
+            {{$nama}}
           </h2>
-          <p class="text-sm text-white">NIDN: 202201234</p>
+          <p class="text-sm text-white">NIDN: {{$id_user}}</p>
           <p class="text-sm text-white">Dosen Tetap</p>
         </div>
       </div>
@@ -271,13 +273,16 @@ class="fixed inset-0 z-50 hidden items-center justify-center
 
    <div class="flex items-center gap-4 p-3 rounded-xl
                bg-gray-50 border">
-     <img src="{{ $kelas->dosens && $kelas->dosens->poto_profil
-     ? asset('storage/' . $kelas->dosens->poto_profil)
-     : asset('img/default_profil.jpg') }}"
+
+               <img 
+        src="{{ $foto 
+        ? asset('storage/' . $foto) 
+        : asset('img/Logo_Zstudy.png') }}"
+          alt="Foto Profil"
           class="w-11 h-11 rounded-full object-cover">
      <div>
        <p class="font-semibold text-gray-800">
-         {{$kelas->dosens->user->name ?? '-' }}
+         {{$nama}}
        </p>
        <p class="text-xs text-gray-500">
          Host
