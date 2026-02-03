@@ -13,21 +13,14 @@ return new class extends Migration
     {
         Schema::create('mata_kuliahs', function (Blueprint $table) {
             $table->id();
-
             $table->string('kode_mata_kuliah')->unique();
             $table->string('mata_kuliah');
-            $table->foreignId('nama_prodi_id')
-                ->constrained('program_studis')
-                ->cascadeOnDelete();
-                
-
             $table->string('semester'); // Genap 2025/2026
             $table->tinyInteger('sks');
-            
+            $table->enum('tipe', ['prodi', 'umum'])->default('prodi');
             $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
             $table->timestamps();
-
-            
+  
         });
     }
 
@@ -39,7 +32,3 @@ return new class extends Migration
         Schema::dropIfExists('mata_kuliahs');
     }
 };
-// $table->foreignId('dosen_id')
-            //       ->constrained('dosens')
-            //       ->onDelete('cascade');
-            // $table->text('deskripsi')->nullable();

@@ -280,6 +280,7 @@ const slides = slider.children
 
 let currentIndex = 0
 let isScrolling = false
+let loginOpened = false
 
 function updateProgress() {
   const percent = ((currentIndex + 1) / slides.length) * 100
@@ -289,6 +290,10 @@ function toggleLogin() {
     const overlay = document.getElementById('loginOverlay');
     overlay.classList.toggle('hidden');
     overlay.classList.toggle('flex');
+    if (overlay.classList.contains('hidden')) {
+    loginOpened = false
+  }
+
   }
 
 function updateOverlay() {
@@ -323,6 +328,14 @@ function goToSlide(index) {
   updateProgress()
   updateOverlay()
   updateOverlayPosition()
+
+  // 🔥 AUTO OPEN LOGIN JIKA SLIDE TERAKHIR
+  if (currentIndex === slides.length - 1 && !loginOpened) {
+    loginOpened = true
+    setTimeout(() => {
+      toggleLogin()
+    }, 2000) // tunggu animasi slide selesai
+  }
 }
 function updateOverlayPosition() {
   const activeSlide = slides[currentIndex]

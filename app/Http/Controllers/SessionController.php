@@ -17,9 +17,9 @@ class SessionController extends Controller
         
             if (session()->has('user_id')) {
                 return match (session('nama_role')) {
-                    'admin' => redirect()->route('admin.dashboard'),
-                    'dosen' => redirect()->route('dosen.dashboard'),
-                    'mahasiswa' => redirect()->route('mahasiswa.dashboard'),
+                    'Admin' => redirect()->route('admin.dashboard'),
+                    'Dosen' => redirect()->route('dosen.dashboard'),
+                    'Mahasiswa' => redirect()->route('mahasiswa.dashboard'),
                     default => redirect('/login'),
                 };
             }
@@ -68,9 +68,9 @@ class SessionController extends Controller
         // REDIRECT BERDASARKAN ROLE
         // ======================
         return match ($user->role) {
-            'admin'     => redirect()->route('admin.dashboard'),
-            'dosen'     => redirect()->route('dosen.dashboard'),
-            'mahasiswa' => redirect()->route('mahasiswa.dashboard'),
+            'Admin'     => redirect()->route('admin.dashboard'),
+            'Dosen'     => redirect()->route('dosen.dashboard'),
+            'Mahasiswa' => redirect()->route('mahasiswa.dashboard'),
             default     => redirect('/'),
         };
     }

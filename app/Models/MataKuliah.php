@@ -14,7 +14,8 @@ class MataKuliah extends Model
     protected $fillable = [
         'kode_mata_kuliah',
         'mata_kuliah',
-        'program_studi_id',
+        'tipe',
+        // 'program_studi_id',
         'semester',
         'sks',
         // 'dosen_pengampu',
@@ -22,6 +23,27 @@ class MataKuliah extends Model
         'status',
     ];
 
+
+
+public function programStudis()
+{
+    return $this->belongsToMany(
+        ProgramStudi::class,
+        'mata_kuliah_prodis',
+        'mata_kuliah_id',
+        'nama_prodi_id'
+    );
+}
+
+
+    // public function programStudi()
+    // {
+    // return $this->belongsTo(ProgramStudi::class, 'nama_prodi_id');
+    // }
+    public function kelas()
+    {
+        return $this->hasMany(Kelas::class);
+    }
     public function tugas()
     {
         return $this->hasMany(Tugas::class, 'mata_kuliah_id');
@@ -32,19 +54,9 @@ class MataKuliah extends Model
     }
 
 
-    //fungsi baru
-    public function kelas()
-{
-    return $this->hasMany(Kelas::class);
-}
-public function prodi()
-{
-    return $this->belongsTo(ProgramStudi::class);
-}
+    
 
-public function programStudi()
-{
-    return $this->belongsTo(ProgramStudi::class, 'nama_prodi_id');
-}
+
+
 
 }

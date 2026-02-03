@@ -4,11 +4,16 @@
 
 <!-- PROFIL Dosen -->
 <!-- CARD PROFILE WITH BACKGROUND -->
-<div 
+<div
   id="profileCard"
   class="relative mb-6 rounded-xl shadow overflow-hidden cursor-pointer group"
-  style="background-image: url('/img/zaky.jpeg'); background-size: cover; background-position: center;"
+  style="background-image: url('{{ $bg 
+      ? asset('storage/' . $bg) 
+      : asset('img/Logo_Zstudy.png') }}');
+         background-size: cover;
+         background-position: center;"
 >
+
 
   <!-- OVERLAY -->
   <div class="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition"></div>

@@ -97,7 +97,7 @@
             </td>
 
             <td class="px-4 py-3 text-slate-600">
-              {{$matkul->programStudi->nama_prodi}}
+              {{-- {{$matkul->programStudis->nama_prodi_id}} --}}
             </td>
 
             <td class="px-4 py-3 text-center">

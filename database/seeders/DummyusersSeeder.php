@@ -18,27 +18,27 @@ class DummyusersSeeder extends Seeder
 // =====================
 // ADMIN (2)
 // =====================
-User::create([
-    'name' => 'Admin Satu',
-    'username' => 'admin1',
-    'nim' => null,
-    'nidn' => null,
-    'email' => 'admin1@gmail.com',
-    'password' => Hash::make('123'),
-    'role_id' => 1,
-]);
+// User::create([
+//     'name' => 'Admin Satu',
+//     'username' => 'admin1',
+//     'nim' => null,
+//     'nidn' => null,
+//     'email' => 'admin1@gmail.com',
+//     'password' => Hash::make('123'),
+//     'role_id' => 1,
+// ]);
 
-User::create([
-    'name' => 'Admin Dua',
-    'username' => 'admin2',
-    'nim' => null,
-    'nidn' => null,
-    'email' => 'admin2@gmail.com',
-    'password' => Hash::make('123'),
-    'role_id' => 1,
-]);
+// User::create([
+//     'name' => 'Admin Dua',
+//     'username' => 'admin2',
+//     'nim' => null,
+//     'nidn' => null,
+//     'email' => 'admin2@gmail.com',
+//     'password' => Hash::make('123'),
+//     'role_id' => 1,
+// ]);
 
-// // =====================
+// // // =====================
 // // DOSEN (5)
 // // =====================
 // User::create([

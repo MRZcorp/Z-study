@@ -27,6 +27,8 @@ class KelolaUserController extends Controller
       
        return view('admin.data_akun.index', compact('users', 'roles'));
    }
+
+   
    public function store(Request $request)
     { 
         $validated = $request->validate([

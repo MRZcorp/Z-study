@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('program_studis', function (Blueprint $table) {
+        Schema::create('fakultas', function (Blueprint $table) {
             $table->id();
             $table->string('kode')->unique();
-            $table->string('nama_prodi');
             $table->string('fakultas');
             $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
             $table->timestamps();
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('program_studis');
+        Schema::dropIfExists('fakultas');
     }
 };

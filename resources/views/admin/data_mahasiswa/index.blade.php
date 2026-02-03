@@ -113,10 +113,10 @@ Tambah Mahasiswa
             {{$mhs->mahasiswa->nim ?? '-' }}
           </td>
           <td class="px-4 py-3">
-            {{$mhs->mahasiswa->fakultas ?? '-' }}
+            {{$mhs->mahasiswa->fakultas->fakultas ?? '-' }}
           </td>
           <td class="px-4 py-3">
-            {{$mhs->mahasiswa->prodi ?? '-' }}
+            {{$mhs->mahasiswa->programStudi->nama_prodi ?? '-' }}
           </td>
           <td class="px-4 py-3 text-center">
             {{$mhs->mahasiswa->angkatan ?? '-' }}

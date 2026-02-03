@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Models\Kelas;
+use App\Models\MataKuliah;
 use Illuminate\Http\Request;
 
 class KelasController extends Controller
@@ -22,8 +23,16 @@ class KelasController extends Controller
     }
     public function dosen1()
      {
-
-        $pilih_kelas = Kelas::with('dosens', 'mataKuliah')->latest()->get();
+        $mataKuliahs = MataKuliah::where('status', 'aktif')
+        ->where(function ($q) use ($prodiId) {
+            $q->where('tipe', 'umum')
+              ->orWhereHas('programStudis', function ($q2) use ($prodiId) {
+                  $q2->where('program_studis.id', $prodiId);
+              });
+        })
+        ->orderBy('kode_mata_kuliah')
+        ->get();
+       
 
     return view('dosen.kelas.buat_kelas', compact('pilih_kelas'));
        

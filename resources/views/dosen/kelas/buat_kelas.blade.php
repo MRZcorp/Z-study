@@ -169,10 +169,14 @@ enctype="multipart/form-data">
              <!-- INPUT KUOTA -->
     <div>
         <label class="block text-sm font-medium mb-1">Kuota Mahasiswa</label>
-        <input name="kuota_maksimal" type="number"
-               class="w-full rounded-lg border border-slate-300 px-4 py-2
-                      focus:ring-2 focus:ring-blue-500 focus:outline-none"
-               placeholder="Contoh: 30">
+        <select name="kuota_maksimal" type="number" class="w-full rounded-lg border border-slate-300 px-4 py-2">
+          <option>10</option>
+          <option>20</option>
+          <option>30</option>
+          <option>40</option>
+          <option>50</option>
+      </select>
+        
     </div>
             
             <div>

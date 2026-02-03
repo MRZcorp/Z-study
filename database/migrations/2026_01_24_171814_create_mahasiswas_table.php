@@ -17,11 +17,16 @@ return new class extends Migration
       ->constrained('users')
       ->cascadeOnDelete();
             $table->string('nim')->unique();
-            $table->string('fakultas');
-            $table->string('prodi');
+            $table->foreignId('nama_prodi_id')
+      ->constrained('program_studis')
+      ->cascadeOnDelete();
+            $table->foreignId('fakultas_id')
+      ->constrained('fakultas')
+      ->cascadeOnDelete();
             $table->year('angkatan');
             $table->string('email')->unique();
             $table->string('poto_profil')->nullable();
+            $table->string('bg')->nullable();
             $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
             $table->timestamps();
         });

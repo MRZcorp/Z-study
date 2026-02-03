@@ -18,6 +18,7 @@ class Mahasiswa extends Model
         'email',
         'status',
         'poto_profil',
+        'bg',
     ];
 
 
@@ -25,6 +26,19 @@ class Mahasiswa extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function fakultas()
+    {
+        return $this->belongsTo(Fakultas::class);
+    }
+
+    public function programStudi()
+    {
+        return $this->belongsTo(ProgramStudi::class, 'nama_prodi_id');
+    }
+    public function kelas()
+    {
+        return $this->belongsToMany(Kelas::class, 'kelas_mahasiswa');
     }
 
 
@@ -42,8 +56,4 @@ class Mahasiswa extends Model
 
 
 
-    public function kelases()
-{
-    return $this->belongsToMany(Kelas::class, 'kelas_mahasiswa');
-}
 }

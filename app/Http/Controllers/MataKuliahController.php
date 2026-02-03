@@ -14,7 +14,7 @@ class MataKuliahController extends Controller
    
 public function index()
 {
-   $matkuls = MataKuliah::with('programStudi')->latest()->get();
+   $matkuls = MataKuliah::with('programStudis')->latest()->get();
 
 return view('admin.mata_kuliah.index', compact('matkuls'));
   

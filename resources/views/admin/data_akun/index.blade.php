@@ -1,7 +1,7 @@
 <x-header>Kelola Pengguna</x-header>
 <x-navbar></x-navbar>
 <x-sidebar>admin</x-sidebar>
-<meta name="csrf-token" content="{{ csrf_token() }}">
+
 
   <!-- CONTAINER -->
   <div class="max-w-7xl mx-auto space-y-6">
@@ -190,11 +190,9 @@ data-status="{{ $user->status }}"
             document.querySelectorAll('.btn-edit').forEach(btn => {
             btn.addEventListener('click', () => {
             modal.classList.remove('hidden');
-            
-            
+
             const id = btn.dataset.id;
-            
-            
+
             document.getElementById('name').value = btn.dataset.name;
             document.getElementById('email').value = btn.dataset.email;
             document.getElementById('role').value = btn.dataset.role;
@@ -202,9 +200,6 @@ data-status="{{ $user->status }}"
             //edit data disini  urlnya
             form.action = `/admin/user_setting/${id}`;
             method.value = "PUT";
-            
-            
-            
             document.getElementById('modalTitle').innerText = "Edit User";
             });
             });
