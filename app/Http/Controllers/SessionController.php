@@ -37,7 +37,7 @@ class SessionController extends Controller
             'username' => 'required',
             'password' => 'required',
         ], [
-            'username.required' => 'Username / NIM / NIDN wajib diisi',
+            'username.required' => 'Username / NIM / NIDN / Email wajib diisi',
             'password.required' => 'Password wajib diisi',
         ]);
 
@@ -47,12 +47,13 @@ class SessionController extends Controller
         $user = User::where('username', $identity)
             ->orWhere('nim', $identity)
             ->orWhere('nidn', $identity)
+            ->orWhere('email', $identity)
             ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return back()
                 ->withInput($request->only('username'))
-                ->with('error', 'Username / NIM / NIDN atau password salah');
+                ->with('error', 'Username / NIM / NIDN / Email atau password salah');
         }
 
         // ======================

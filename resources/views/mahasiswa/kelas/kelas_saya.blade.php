@@ -1,212 +1,43 @@
-<x-header>Kelas Mahasiswa</x-header>
+﻿<x-header>Kelas Mahasiswa</x-header>
 <x-navbar></x-navbar>
 <x-sidebar>mahasiswa</x-sidebar>
 
-<!-- PROFIL MAHASISWA -->
-<div 
-  id="profileCard"
-  class="relative mb-6 rounded-xl shadow overflow-hidden cursor-pointer group"
-  style="background-image: url('/img/zaky.jpeg'); background-size: cover; background-position: center;"
->
-
-  <!-- OVERLAY -->
-  <div class="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition"></div>
-
-  <!-- UPLOAD INPUT (HIDDEN) -->
-  <input 
-    type="file" 
-    id="bgUpload"
-    accept="image/*"
-    class="hidden"
-  >
-
-  <!-- CONTENT -->
-  <div class="relative p-5 text-white">
-
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-
-      <!-- KIRI -->
-      <div class="flex items-center gap-4">
-        <img 
-          src="{{ $foto 
-        ? asset('storage/' . $foto) 
-        : asset('img/Logo_Zstudy.png') }}"
-          class="w-26 h-26 rounded-full object-cover border-2 border-white"
-          alt="Foto Mahasiswa"
-        >
-
-        <div>
-          <h2 class="text-lg font-semibold">
-            {{$nama}}
-          </h2>
-          <p class="text-sm text-white">NIM: {{$id_user}} </p>
-          <p class="text-sm text-white">Fakultas {{$fakultas}} · {{$prodi}} </p>
-        </div>
-      </div>
-
-      <!-- KANAN -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm text-gray-800">
-
-        
-        <div class="rounded-lg px-3 py-2 text-center
-            bg-black/40 backdrop-blur-sm
-            border border-white/20">
-  <p class="text-white/70 text-sm">Tahun Ajar</p>
-  <p class="font-semibold text-white text-lg">2024 / 2025</p>
-</div>
-
-        
-        <div class="rounded-lg px-3 py-2 text-center
-        bg-black/40 backdrop-blur-sm
-        border border-white/20">
-<p class="text-white/70 text-sm">Semester</p>
-<p class="font-semibold text-white text-lg">Genap : 6</p>
-</div>
-        
-        <div class="rounded-lg px-3 py-2 text-center
-        bg-black/40 backdrop-blur-sm
-        border border-white/20">
-<p class="text-white/70 text-sm">Dosen Wali</p>
-<p class="font-semibold text-white text-lg">Budi Yono</p>
-</div>
-
-        <div class="rounded-lg px-3 py-2 text-center
-            bg-black/40 backdrop-blur-sm
-            border border-white/20">
-  <p class="text-white/70 text-sm">IPK</p>
-  <p class="font-semibold text-white text-lg"> 3.75</p>
-</div>
-        <div class="rounded-lg px-3 py-2 text-center
-        bg-black/40 backdrop-blur-sm
-        border border-white/20">
-<p class="text-white/70 text-sm">SKS Ditempuh</p>
-<p class="font-semibold text-white text-lg">66 / 144</p>
-</div>
-
-        <div class="rounded-lg px-3 py-2 text-center
-            bg-black/40 backdrop-blur-sm
-            border border-white/20">
-  <p class="text-white/70 text-sm">Max SKS</p>
-  <p class="font-semibold text-white text-lg"> 0 / 24</p>
-</div>
-
-      </div>
-
-    </div>
-
-   
-
-  </div>
-</div>
-{{-- <div class="mb-6 bg-white rounded-xl shadow p-5">
-
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-  
-      <!-- KIRI -->
-      <div class="flex items-center gap-4">
-        <img src="/img/zaky.jpeg"
-             class="w-16 h-16 rounded-full object-cover border-2 border-blue-500"
-             alt="Foto Mahasiswa">
-  
-        <div>
-          <h2 class="text-lg font-semibold text-gray-800">
-            M. Zaky Nugraha A R
-          </h2>
-          <p class="text-sm text-gray-500">NIM: 202201234</p>
-          <p class="text-sm text-gray-500">
-            Fakultas Teknik · Informatika
-          </p>
-        </div>
-      </div>
-  
-      <!-- KANAN -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-  
-        
-  
-        <div class="bg-gray-100 rounded-lg px-3 py-2">
-            <p class="text-gray-500">Tahun Ajar</p>
-            <p class="font-semibold text-gray-800">2024 / 2025</p>
-          </div>
-
-        <div class="bg-gray-100 rounded-lg px-3 py-2">
-          <p class="text-gray-500">Semester</p>
-          <p class="font-semibold text-gray-800">Genap : 6</p>
-        </div>
-  
-        
-  
-        <div class="bg-gray-100 rounded-lg px-3 py-2 col-span-2 sm:col-span-1">
-          <p class="text-gray-500">Dosen Wali</p>
-          <p class="font-semibold text-gray-800">Dr. Budi Yono</p>
-        </div>
-
-        <div class="bg-gray-100 rounded-lg px-3 py-2">
-            <p class="text-gray-500">IPK</p>
-            <p class="font-semibold text-gray-800">3.75</p>
-          </div>
-    
-          <div class="bg-gray-100 rounded-lg px-3 py-2">
-            <p class="text-gray-500">SKS Ditempuh</p>
-            <p class="font-semibold text-gray-800"> 64 / 144</p>
-          </div>
-
-          <div class="bg-gray-100 rounded-lg px-3 py-2">
-            <p class="text-gray-500">Max SKS</p>
-            <p class="font-semibold text-gray-800"> 0 / 24</p>
-          </div>
-  
-      </div>
-    </div>
-  </div> --}}
-  
 <!-- SUB NAVBAR -->
 <div class="mb-6">
-    <div class="flex items-center gap-2 rounded-xl bg-white p-1 shadow w-fit">
-  
-      <!-- TAB 1 -->
-      <a href="{{ route('mahasiswa.kelas_saya') }}"
-         class="px-4 py-2 text-sm font-semibold rounded-lg
-                bg-blue-800 text-white shadow">
-        Kelas Saya 
-      </a>
-  
-      <!-- TAB 2 -->
-      <a href="{{ route('mahasiswa.kelas_tersedia') }}"
-         class="px-4 py-2 text-sm font-semibold rounded-lg
-                text-gray-600 hover:bg-gray-100">
-        Kelas Tersedia
-      </a>
-  
-    </div>
+  <div class="flex items-center gap-2 rounded-xl bg-white p-1 shadow w-fit">
+    <a href="{{ route('mahasiswa.kelas_saya') }}"
+       class="px-4 py-2 text-sm font-semibold rounded-lg bg-blue-800 text-white shadow">
+      Kelas Saya
+    </a>
+    <a href="{{ route('mahasiswa.kelas_tersedia') }}"
+       class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:bg-gray-100">
+      Kelas Tersedia
+    </a>
+    <a href="{{ route('mahasiswa.kelas_riwayat') }}"
+       class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:bg-gray-100">
+      Riwayat Kelas
+    </a>
   </div>
-
-
+</div>
 
   <div class="p-6 bg-gray-100 min-h-screen">
-    {{-- <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"> --}}
-        <div class="grid gap-6"
-        style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-   
+        <div class="grid gap-6 justify-center [grid-template-columns:repeat(auto-fill,minmax(260px,260px))]">
+
+        @if ($pilih_kelas->isEmpty())
+          <div class="col-span-full text-center text-gray-500">
+            Belum ada kelas yang kamu ikuti.
+          </div>
+        @endif
 
         @foreach ($pilih_kelas as $kelas)
-            
-        
         <!-- CARD -->
         <div class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
     
           <!-- HEADER (BACKGROUND UPLOADABLE) -->
           <div
             class="relative h-28 bg-cover bg-center"
-            style="background-image: url({{asset('storage/' . $kelas->bg_image)}});"
-          > <!-- Overlay -->
-          {{-- <img
-            src="{{ $kelas->dosens && $kelas->dosens->poto_profil
-                  ? asset('storage/' . $kelas->dosens->poto_profil)
-                  : asset('img/default_profil.jpg') }}"
-            class="absolute -bottom-10 right-4 w-20 h-20 rounded-full border-4 border-white object-cover z-10"
-            alt="Avatar"
-          /> --}}
+            style="background-image: url({{ $kelas->bg_image ? asset('storage/' . $kelas->bg_image) : asset('img/Logo_Zstudy.png') }});"
+          >
           <div class="absolute inset-0 bg-black/30"></div>
         
           <!-- SKS TAG -->
@@ -218,7 +49,7 @@
             <span class="material-symbols-rounded text-base text-blue-600">
               attach_file
             </span>
-            {{$kelas->mataKuliah->sks}}
+            {{$kelas->mataKuliah->sks ?? '-'}}
           </div>
             <div class="absolute inset-0 bg-black/30"></div>
     
@@ -229,7 +60,7 @@
                           max-w-[70%] 
                           line-clamp-2"
                   >
-                    {{ $kelas->mataKuliah->mata_kuliah }}
+                    {{ $kelas->mataKuliah->mata_kuliah ?? '-' }}
                   </h3>
             </div>
     
@@ -257,7 +88,7 @@
     
             <div class="h-2"></div>
     
-            <p class="font-medium text-gray-900">{{$kelas->dosens->user->name ?? '-' }} {{$kelas->dosens->gelar}} </p>
+            <p class="font-medium text-gray-900">{{$kelas->dosens->user->name ?? '-' }} {{$kelas->dosens->gelar ?? ''}} </p>
           </div>
     
           <!-- FOOTER -->
@@ -271,173 +102,127 @@
     
               <!-- KUOTA (DINAMIS) -->
               <span class="text-sm font-semibold text-green-600">
-                {{ $kelas->kuota_terdaftar }} / {{ $kelas->kuota_maksimal }}
+                {{ $kelas->mahasiswas_count ?? 0 }} / {{ $kelas->kuota_maksimal }}
               </span>
             </div>
+
+            <button
+              type="button"
+              class="btn-view-peserta flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+              data-kelas-nama="{{ $kelas->mataKuliah->mata_kuliah ?? '-' }} - {{ $kelas->nama_kelas }}"
+              data-dosen="{{ $kelas->dosens->user->name ?? '-' }}"
+              data-dosen-foto="{{ $kelas->dosens && $kelas->dosens->poto_profil ? asset('storage/' . $kelas->dosens->poto_profil) : asset('img/default_profil.jpg') }}"
+              data-participants='@json($kelas->mahasiswas->map(fn($mhs) => [
+                "name" => $mhs->user->name ?? "-",
+                "foto" => $mhs->poto_profil ? asset("storage/" . $mhs->poto_profil) : asset("img/Logo_Zstudy.png"),
+              ])->values())'
+            >
+              <span class="material-symbols-rounded text-base">visibility</span>
+              Lihat
+            </button>
   
-  
-           
-  
-  
-    
-            <!-- BUTTON -->
-            
-           <!-- tombol lihat -->
-    
-  
-              <button
-              onclick="openModal()"
-               data-kelas-id="{{ $kelas->id }}"
-              data-dosen="{{ $kelas->dosen->user->name ?? '-' }}"
-                class="flex items-center gap-1 rounded-full bg-gradient-to-r 
-                       from-blue-500 to-purple-500 px-4 py-1.5 text-sm 
-                       font-semibold text-white transition 
-                       hover:-translate-y-2 hover:shadow-lg"
-              >
-                <span class="material-symbols-rounded text-base">Visibility</span>
-                Lihat
-              </button>
-             
-     
-  
-            
-    
-        </div>
+          </div>
         </div>
         <!-- END CARD -->
         @endforeach
   
   
-  
-  {{-- ///////////////////////////////////////////////////////////////////////////////////////// --}}
-  
-  
-        <!-- OVERLAY -->
-  <div id="pesertaModal"
-  class="fixed inset-0 z-50 hidden items-center justify-center
-         bg-black/50 backdrop-blur-sm px-4">
-  
-  <!-- MODAL BOX -->
-  <div class="relative w-full max-w-md bg-white rounded-2xl shadow-xl
-           animate-scaleIn">
-  
-  <!-- HEADER -->
-  <div class="flex items-center justify-between px-5 py-4 border-b">
-   <h3 class="text-lg font-semibold text-gray-800">
-     Peserta Kelas
-   </h3>
-  
-   <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-     ✕
-   </button>
   </div>
-  
-  <!-- CONTENT -->
-  <div class="p-5 space-y-6 max-h-[70vh] overflow-y-auto">
-  
-   <!-- DOSEN -->
-   <div>
-     <p class="text-xs font-semibold text-gray-400 uppercase mb-3">
-       Dosen Pengampu
-     </p>
-  
-     <div class="flex items-center gap-4 p-3 rounded-xl
-                 bg-gray-50 border">
-       <img src="{{ $kelas->dosens && $kelas->dosens->poto_profil
-       ? asset('storage/' . $kelas->dosens->poto_profil)
-       : asset('img/default_profil.jpg') }}"
-            class="w-11 h-11 rounded-full object-cover">
-       <div>
-         <p class="font-semibold text-gray-800">
-           {{$kelas->dosens->user->name ?? '-' }}
-         </p>
-         <p class="text-xs text-gray-500">
-           Host
-         </p>
-       </div>
-     </div>
-   </div>
-  
-   <!-- MAHASISWA -->
-   <div>
-     <p class="text-xs font-semibold text-gray-400 uppercase mb-3">
-       Mahasiswa Peserta
-     </p>
-  
-     <div class="space-y-2">
-  
-       <div class="flex items-center gap-3 p-3 rounded-xl
-                   hover:bg-gray-100 transition">
-         <img src="/img/user1.jpg"
-              class="w-9 h-9 rounded-full object-cover">
-         <span class="text-sm text-gray-800">
-           M. Zaky Nugraha A R
-         </span>
-       </div>
-  
-       <div class="flex items-center gap-3 p-3 rounded-xl
-                   hover:bg-gray-100 transition">
-         <img src="/img/user2.jpg"
-              class="w-9 h-9 rounded-full object-cover">
-         <span class="text-sm text-gray-800">
-           Aulia Rahman
-         </span>
-       </div>
-  
-       <div class="flex items-center gap-3 p-3 rounded-xl
-                   hover:bg-gray-100 transition">
-         <img src="/img/user3.jpg"
-              class="w-9 h-9 rounded-full object-cover">
-         <span class="text-sm text-gray-800">
-           Siti Nurhaliza
-         </span>
-       </div>
-  
-     </div>
-   </div>
-  
+
+  <div id="pesertaModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+    <div class="relative w-full max-w-md bg-white rounded-2xl shadow-xl animate-scaleIn">
+      <div class="flex items-center justify-between px-5 py-4 border-b">
+        <h3 id="pesertaModalTitle" class="text-lg font-semibold text-gray-800">Peserta Kelas</h3>
+        <button id="btnClosePeserta" type="button" class="text-gray-400 hover:text-gray-600">×</button>
+      </div>
+      <div class="p-5 space-y-6 max-h-[70vh] overflow-y-auto">
+        <div>
+          <p class="text-xs font-semibold text-gray-400 uppercase mb-3">Dosen Pengampu</p>
+          <div class="flex items-center gap-4 p-3 rounded-xl bg-gray-50 border">
+            <img id="dosenFoto" src="" class="w-11 h-11 rounded-full object-cover" alt="Foto Dosen">
+            <div>
+              <p id="dosenNama" class="font-semibold text-gray-800"></p>
+              <p class="text-xs text-gray-500">Host</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-gray-400 uppercase mb-3">Mahasiswa Peserta</p>
+          <div id="pesertaList" class="space-y-2"></div>
+        </div>
+      </div>
+    </div>
   </div>
-  </div>
-  </div>
-  
+
   <style>
     @keyframes scaleIn {
-      from { transform: scale(.95); opacity: 0 }
-      to   { transform: scale(1); opacity: 1 }
+      from { transform: scale(.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
     .animate-scaleIn {
       animation: scaleIn .2s ease-out;
     }
-    </style>
-    
-  
-    <script>
-      function openModal() {
-        document.getElementById('pesertaModal').classList.remove('hidden');
-        document.getElementById('pesertaModal').classList.add('flex');
-      }
-      
-      function closeModal() {
-        document.getElementById('pesertaModal').classList.add('hidden');
-        document.getElementById('pesertaModal').classList.remove('flex');
-      }
-      
-      // klik di luar modal
-      document.getElementById('pesertaModal').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
+  </style>
+
+  <script>
+    const pesertaModal = document.getElementById('pesertaModal');
+    const pesertaList = document.getElementById('pesertaList');
+    const pesertaTitle = document.getElementById('pesertaModalTitle');
+    const btnClosePeserta = document.getElementById('btnClosePeserta');
+    const dosenNama = document.getElementById('dosenNama');
+    const dosenFoto = document.getElementById('dosenFoto');
+
+    const closePesertaModal = () => {
+      pesertaModal.classList.add('hidden');
+      pesertaModal.classList.remove('flex');
+    };
+
+    document.querySelectorAll('.btn-view-peserta').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const kelasNama = btn.dataset.kelasNama;
+        pesertaTitle.textContent = kelasNama ? `Peserta Kelas - ${kelasNama}` : 'Peserta Kelas';
+
+        dosenNama.textContent = btn.dataset.dosen || '-';
+        dosenFoto.src = btn.dataset.dosenFoto || '';
+
+        const participants = JSON.parse(btn.dataset.participants || '[]');
+        pesertaList.innerHTML = '';
+
+        if (!participants.length) {
+          const empty = document.createElement('div');
+          empty.className = 'text-sm text-gray-500';
+          empty.textContent = 'Belum ada peserta terdaftar.';
+          pesertaList.appendChild(empty);
+        } else {
+          participants.forEach((item) => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition';
+
+            const img = document.createElement('img');
+            img.src = item.foto;
+            img.className = 'w-9 h-9 rounded-full object-cover';
+            img.alt = item.name || 'Mahasiswa';
+
+            const name = document.createElement('span');
+            name.className = 'text-sm text-gray-800';
+            name.textContent = item.name || '-';
+
+            row.appendChild(img);
+            row.appendChild(name);
+            pesertaList.appendChild(row);
+          });
+        }
+
+        pesertaModal.classList.remove('hidden');
+        pesertaModal.classList.add('flex');
       });
-      </script>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+    });
+
+    btnClosePeserta?.addEventListener('click', closePesertaModal);
+    pesertaModal?.addEventListener('click', (e) => {
+      if (e.target === pesertaModal) {
+        closePesertaModal();
+      }
+    });
+  </script>
+

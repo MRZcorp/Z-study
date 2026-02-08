@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Angkatan;
 use App\Models\Fakultas;
 use App\Models\Mahasiswa;
 use App\Models\ProgramStudi;
@@ -26,6 +27,8 @@ class MahasiswaSeeder extends Seeder
          $fakultas = Fakultas::where('kode', 'FT')->firstOrFail();
          $prodi    = ProgramStudi::where('kode', 'TI')->firstOrFail();
      
+         $angkatan = Angkatan::where('status', 'aktif')->orderBy('tahun', 'desc')->first();
+
          $data = [
              [
                  'name'     => 'Mahasiswa Satu',
@@ -34,6 +37,7 @@ class MahasiswaSeeder extends Seeder
                  'email'    => 'mhs1@gmail.com',
                  'foto'     => 'mahasiswa/mhs1.jpg',
                  'bg'     => 'mahasiswa/mhs1.jpg',
+                 'jenjang'  => 's1',
              ],
              [
                  'name'     => 'Mahasiswa Dua',
@@ -42,6 +46,7 @@ class MahasiswaSeeder extends Seeder
                  'email'    => 'mhs2@gmail.com',
                  'foto'     => 'mahasiswa/mhs2.jpg',
                  'bg'     => 'mahasiswa/mhs1.jpg',
+                 'jenjang'  => 'd3',
              ],
              [
                  'name'     => 'Mahasiswa Tiga',
@@ -50,6 +55,7 @@ class MahasiswaSeeder extends Seeder
                  'email'    => 'mhs3@gmail.com',
                  'foto'     => 'mahasiswa/mhs3.jpg',
                  'bg'     => 'mahasiswa/mhs1.jpg',
+                 'jenjang'  => 's1',
              ],
              [
                  'name'     => 'Mahasiswa Empat',
@@ -58,6 +64,7 @@ class MahasiswaSeeder extends Seeder
                  'email'    => 'mhs4@gmail.com',
                  'foto'     => null,
                  'bg'     => 'mahasiswa/mhs1.jpg',
+                 'jenjang'  => 'd3',
              ],
              [
                  'name'     => 'Mahasiswa Lima',
@@ -66,6 +73,7 @@ class MahasiswaSeeder extends Seeder
                  'email'    => 'mhs5@gmail.com',
                  'foto'     => null,
                  'bg'     => 'mahasiswa/mhs1.jpg',
+                 'jenjang'  => 's1',
              ],
          ];
      
@@ -95,7 +103,8 @@ class MahasiswaSeeder extends Seeder
                      'nim'              => $item['nim'],
                      'fakultas_id'      => $fakultas->id,
                      'nama_prodi_id' => $prodi->id,
-                     'angkatan'         => 2021,
+                     'jenjang'          => $item['jenjang'] ?? (random_int(0, 1) === 0 ? 'd3' : 's1'),
+                     'angkatan_id'      => $angkatan?->id,
                      'email'            => $item['email'],
                      'poto_profil'      => $item['foto'],
                      'bg'      => $item['bg'],

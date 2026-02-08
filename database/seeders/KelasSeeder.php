@@ -9,6 +9,7 @@ use App\Models\Kelas;
 use App\Models\MataKuliah;
 use App\Models\User;
 use Illuminate\Container\Attributes\DB;
+use Illuminate\Support\Str;
 
 class KelasSeeder extends Seeder
 {
@@ -32,7 +33,7 @@ $kelasList = ['A', 'B', 'C', 'D', 'E'];
 $bgList = ['img/bg1.jpg', 'img/bg2.jpg', 'img/bg3.jpg', 'img/bg4.jpg', 'img/bg5.jpg', ''];
 
 for ($i = 0; $i < 5; $i++) {
-    Kelas::create([
+    $kelas = Kelas::create([
         'dosen_id' => $dosens[$i % $dosens->count()]->id,
         'mata_kuliah_id' => $matkuls[$i % $matkuls->count()]->id,
 
@@ -47,10 +48,17 @@ for ($i = 0; $i < 5; $i++) {
         'kuota_terdaftar' => rand(0, 10),
 
         'bg_image' => $bgList[$i],
-        
         'status' => 'aktif',
+        
     ]);
 
+    $matkulName = $matkuls[$i % $matkuls->count()]->mata_kuliah ?? '';
+    $baseSlug = Str::slug(trim($matkulName . ' ' . $kelasList[$i]), '_');
+    $slug = $baseSlug ?: ('kelas_' . $kelas->id);
+    if (Kelas::where('slug', $slug)->where('id', '!=', $kelas->id)->exists()) {
+        $slug = $slug . '_' . $kelas->id;
+    }
+    $kelas->update(['slug' => $slug]);
 
     }
 }

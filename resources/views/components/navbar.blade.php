@@ -26,19 +26,17 @@
         <!-- Search Expand -->
         <!-- Google Style Expand Search -->
         <div class="relative flex items-center">
-        <form action="/search" method="GET"
+        <form action="{{ route('search') }}" method="GET"
           id="searchForm"
-          class="relative flex items-center overflow-hidden
-                 w-10 focus-within:w-104
-                 transition-all duration-300 ease-in-out">
+          class="relative flex items-center overflow-hidden search-expand"
+          style="width:40px; transition: width 300ms ease;">
 
         <input
             type="text"
             name="q"
             placeholder="Cari..."
             class="h-10 w-full pl-4 pr-10 rounded-full border border-gray-300
-                   text-sm opacity-0 focus:opacity-100
-                   transition-opacity duration-200
+                   text-sm opacity-0 transition-opacity duration-200
                    focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
 
@@ -51,19 +49,44 @@
             </span>
             </button>
             </form>
+            <div id="searchDropdown"
+                 class="absolute top-12 left-0 w-80 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-100 hidden">
+              <div id="searchResults" class="max-h-80 overflow-y-auto"></div>
+            </div>
             </div>
 
 
 
   
-                <button class="p-2 text-gray-600 hover:text-blue-600 rounded-full 
-                hover:bg-gray-100 transition-colors duration-200 relative">
-                    <i class="fas fa-bell"></i>
-                    
-                    <span class="material-symbols-rounded">Notifications</span>
-                    <span class="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-red-500 
-                    border-2 border-white"></span>
-                </button>
+                <div class="dropdown relative">
+                    <button id="notifButton" class="p-2 text-gray-600 hover:text-blue-600 rounded-full 
+                    hover:bg-gray-100 transition-colors duration-200 relative">
+                        <span class="material-symbols-rounded">Notifications</span>
+                        @if(($navbarHasNew ?? false))
+                        <span class="notification-dot absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-red-500 
+                        border-2 border-white"></span>
+                        @endif
+                    </button>
+                    <div class="dropdown-menu absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl py-2 z-50 opacity-0 invisible transition-all duration-300 transform -translate-y-2 border border-gray-100" id="notifDropdown">
+                        <div class="px-4 py-2 border-b border-gray-100 flex items-center justify-between">
+                            <span class="text-sm font-semibold text-gray-700">Pengumuman</span>
+                            <span class="text-xs text-gray-500">{{ $navbarPengumumanCount ?? 0 }}</span>
+                        </div>
+                        <div class="max-h-80 overflow-y-auto">
+                            @forelse(($navbarPengumuman ?? collect()) as $item)
+                                <div class="px-4 py-2 hover:bg-blue-50 transition-colors">
+                                    <p class="text-sm font-semibold text-gray-800">{{ $item->judul }}</p>
+                                    <p class="text-xs text-gray-500 line-clamp-2">{{ $item->isi }}</p>
+                                    <p class="text-[11px] text-gray-400 mt-1">
+                                        {{ $item->tanggal_publish ? \Illuminate\Support\Str::lower(\Carbon\Carbon::parse($item->tanggal_publish)->locale('id')->translatedFormat('d F Y')) : '-' }}
+                                    </p>
+                                </div>
+                            @empty
+                                <div class="px-4 py-6 text-sm text-gray-500 text-center">Tidak ada pengumuman.</div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
   {{-- mode --}}
 
 {{--   
@@ -189,15 +212,128 @@
     
   </nav>
 
-  <script>
+<script>
+    const examLock = document.querySelector('[data-exam-lock="true"]');
+    if (examLock) {
+        document.querySelectorAll('nav button, nav a, nav input, nav select, nav textarea').forEach((el) => {
+            el.classList.add('pointer-events-none', 'opacity-60');
+            el.setAttribute('tabindex', '-1');
+            el.setAttribute('aria-disabled', 'true');
+            if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
+                el.setAttribute('disabled', 'disabled');
+            }
+        });
+    }
+
     const searchBtn = document.getElementById('searchBtn');
     const searchForm = document.getElementById('searchForm');
     const searchInput = searchForm.querySelector('input');
+    const searchDropdown = document.getElementById('searchDropdown');
+    const searchResults = document.getElementById('searchResults');
 
-    searchBtn.addEventListener('click', function (e) {
-        if (!searchInput.value) {
-            e.preventDefault(); // cegah submit saat masih kosong
-            searchInput.focus();
+    const expandSearch = () => {
+        if (!searchForm) return;
+        searchForm.style.width = '260px';
+        if (searchInput) {
+            searchInput.classList.remove('opacity-0');
+            searchInput.classList.add('opacity-100');
+        }
+    };
+
+    const collapseSearch = () => {
+        if (!searchForm) return;
+        if (searchInput && searchInput.value.trim() !== '') return;
+        searchForm.style.width = '40px';
+        if (searchInput) {
+            searchInput.classList.add('opacity-0');
+            searchInput.classList.remove('opacity-100');
+        }
+        if (searchDropdown) searchDropdown.classList.add('hidden');
+    };
+
+    const renderSearchResults = (items) => {
+        if (!searchResults || !searchDropdown) return;
+        if (!items.length) {
+            searchResults.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500">Tidak ada hasil.</div>';
+            searchDropdown.classList.remove('hidden');
+            return;
+        }
+        const grouped = {};
+        items.forEach((item) => {
+            grouped[item.type] = grouped[item.type] || [];
+            grouped[item.type].push(item);
+        });
+        searchResults.innerHTML = Object.entries(grouped).map(([type, list]) => {
+            const rows = list.map((it) => `
+                <a href="${it.url}" class="block px-4 py-2 hover:bg-blue-50">
+                  <div class="text-xs uppercase text-gray-400">${type}</div>
+                  <div class="text-sm font-semibold text-gray-800">${it.label}</div>
+                </a>
+            `).join('');
+            return `<div class="border-b border-gray-100 py-1">${rows}</div>`;
+        }).join('');
+        searchDropdown.classList.remove('hidden');
+    };
+
+    let searchTimer = null;
+    const fetchSearch = () => {
+        const q = searchInput.value.trim();
+        if (!q) {
+            if (searchDropdown) searchDropdown.classList.add('hidden');
+            return;
+        }
+        fetch(`{{ route('search') }}?q=${encodeURIComponent(q)}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        })
+          .then((res) => res.json())
+          .then((data) => renderSearchResults(data.items || []))
+          .catch(() => {
+              if (searchDropdown) searchDropdown.classList.add('hidden');
+          });
+    };
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(fetchSearch, 250);
+    });
+
+    searchInput.addEventListener('focus', () => {
+        expandSearch();
+        fetchSearch();
+    });
+
+    searchBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        expandSearch();
+        searchInput?.focus();
+        fetchSearch();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!searchDropdown || !searchForm) return;
+        if (!searchForm.contains(e.target)) {
+            searchDropdown.classList.add('hidden');
+            collapseSearch();
         }
     });
+
+    searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        fetchSearch();
+    });
+
+    const notifDropdown = document.getElementById('notifDropdown');
+    if (notifDropdown) {
+        notifDropdown.addEventListener('mouseenter', () => {
+            fetch('{{ route('pengumuman.read_all') }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+            }).then(() => {
+                const dot = document.querySelector('.notification-dot');
+                if (dot) dot.classList.add('hidden');
+            }).catch(() => {});
+        });
+    }
 </script>

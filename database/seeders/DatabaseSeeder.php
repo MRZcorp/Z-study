@@ -27,10 +27,15 @@ class DatabaseSeeder extends Seeder
            RoleSeeder::class, DummyusersSeeder::class,
            FakultasSeeder::class, 
            ProgramStudiSeeder::class, DosenSeeder::class, 
-           MataKuliahSeeder::class, MataKuliahProdiSeeder::class,
+           MataKuliahSeeder::class,
            KelasSeeder::class,  
            MateriKelasSeeder::class, TugasSeeder::class, 
-           PengumumanSeeder::class, MahasiswaSeeder::class,
+           PengumumanSeeder::class, AngkatanSeeder::class,
+           MahasiswaSeeder::class,
+           DosenWaliSeeder::class,
+           KalenderAkademikSeeder::class,
+           KrsSettingSeeder::class,
+           AdminSeeder::class,
         ]);
 
         

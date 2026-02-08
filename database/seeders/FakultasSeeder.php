@@ -16,15 +16,15 @@ class FakultasSeeder extends Seeder
     $data = [
         [
             'kode' => 'FT',
-            'nama_fakultas' => 'Fakultas Teknik',
+            'fakultas' => 'Fakultas Teknik',
         ],
         [
             'kode' => 'FEB',
-            'nama_fakultas' => 'Fakultas Ekonomi dan Bisnis',
+            'fakultas' => 'Fakultas Ekonomi dan Bisnis',
         ],
         [
             'kode' => 'FIS',
-            'nama_fakultas' => 'Fakultas Ilmu Sosial',
+            'fakultas' => 'Fakultas Ilmu Sosial',
         ],
     ];
 
@@ -32,7 +32,7 @@ class FakultasSeeder extends Seeder
         Fakultas::updateOrCreate(
             ['kode' => $item['kode']], // kunci unik
             [
-                'fakultas' => $item['nama_fakultas'],
+                'fakultas' => $item['fakultas'],
                 'status' => 'aktif',
             ]
         );

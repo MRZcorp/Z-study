@@ -27,48 +27,60 @@ Tambah Dosen
 </div>
 
   <!-- NAVBAR FILTER -->
-  <div class="bg-white rounded-xl shadow p-4">
+  <form id="dosenFilterForm" class="bg-white rounded-xl shadow p-4" method="GET">
     <div class="flex flex-col md:flex-row md:items-center gap-4">
 
       <div class="grid grid-cols-1 md:grid-cols-5 gap-4 flex-1">
 
         <!-- FAKULTAS -->
-        <select class="rounded-lg border border-slate-300 px-3 py-2 text-sm
+        <select name="fakultas_id"
+                data-prodi-target="filter_prodi_id_dosen"
+                class="rounded-lg border border-slate-300 px-3 py-2 text-sm
                        focus:ring-2 focus:ring-blue-500">
           <option value="">Semua Fakultas</option>
-          <option>Fakultas Teknik</option>
-          <option>Fakultas Ilmu Komputer</option>
-          <option>Fakultas Ekonomi</option>
+          @foreach(($fakultas ?? []) as $fakultasItem)
+            <option value="{{ $fakultasItem->id }}" {{ (string) request('fakultas_id') === (string) $fakultasItem->id ? 'selected' : '' }}>
+              {{ $fakultasItem->fakultas }}
+            </option>
+          @endforeach
         </select>
 
         <!-- PRODI -->
-        <select class="rounded-lg border border-slate-300 px-3 py-2 text-sm
+        <select id="filter_prodi_id_dosen"
+                name="nama_prodi_id"
+                class="rounded-lg border border-slate-300 px-3 py-2 text-sm
                        focus:ring-2 focus:ring-blue-500">
           <option value="">Semua Prodi</option>
-          <option>Informatika</option>
-          <option>Sistem Informasi</option>
-          <option>Manajemen</option>
+          @foreach(($prodis ?? []) as $prodi)
+            <option value="{{ $prodi->id }}"
+                    data-fakultas-id="{{ $prodi->fakultas_id }}"
+                    {{ (string) request('nama_prodi_id') === (string) $prodi->id ? 'selected' : '' }}>
+              {{ $prodi->nama_prodi }}
+            </option>
+          @endforeach
         </select>
 
         <!-- JABATAN -->
-        <select class="rounded-lg border border-slate-300 px-3 py-2 text-sm
+        <select name="jabatan" class="rounded-lg border border-slate-300 px-3 py-2 text-sm
                        focus:ring-2 focus:ring-blue-500">
           <option value="">Semua Jabatan</option>
-          <option>Dosen Tetap</option>
-          <option>Dosen Tidak Tetap</option>
+          <option value="Dosen Tetap" {{ request('jabatan') === 'Dosen Tetap' ? 'selected' : '' }}>Dosen Tetap</option>
+          <option value="Dosen Tidak Tetap" {{ request('jabatan') === 'Dosen Tidak Tetap' ? 'selected' : '' }}>Dosen Tidak Tetap</option>
         </select>
 
         <!-- STATUS -->
-        <select class="rounded-lg border border-slate-300 px-3 py-2 text-sm
+        <select name="status" class="rounded-lg border border-slate-300 px-3 py-2 text-sm
                        focus:ring-2 focus:ring-blue-500">
           <option value="">Semua Status</option>
-          <option value="aktif">Aktif</option>
-          <option value="nonaktif">Nonaktif</option>
+          <option value="aktif" {{ request('status') === 'aktif' ? 'selected' : '' }}>Aktif</option>
+          <option value="nonaktif" {{ request('status') === 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
         </select>
 
         <!-- SEARCH -->
         <input type="text"
+               name="q"
                placeholder="Cari nama atau NIDN..."
+               value="{{ request('q') }}"
                class="rounded-lg border border-slate-300 px-3 py-2 text-sm
                       focus:ring-2 focus:ring-blue-500">
       </div>
@@ -76,7 +88,7 @@ Tambah Dosen
      
 
     </div>
-  </div>
+  </form>
 
   <!-- TABLE -->
   <div class="bg-white rounded-xl shadow overflow-x-auto">
@@ -109,10 +121,10 @@ Tambah Dosen
             {{$dosen->nidn ?? '-' }}
           </td>
           <td class="px-4 py-3">
-            Fakultas Ilmu Komputer
+            {{ $dosen->dosens?->fakultas?->fakultas ?? '-' }}
           </td>
           <td class="px-4 py-3">
-            Dosen Tetap
+            {{ $dosen->dosens?->status ?? 'Dosen Tetap' }}
           </td>
           <td class="px-4 py-3">
             {{$dosen->email}}
@@ -125,16 +137,27 @@ Tambah Dosen
           </td>
           <td class="px-4 py-3">
             <div class="flex justify-center gap-2">
-              <button class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200"
-                      title="Lihat">
+              <button
+                class="btn-preview p-2 rounded-lg bg-slate-100 hover:bg-slate-200"
+                title="Lihat"
+                data-name="{{ $dosen->name }}"
+                data-nidn="{{ $dosen->nidn ?? '' }}"
+                data-email="{{ $dosen->email }}"
+                data-role="{{ $dosen->role->nama_role ?? 'Dosen' }}"
+                data-status="{{ $dosen->status ?? '-' }}"
+                data-created="{{ $dosen->created_at }}"
+              >
                 <span class="material-symbols-rounded">visibility</span>
               </button>
               <button class="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700"
                       title="Edit">
                 <span class="material-symbols-rounded">edit</span>
               </button>
-              <button class="p-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-700"
-                      title="Hapus">
+              <button
+                class="btn-delete p-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-700"
+                title="Hapus"
+                data-delete-url="{{ url('/admin/kelola_dosen/' . $dosen->id) }}"
+              >
                 <span class="material-symbols-rounded">delete</span>
               </button>
             </div>
@@ -186,6 +209,171 @@ Tambah Dosen
   </div>
 
 </div>
+
+<!-- MODAL PREVIEW -->
+<div id="previewModal" class="modal-overlay hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl w-full max-w-md p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-slate-800">Detail Dosen</h3>
+      <button type="button" class="btn-close text-slate-400 hover:text-slate-600">×</button>
+    </div>
+    <div class="space-y-2 text-sm text-slate-700">
+      <p><span class="font-semibold">Nama:</span> <span id="previewName">-</span></p>
+      <p><span class="font-semibold">NIDN/NIM:</span> <span id="previewId">-</span></p>
+      <p><span class="font-semibold">Email:</span> <span id="previewEmail">-</span></p>
+      <p><span class="font-semibold">Role:</span> <span id="previewRole">-</span></p>
+      <p><span class="font-semibold">Status:</span> <span id="previewStatus">-</span></p>
+      <p><span class="font-semibold">Tanggal Dibuat:</span> <span id="previewCreated">-</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUCCESS -->
+<div id="successModal" class="modal-overlay hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl w-full max-w-sm p-6">
+    <h3 class="text-lg font-semibold text-slate-800 mb-2">Berhasil</h3>
+    <p id="successMessage" class="text-sm text-slate-600"></p>
+    <div class="flex justify-end mt-6">
+      <button type="button" class="btn-close px-4 py-2 rounded-lg bg-blue-600 text-white">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL KONFIRMASI HAPUS -->
+<div id="deleteModal" class="modal-overlay hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl w-full max-w-sm p-6">
+    <h3 class="text-lg font-semibold text-slate-800 mb-2">Hapus Dosen</h3>
+    <p class="text-sm text-slate-600">Yakin hapus dosen ini?</p>
+    <div class="flex justify-end gap-2 mt-6">
+      <button type="button" id="btnCancelDelete" class="px-4 py-2 rounded-lg bg-slate-200">Batal</button>
+      <button type="button" id="btnConfirmDelete" class="px-4 py-2 rounded-lg bg-red-600 text-white">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const dosenFilterForm = document.getElementById('dosenFilterForm');
+  const dosenTableBody = document.querySelector('table tbody');
+
+  const buildQuery = () => {
+    if (!dosenFilterForm) return '';
+    const formData = new FormData(dosenFilterForm);
+    const params = new URLSearchParams();
+    formData.forEach((value, key) => {
+      if (value !== null && String(value).trim() !== '') {
+        params.set(key, String(value).trim());
+      }
+    });
+    return params.toString();
+  };
+
+  const fetchFilteredDosen = async () => {
+    const query = buildQuery();
+    const url = `${window.location.pathname}${query ? `?${query}` : ''}`;
+    try {
+      const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const newTbody = doc.querySelector('table tbody');
+      if (newTbody && dosenTableBody) {
+        dosenTableBody.innerHTML = newTbody.innerHTML;
+        history.replaceState(null, '', url);
+        bindDosenActions();
+      }
+    } catch (err) {
+      console.error('Gagal memuat data:', err);
+    }
+  };
+
+  const debounce = (fn, delay = 300) => {
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), delay);
+    };
+  };
+
+  const bindFilterEvents = () => {
+    if (!dosenFilterForm) return;
+    dosenFilterForm.querySelectorAll('select').forEach((el) => {
+      el.addEventListener('change', fetchFilteredDosen);
+    });
+    const searchInput = dosenFilterForm.querySelector('input[name="q"]');
+    if (searchInput) {
+      searchInput.addEventListener('input', debounce(fetchFilteredDosen, 350));
+    }
+  };
+
+  const bindDosenActions = () => {
+    document.querySelectorAll('.btn-preview').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const modal = document.getElementById('previewModal');
+        if (!modal) return;
+        const nidn = btn.dataset.nidn || '';
+        document.getElementById('previewName').textContent = btn.dataset.name || '-';
+        document.getElementById('previewId').textContent = nidn || '-';
+        document.getElementById('previewEmail').textContent = btn.dataset.email || '-';
+        document.getElementById('previewRole').textContent = btn.dataset.role || '-';
+        document.getElementById('previewStatus').textContent = btn.dataset.status || '-';
+        document.getElementById('previewCreated').textContent = btn.dataset.created || '-';
+        modal.classList.remove('hidden');
+      });
+    });
+
+    document.querySelectorAll('.btn-delete').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const url = btn.dataset.deleteUrl || '';
+        if (!url) return;
+        const modal = document.getElementById('deleteModal');
+        if (!modal) return;
+        modal.dataset.deleteUrl = url;
+        modal.classList.remove('hidden');
+      });
+    });
+  };
+
+  // Close modal when clicking outside
+  document.querySelectorAll('.modal-overlay').forEach((modal) => {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+      }
+    });
+  });
+
+  // Success modal from session
+  @if (session('success'))
+    const successModal = document.getElementById('successModal');
+    const successMessage = document.getElementById('successMessage');
+    if (successModal && successMessage) {
+      successMessage.textContent = @json(session('success'));
+      successModal.classList.remove('hidden');
+    }
+  @endif
+
+  // Delete confirm modal actions
+  const deleteModal = document.getElementById('deleteModal');
+  document.getElementById('btnCancelDelete')?.addEventListener('click', () => {
+    deleteModal?.classList.add('hidden');
+  });
+  document.getElementById('btnConfirmDelete')?.addEventListener('click', () => {
+    if (!deleteModal) return;
+    const url = deleteModal.dataset.deleteUrl || '';
+    if (!url) return;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.innerHTML = `
+      @csrf
+      <input type="hidden" name="_method" value="DELETE">
+    `;
+    document.body.appendChild(form);
+    form.submit();
+  });
+
+  bindFilterEvents();
+  bindDosenActions();
+</script>
 
 </body>
 </html>

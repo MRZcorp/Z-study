@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Dosen;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -19,7 +20,6 @@ class DosenSeeder extends Seeder
         $data = [
             [
                 'name'  => 'Dosen Satu',
-                'nama_prodi_id'  => '1',
                 'fakultas_id' => '1',
                 'username' => 'dosen1',
                 'nidn' => '198001001',
@@ -29,7 +29,6 @@ class DosenSeeder extends Seeder
             ],
             [
                 'name'  => 'Dosen Dua',
-                'nama_prodi_id'  => '1',
                 'fakultas_id' => '1',
                 'username' => 'dosen2',
                 'nidn' => '198001002',
@@ -39,7 +38,6 @@ class DosenSeeder extends Seeder
             ],
             [
                 'name'  => 'Dosen Tiga',
-                'nama_prodi_id'  => '1',
                 'fakultas_id' => '1',
                 'username' => 'dosen3',
                 'nidn' => '198001003',
@@ -50,7 +48,6 @@ class DosenSeeder extends Seeder
             [
                 'name'  => 'Dosen Empat',
                 'username' => 'dosen4',
-                'nama_prodi_id'  => '1',
                 'fakultas_id' => '1',
                 'nidn' => '198001004',
                 'email' => 'dosen4@gmail.com',
@@ -59,7 +56,6 @@ class DosenSeeder extends Seeder
             ],
             [
                 'name'  => 'Dosen Lima',
-                'nama_prodi_id'  => '1',
                 'fakultas_id' => '1',
                 'username' => 'dosen5',
                 'nidn' => '198001005',
@@ -68,6 +64,11 @@ class DosenSeeder extends Seeder
                 'bg' => 'dosen/dosen5.jpg',
             ],
         ];
+
+        $roleDosen = Role::where('nama_role', 'Dosen')->first();
+        if (!$roleDosen) {
+            return;
+        }
 
         foreach ($data as $item) {
 
@@ -82,7 +83,7 @@ class DosenSeeder extends Seeder
                 'nidn'     => $item['nidn'],
                 'email'    => $item['email'],
                 'password' => Hash::make('123'),
-                'role_id'  => 2, // dosen
+                'role_id'  => $roleDosen->id,
             ]);
 
             // =====================
@@ -90,7 +91,6 @@ class DosenSeeder extends Seeder
             // =====================
             Dosen::create([
                 'user_id'     => $user->id, // 🔥 kunci relasi
-                'nama_prodi_id' => $item['nama_prodi_id'],
                 'fakultas_id' => $item['fakultas_id'],
                 'nidn'        => $item['nidn'],
                 'email'       => $item['email'],
@@ -103,3 +103,8 @@ class DosenSeeder extends Seeder
         }
     }
 }
+
+
+
+
+

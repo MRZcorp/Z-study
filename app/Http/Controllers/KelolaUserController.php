@@ -11,7 +11,26 @@ class KelolaUserController extends Controller
     //
     
     public function index()
-    {   $users = User::with('role')
+    {
+        $query = User::with('role');
+
+        if (request('role')) {
+            $query->where('role_id', request('role'));
+        }
+
+        if (request('status')) {
+            $query->where('status', request('status'));
+        }
+
+        if (request('q')) {
+            $term = request('q');
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', '%' . $term . '%')
+                  ->orWhere('email', 'like', '%' . $term . '%');
+            });
+        }
+
+        $users = $query
         ->orderByRaw("
         CASE 
             WHEN role_id = 1 THEN 1  -- Admin
@@ -29,19 +48,20 @@ class KelolaUserController extends Controller
    }
 
    
-   public function store(Request $request)
+    public function store(Request $request)
     { 
         $validated = $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'role_id' => 'required|exists:roles,id',
-        'status' => 'required|in:aktif,nonaktif',
+            'status' => 'required|in:aktif,nonaktif',
+            'password' => 'nullable|string|min:3',
         ]);
 
         User::create([
         'name' => $request->name,
         'email' => $request->email,
-        'password' => bcrypt('123'),
+        'password' => bcrypt($request->password ?: '123'),
         'role_id' => $request->role_id,
         'status' => $request->status,
         ]);
@@ -56,13 +76,18 @@ class KelolaUserController extends Controller
         {
         $user = User::findOrFail($id);
 
-
-        $user->update([
+        $data = [
         'name' => $request->name,
         'email' => $request->email,
         'role_id' => $request->role_id,
         'status' => $request->status
-        ]);
+        ];
+
+        if (!empty($request->password)) {
+            $data['password'] = bcrypt($request->password);
+        }
+
+        $user->update($data);
 
 
         return redirect()->back()->with('success', 'User berhasil diupdate');

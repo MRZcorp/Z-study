@@ -15,10 +15,10 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
       
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
-<link rel="stylesheet" href="{{ asset('css/style.css') }}">
+
 
 @php
     $user = \App\Models\User::find(session('user_id'));

@@ -23,11 +23,11 @@ class MataKuliahSeeder extends Seeder
             $prefix = $prodi->kode;
 
             $matkuls = [
-                ['kode' => $prefix.'-101', 'nama' => 'Pengantar '.$prodi->nama_prodi,    'semester' => 'Ganjil', 'sks' => 2],
-                ['kode' => $prefix.'-102', 'nama' => 'Dasar '.$prodi->nama_prodi,        'semester' => 'Genap',  'sks' => 3],
-                ['kode' => $prefix.'-201', 'nama' => 'Metodologi '.$prodi->nama_prodi,   'semester' => 'Ganjil', 'sks' => 2],
-                ['kode' => $prefix.'-202', 'nama' => 'Praktikum '.$prodi->nama_prodi,    'semester' => 'Genap',  'sks' => 1],
-                ['kode' => $prefix.'-301', 'nama' => 'Proyek Akhir '.$prodi->nama_prodi, 'semester' => 'Genap',  'sks' => 4],
+                ['kode' => $prefix.'-101', 'nama' => 'Pengantar '.$prodi->nama_prodi,    'semester' => 'ganjil', 'sks' => 2],
+                ['kode' => $prefix.'-102', 'nama' => 'Dasar '.$prodi->nama_prodi,        'semester' => 'genap',  'sks' => 3],
+                ['kode' => $prefix.'-201', 'nama' => 'Metodologi '.$prodi->nama_prodi,   'semester' => 'ganjil', 'sks' => 2],
+                ['kode' => $prefix.'-202', 'nama' => 'Praktikum '.$prodi->nama_prodi,    'semester' => 'genap',  'sks' => 1],
+                ['kode' => $prefix.'-301', 'nama' => 'Proyek Akhir '.$prodi->nama_prodi, 'semester' => 'genap',  'sks' => 4],
             ];
 
             foreach ($matkuls as $m) {
@@ -58,11 +58,11 @@ class MataKuliahSeeder extends Seeder
         // ====================================================
 
         $matkulsUmum = [
-            ['kode' => 'UM-101', 'nama' => 'Pendidikan Pancasila',       'semester' => 'Ganjil', 'sks' => 2],
-            ['kode' => 'UM-102', 'nama' => 'Pendidikan Kewarganegaraan', 'semester' => 'Genap',  'sks' => 2],
-            ['kode' => 'UM-201', 'nama' => 'Bahasa Indonesia',           'semester' => 'Ganjil', 'sks' => 2],
-            ['kode' => 'UM-202', 'nama' => 'Bahasa Inggris',             'semester' => 'Genap',  'sks' => 2],
-            ['kode' => 'UM-301', 'nama' => 'Kewirausahaan',              'semester' => 'Genap',  'sks' => 2],
+            ['kode' => 'UM-101', 'nama' => 'Pendidikan Pancasila',       'semester' => 'ganjil', 'sks' => 2],
+            ['kode' => 'UM-102', 'nama' => 'Pendidikan Kewarganegaraan', 'semester' => 'genap',  'sks' => 2],
+            ['kode' => 'UM-201', 'nama' => 'Bahasa Indonesia',           'semester' => 'ganjil', 'sks' => 2],
+            ['kode' => 'UM-202', 'nama' => 'Bahasa Inggris',             'semester' => 'genap',  'sks' => 2],
+            ['kode' => 'UM-301', 'nama' => 'Kewirausahaan',              'semester' => 'genap',  'sks' => 2],
         ];
 
         foreach ($matkulsUmum as $m) {

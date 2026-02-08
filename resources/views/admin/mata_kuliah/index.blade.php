@@ -2,13 +2,6 @@
 <x-navbar></x-navbar>
 <x-sidebar>admin</x-sidebar>
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title>Kelola Data Mata Kuliah</title>
-
-  
   <div class="max-w-7xl mx-auto space-y-6">
 
     <!-- HEADER -->
@@ -23,7 +16,12 @@
       </div>
 
       <!-- BUTTON TAMBAH -->
-      <button class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2
+      <button
+        id="btnAddMatkul"
+        data-modal-target="matkulModal"
+        data-title-add="Tambah Mata Kuliah"
+        data-store-url="{{ route('admin.mata_kuliah.store') }}"
+        class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2
                      text-sm font-semibold text-white hover:bg-blue-700">
         <span class="material-symbols-rounded text-base">add</span>
         Tambah Mata Kuliah
@@ -31,33 +29,45 @@
     </div>
 
     <!-- FILTER -->
-    <div class="bg-white rounded-xl shadow p-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <form id="matkulFilterForm" class="bg-white rounded-xl shadow p-4" method="GET">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
         <!-- JURUSAN / PRODI -->
-        <select class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+        <select name="prodi_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
                        focus:ring-2 focus:ring-blue-500">
           <option value="">Semua Jurusan / Prodi</option>
-          <option>Teknik Informatika</option>
-          <option>Sistem Informasi</option>
-          <option>Manajemen</option>
+          @foreach(($prodis ?? []) as $prodi)
+            <option value="{{ $prodi->id }}" {{ (string) request('prodi_id') === (string) $prodi->id ? 'selected' : '' }}>
+              {{ $prodi->nama_prodi }}
+            </option>
+          @endforeach
         </select>
 
         <!-- STATUS -->
-        <select class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+        <select name="status" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
                        focus:ring-2 focus:ring-blue-500">
           <option value="">Semua Status</option>
-          <option value="aktif">Aktif</option>
-          <option value="nonaktif">Nonaktif</option>
+          <option value="aktif" {{ request('status') === 'aktif' ? 'selected' : '' }}>Aktif</option>
+          <option value="nonaktif" {{ request('status') === 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+        </select>
+
+        <!-- SEMESTER -->
+        <select name="semester" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+                       focus:ring-2 focus:ring-blue-500">
+          <option value="">Semua Semester</option>
+          <option value="ganjil" {{ request('semester') === 'ganjil' ? 'selected' : '' }}>Ganjil</option>
+          <option value="genap" {{ request('semester') === 'genap' ? 'selected' : '' }}>Genap</option>
         </select>
 
         <!-- SEARCH -->
         <input type="text"
+               name="q"
                placeholder="Cari kode atau nama mata kuliah..."
+               value="{{ request('q') }}"
                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
                       focus:ring-2 focus:ring-blue-500">
       </div>
-    </div>
+    </form>
 
     <!-- TABLE -->
     <div class="bg-white rounded-xl shadow overflow-x-auto">
@@ -68,6 +78,8 @@
             <th class="px-4 py-3 text-left">Kode</th>
             <th class="px-4 py-3 text-left">Nama Mata Kuliah</th>
             <th class="px-4 py-3 text-center">SKS</th>
+            <th class="px-4 py-3 text-center">Semester</th>
+            <th class="px-4 py-3 text-left">Fakultas</th>
             <th class="px-4 py-3 text-left">Jurusan / Prodi</th>
             <th class="px-4 py-3 text-center">Jumlah Kelas</th>
             <th class="px-4 py-3 text-center">Status</th>
@@ -75,7 +87,7 @@
           </tr>
         </thead>
 
-        <tbody class="divide-y">
+        <tbody id="matkulTbody" class="divide-y">
 
           <!-- ROW -->
           @foreach ($matkuls as $matkul)
@@ -95,13 +107,26 @@
             <td class="px-4 py-3 text-center">
               {{$matkul->sks}}
             </td>
+            <td class="px-4 py-3 text-center">
+              {{ ucfirst($matkul->semester ?? '-') }}
+            </td>
 
+            @php
+              $fakultasList = $matkul->programStudis
+                ->map(fn($p) => $p->fakultas?->fakultas)
+                ->filter()
+                ->unique()
+                ->values();
+            @endphp
             <td class="px-4 py-3 text-slate-600">
-              {{-- {{$matkul->programStudis->nama_prodi_id}} --}}
+              {{ $fakultasList->join(', ') ?: '-' }}
+            </td>
+            <td class="px-4 py-3 text-slate-600">
+              {{ $matkul->programStudis->pluck('nama_prodi')->join(', ') ?: '-' }}
             </td>
 
             <td class="px-4 py-3 text-center">
-              0
+              {{ $matkul->kelas_count ?? 0 }}
             </td>
 
             <td class="px-4 py-3 text-center">
@@ -114,18 +139,43 @@
             <td class="px-4 py-3">
               <div class="flex justify-center gap-2">
 
-                <button class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200
-                               text-slate-700" title="Detail">
+                <button
+                  class="btn-preview p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700"
+                  title="Detail"
+                  data-kode="{{ $matkul->kode_mata_kuliah }}"
+                  data-nama="{{ $matkul->mata_kuliah }}"
+                  data-sks="{{ $matkul->sks }}"
+                  data-semester="{{ $matkul->semester }}"
+                  data-fakultas="{{ $fakultasList->join(', ') }}"
+                  data-prodi="{{ $matkul->programStudis->pluck('nama_prodi')->join(', ') }}"
+                  data-status="{{ $matkul->status }}"
+                  data-created="{{ $matkul->created_at }}"
+                >
                   <span class="material-symbols-rounded">visibility</span>
                 </button>
 
-                <button class="p-2 rounded-lg bg-blue-100 hover:bg-blue-200
-                               text-blue-700" title="Edit">
+                <button
+                  class="btn-edit p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700"
+                  title="Edit"
+                  data-modal-target="matkulModal"
+                  data-title-edit="Edit Mata Kuliah"
+                  data-id="{{ $matkul->id }}"
+                  data-kode="{{ $matkul->kode_mata_kuliah }}"
+                  data-nama="{{ $matkul->mata_kuliah }}"
+                  data-sks="{{ $matkul->sks }}"
+                  data-semester="{{ $matkul->semester }}"
+                  data-status="{{ $matkul->status }}"
+                  data-prodis='@json($matkul->programStudis->pluck("id"))'
+                  data-update-url="{{ url('/admin/kelola_mata_kuliah/' . $matkul->id) }}"
+                >
                   <span class="material-symbols-rounded">edit</span>
                 </button>
 
-                <button class="p-2 rounded-lg bg-red-100 hover:bg-red-200
-                               text-red-700" title="Hapus">
+                <button
+                  class="btn-delete p-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-700"
+                  title="Hapus"
+                  data-delete-url="{{ url('/admin/kelola_mata_kuliah/' . $matkul->id) }}"
+                >
                   <span class="material-symbols-rounded">delete</span>
                 </button>
 
@@ -143,3 +193,228 @@
 
   </div>
 
+  <!-- MODAL -->
+  <x-crud-modal id="matkulModal" title="Tambah Mata Kuliah">
+    <input type="text" name="kode_mata_kuliah" id="kode_mata_kuliah" placeholder="Kode Mata Kuliah" class="w-full rounded-lg border p-2" required>
+    <input type="text" name="mata_kuliah" id="mata_kuliah" placeholder="Nama Mata Kuliah" class="w-full rounded-lg border p-2" required>
+    <select name="semester" id="semester" class="w-full rounded-lg border p-2" required>
+      <option value="">Pilih Semester</option>
+      <option value="ganjil">Ganjil</option>
+      <option value="genap">Genap</option>
+    </select>
+    <input type="number" name="sks" id="sks" placeholder="SKS" class="w-full rounded-lg border p-2" required>
+
+    <select name="prodi_ids[]" id="prodi_ids" class="w-full rounded-lg border p-2" multiple>
+      @foreach(($prodis ?? []) as $prodi)
+        <option value="{{ $prodi->id }}">{{ $prodi->nama_prodi }}</option>
+      @endforeach
+    </select>
+
+    <select name="status" id="status" class="w-full rounded-lg border p-2">
+      <option value="aktif">Aktif</option>
+      <option value="nonaktif">Nonaktif</option>
+    </select>
+  </x-crud-modal>
+
+  <!-- MODAL PREVIEW -->
+  <div id="previewModal" class="modal-overlay hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl w-full max-w-md p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-slate-800">Detail Mata Kuliah</h3>
+        <button type="button" class="btn-close text-slate-400 hover:text-slate-600">×</button>
+      </div>
+      <div class="space-y-2 text-sm text-slate-700">
+        <p><span class="font-semibold">Kode:</span> <span id="previewKode">-</span></p>
+        <p><span class="font-semibold">Nama:</span> <span id="previewNama">-</span></p>
+        <p><span class="font-semibold">SKS:</span> <span id="previewSks">-</span></p>
+        <p><span class="font-semibold">Semester:</span> <span id="previewSemester">-</span></p>
+        <p><span class="font-semibold">Fakultas:</span> <span id="previewFakultas">-</span></p>
+        <p><span class="font-semibold">Prodi:</span> <span id="previewProdi">-</span></p>
+        <p><span class="font-semibold">Status:</span> <span id="previewStatus">-</span></p>
+        <p><span class="font-semibold">Tanggal Dibuat:</span> <span id="previewCreated">-</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL KONFIRMASI HAPUS -->
+  <div id="deleteModal" class="modal-overlay hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl w-full max-w-sm p-6">
+      <h3 class="text-lg font-semibold text-slate-800 mb-2">Hapus Mata Kuliah</h3>
+      <div class="flex justify-end gap-2 mt-6">
+        <button type="button" id="btnCancelDelete" class="px-4 py-2 rounded-lg bg-slate-200">Batal</button>
+        <button type="button" id="btnConfirmDelete" class="px-4 py-2 rounded-lg bg-red-600 text-white">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const matkulFilterForm = document.getElementById('matkulFilterForm');
+    const matkulTableBody = document.getElementById('matkulTbody');
+
+    const buildQuery = () => {
+      if (!matkulFilterForm) return '';
+      const formData = new FormData(matkulFilterForm);
+      const params = new URLSearchParams();
+      formData.forEach((value, key) => {
+        if (value !== null && String(value).trim() !== '') {
+          params.set(key, String(value).trim());
+        }
+      });
+      return params.toString();
+    };
+
+    const fetchFilteredMatkul = async () => {
+      const query = buildQuery();
+      const url = `${window.location.pathname}${query ? `?${query}` : ''}`;
+      try {
+        const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const newTbody = doc.getElementById('matkulTbody') || doc.querySelector('table tbody');
+        if (newTbody && matkulTableBody) {
+          matkulTableBody.innerHTML = newTbody.innerHTML;
+          history.replaceState(null, '', url);
+          bindMatkulActions();
+        }
+      } catch (err) {
+        console.error('Gagal memuat data:', err);
+      }
+    };
+
+    const debounce = (fn, delay = 300) => {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), delay);
+      };
+    };
+
+    const bindFilterEvents = () => {
+      if (!matkulFilterForm) return;
+      matkulFilterForm.querySelectorAll('select').forEach((el) => {
+        el.addEventListener('change', fetchFilteredMatkul);
+      });
+      const searchInput = matkulFilterForm.querySelector('input[name="q"]');
+      if (searchInput) {
+        searchInput.addEventListener('input', debounce(fetchFilteredMatkul, 350));
+      }
+      matkulFilterForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        fetchFilteredMatkul();
+      });
+    };
+
+    const matkulModal = document.getElementById('matkulModal');
+    const modalTitle = matkulModal?.querySelector('.modal-title');
+    const crudForm = matkulModal?.querySelector('.crud-form');
+    const crudMethod = matkulModal?.querySelector('.crud-method');
+
+    const openModal = () => matkulModal?.classList.remove('hidden');
+    const closeModal = () => matkulModal?.classList.add('hidden');
+
+    document.getElementById('btnAddMatkul')?.addEventListener('click', () => {
+      if (!matkulModal || !crudForm || !crudMethod || !modalTitle) return;
+      modalTitle.textContent = document.getElementById('btnAddMatkul')?.dataset?.titleAdd || 'Tambah Mata Kuliah';
+      crudForm.action = document.getElementById('btnAddMatkul')?.dataset?.storeUrl || '';
+      crudMethod.value = 'POST';
+      crudForm.reset();
+      openModal();
+    });
+
+    const setMultiSelect = (selectEl, values) => {
+      if (!selectEl) return;
+      const set = new Set(values.map(String));
+      Array.from(selectEl.options).forEach((opt) => {
+        opt.selected = set.has(String(opt.value));
+      });
+    };
+
+    const bindMatkulActions = () => {
+      document.querySelectorAll('.btn-preview').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const modal = document.getElementById('previewModal');
+          if (!modal) return;
+          document.getElementById('previewKode').textContent = btn.dataset.kode || '-';
+          document.getElementById('previewNama').textContent = btn.dataset.nama || '-';
+          document.getElementById('previewSks').textContent = btn.dataset.sks || '-';
+          document.getElementById('previewSemester').textContent = btn.dataset.semester || '-';
+          document.getElementById('previewFakultas').textContent = btn.dataset.fakultas || '-';
+          document.getElementById('previewProdi').textContent = btn.dataset.prodi || '-';
+          document.getElementById('previewStatus').textContent = btn.dataset.status || '-';
+          document.getElementById('previewCreated').textContent = btn.dataset.created || '-';
+          modal.classList.remove('hidden');
+        });
+      });
+
+      document.querySelectorAll('.btn-edit').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (!matkulModal || !crudForm || !crudMethod || !modalTitle) return;
+          modalTitle.textContent = btn.dataset.titleEdit || 'Edit Mata Kuliah';
+          crudForm.action = btn.dataset.updateUrl || '';
+          crudMethod.value = 'PUT';
+
+          const setVal = (name, value) => {
+            const input = matkulModal.querySelector(`[name="${name}"]`);
+            if (input) input.value = value ?? '';
+          };
+          setVal('kode_mata_kuliah', btn.dataset.kode);
+          setVal('mata_kuliah', btn.dataset.nama);
+          setVal('semester', btn.dataset.semester);
+          setVal('sks', btn.dataset.sks);
+          setVal('status', btn.dataset.status);
+          const prodiSelect = matkulModal.querySelector('#prodi_ids');
+          const prodis = JSON.parse(btn.dataset.prodis || '[]');
+          setMultiSelect(prodiSelect, prodis);
+
+          openModal();
+        });
+      });
+
+      document.querySelectorAll('.btn-delete').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const url = btn.dataset.deleteUrl || '';
+          if (!url) return;
+          const modal = document.getElementById('deleteModal');
+          if (!modal) return;
+          modal.dataset.deleteUrl = url;
+          modal.classList.remove('hidden');
+        });
+      });
+    };
+
+    matkulModal?.querySelectorAll('.btn-close').forEach((btn) => {
+      btn.addEventListener('click', closeModal);
+    });
+
+    // Close modal when clicking outside
+    document.querySelectorAll('.modal-overlay').forEach((modal) => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.add('hidden');
+        }
+      });
+    });
+
+    // Delete confirm modal actions
+    const deleteModal = document.getElementById('deleteModal');
+    document.getElementById('btnCancelDelete')?.addEventListener('click', () => {
+      deleteModal?.classList.add('hidden');
+    });
+    document.getElementById('btnConfirmDelete')?.addEventListener('click', () => {
+      if (!deleteModal) return;
+      const url = deleteModal.dataset.deleteUrl || '';
+      if (!url) return;
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = url;
+      form.innerHTML = `
+        @csrf
+        <input type="hidden" name="_method" value="DELETE">
+      `;
+      document.body.appendChild(form);
+      form.submit();
+    });
+
+    bindFilterEvents();
+    bindMatkulActions();
+  </script>

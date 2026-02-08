@@ -11,8 +11,11 @@ class Kelas extends Model
     use HasFactory;
     protected $fillable = [
         'dosen_id',
+        'mata_kuliah_id',
+        'tahun_ajar',
+        'semester',
         'nama_kelas',
-        'mata_kuliah',
+        'slug',
         'jadwal_kelas',
         'hari_kelas',
         'jam_mulai',
@@ -20,6 +23,7 @@ class Kelas extends Model
         'kuota_maksimal',
         'kuota_terdaftar',
         'bg_image',
+        'status',
         
     ];
     protected $table = 'kelas';
@@ -36,9 +40,10 @@ class Kelas extends Model
     {
         return $this->belongsTo(Dosen::class, 'dosen_id');
     }
-    public function mahasiswas()
+public function mahasiswas()
 {
     return $this->belongsToMany(Mahasiswa::class, 'kelas_mahasiswa')
+    ->withPivot('status')
     ->withTimestamps();
 }
 

@@ -1,3 +1,4 @@
 import './bootstrap';
-// import './user';
+import './modal_crud';
 
+// import './user';

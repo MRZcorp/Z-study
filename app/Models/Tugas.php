@@ -15,9 +15,11 @@ class Tugas extends Model
     protected $fillable = [
         'nama_kelas_id',
         
+        'tugas_ke',
         'mata_kuliah_id',
         'nama_tugas',
         'detail_tugas',
+        'mulai_tugas',
         'file_tugas',
         'deadline'
     ];
@@ -29,5 +31,15 @@ class Tugas extends Model
     public function mataKuliah()
     {
         return $this->belongsTo(Matakuliah::class);
+    }
+
+    public function files()
+    {
+        return $this->hasMany(TugasFile::class);
+    }
+
+    public function pengumpulan()
+    {
+        return $this->hasMany(PengumpulanTugas::class);
     }
 }

@@ -12,6 +12,8 @@ class ProgramStudi extends Model
         'kode',
         'nama_prodi',
         'fakultas_id',
+        's1',
+        'd3',
         'status',
         
     ];
@@ -33,12 +35,17 @@ class ProgramStudi extends Model
     
     public function dosens()
     {
-        return $this->hasMany(Dosen::class);
+        return $this->belongsToMany(
+            Dosen::class,
+            'dosen_walis',
+            'nama_prodi_id',
+            'dosen_id'
+        );
     }
 
     public function mahasiswas()
     {
-        return $this->hasMany(Mahasiswa::class);
+        return $this->hasMany(Mahasiswa::class, 'nama_prodi_id');
     }
 
    

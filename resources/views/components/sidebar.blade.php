@@ -44,4 +44,22 @@
 </aside>
 
 <script src="{{ asset('js/script.js') }}"></script>
+<script>
+  const examLock = document.querySelector('[data-exam-lock="true"]');
+  if (examLock) {
+    document.querySelectorAll('.sidebar a, .sidebar button, .sidebar .dropdown-toggle, .sidebar input, .sidebar select, .sidebar textarea').forEach((el) => {
+      el.classList.add('pointer-events-none', 'opacity-60');
+      el.setAttribute('tabindex', '-1');
+      el.setAttribute('aria-disabled', 'true');
+      if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
+        el.setAttribute('disabled', 'disabled');
+      }
+    });
+    document.querySelectorAll('.sidebar-menu-button, .sidebar-toggler').forEach((el) => {
+      el.classList.add('pointer-events-none', 'opacity-60');
+      el.setAttribute('tabindex', '-1');
+      el.setAttribute('aria-disabled', 'true');
+    });
+  }
+</script>
 <div class="main-content">

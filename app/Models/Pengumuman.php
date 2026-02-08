@@ -15,7 +15,9 @@ class Pengumuman extends Model
         'isi',
         'tipe',
         'is_active',
-        'tanggal_publish'
+        'tanggal_publish',
+        'file_name',
+        'file_path'
     ];
     public function mahasiswa()
     {

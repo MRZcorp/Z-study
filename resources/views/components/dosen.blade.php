@@ -1,3 +1,17 @@
+@php
+  use App\Models\Dosen;
+  use App\Models\DosenWali;
+
+  $isDosenWali = false;
+
+  if (strtolower((string) session('nama_role')) === 'dosen') {
+    $dosen = Dosen::where('user_id', session('user_id'))->first();
+    $isDosenWali = $dosen
+      ? DosenWali::where('dosen_id', $dosen->id)->exists()
+      : false;
+  }
+@endphp
+
 <nav class="sidebar-nav">
     <!-- Primary Top Nav -->
     <ul class="nav-list primary-nav">
@@ -8,6 +22,14 @@
       icon="dashboard" 
       label="Dashboard"
       ></x-side-link>
+
+      @if ($isDosenWali)
+        <x-side-link 
+        link="dosen/perwalian" 
+        icon="group" 
+        label="Perwalian"
+        ></x-side-link>
+      @endif
 
       <x-side-link 
       link="dosen/kelas" 

@@ -8,6 +8,33 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #0f172a;
+  caret-color: #0f172a;
+  transition: background-color 5000s ease-in-out 0s;
+  -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0) inset !important;
+  box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0) inset !important;
+  background-color: transparent !important;
+  filter: none !important;
+}
+input:autofill {
+  -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0) inset !important;
+  box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0) inset !important;
+  -webkit-text-fill-color: #0f172a;
+  caret-color: #0f172a;
+  background-color: transparent !important;
+  filter: none !important;
+}
+input:-moz-autofill {
+  box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0) inset !important;
+  -webkit-text-fill-color: #0f172a;
+  caret-color: #0f172a;
+  background-color: transparent !important;
+  filter: none !important;
+}
 </style>
 <!-- TOP RIGHT TOGGLE -->
 <div class="flex justify-between items-center ">
@@ -58,7 +85,7 @@
             bg-white/30 backdrop-blur-md
              rounded-xl p-6
              transition-all duration-700 ease-out
-         transform-gpu"
+         transform-gpu pointer-events-none"
     >
       <h1
         id="overlayTitle"
@@ -226,21 +253,32 @@ Z-Study! 👋
     <input
       type="text"
       name="username"
-      placeholder="Username / ID"
+      placeholder="Username / NIM / NIDN / Email"
       class="w-full border-b border-white/40 bg-transparent
              px-2 py-3 text-white placeholder-white/70
              focus:border-indigo-400 focus:outline-none"
     />
 
     <!-- PASSWORD -->
-    <input
-      type="password"
-      name="password"
-      placeholder="Password"
-      class="w-full border-b border-white/40 bg-transparent
-             px-2 py-3 text-white placeholder-white/70
-             focus:border-indigo-400 focus:outline-none"
-    />
+    <div class="relative">
+      <input
+        id="loginPasswordInput"
+        type="password"
+        name="password"
+        placeholder="Password"
+        class="w-full border-b border-white/40 bg-transparent
+               px-2 py-3 pr-10 text-white placeholder-white/70
+               focus:border-indigo-400 focus:outline-none"
+      />
+      <button
+        type="button"
+        id="toggleLoginPassword"
+        class="absolute right-1 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
+        aria-label="Tampilkan password"
+      >
+        <span class="material-symbols-rounded text-base">visibility</span>
+      </button>
+    </div>
 
     <!-- OPTIONS -->
     <div class="flex items-center justify-between text-sm text-white/80">
@@ -249,7 +287,7 @@ Z-Study! 👋
         Ingat Saya
       </label>
 
-      <a href="#" class="hover:text-white">
+      <a href="{{ route('password.request') }}" class="hover:text-white">
         Lupa Password?
       </a>
     </div>
@@ -296,6 +334,13 @@ function toggleLogin() {
 
   }
 
+const loginOverlay = document.getElementById('loginOverlay');
+loginOverlay?.addEventListener('click', (e) => {
+  if (e.target === loginOverlay) {
+    toggleLogin();
+  }
+});
+
 function updateOverlay() {
   const activeSlide = slides[currentIndex]
   const title = activeSlide.dataset.title
@@ -329,13 +374,7 @@ function goToSlide(index) {
   updateOverlay()
   updateOverlayPosition()
 
-  // 🔥 AUTO OPEN LOGIN JIKA SLIDE TERAKHIR
-  if (currentIndex === slides.length - 1 && !loginOpened) {
-    loginOpened = true
-    setTimeout(() => {
-      toggleLogin()
-    }, 2000) // tunggu animasi slide selesai
-  }
+  // 🔥 Login dibuka saat scroll lagi di slide terakhir (lihat wheel handler)
 }
 function updateOverlayPosition() {
   const activeSlide = slides[currentIndex]
@@ -370,7 +409,14 @@ slider.addEventListener("wheel", (e) => {
   isScrolling = true
 
   if (e.deltaY > 0) {
-    goToSlide(currentIndex + 1)
+    if (currentIndex === slides.length - 1) {
+      if (!loginOpened) {
+        loginOpened = true
+        toggleLogin()
+      }
+    } else {
+      goToSlide(currentIndex + 1)
+    }
   } else {
     goToSlide(currentIndex - 1)
   }
@@ -384,4 +430,17 @@ slider.addEventListener("wheel", (e) => {
 updateProgress()
 updateOverlay()
 updateOverlayPosition()
+</script>
+
+<script>
+  const loginPasswordInput = document.getElementById('loginPasswordInput');
+  const toggleLoginPassword = document.getElementById('toggleLoginPassword');
+
+  toggleLoginPassword?.addEventListener('click', () => {
+    if (!loginPasswordInput) return;
+    const isHidden = loginPasswordInput.type === 'password';
+    loginPasswordInput.type = isHidden ? 'text' : 'password';
+    const icon = toggleLoginPassword.querySelector('.material-symbols-rounded');
+    if (icon) icon.textContent = isHidden ? 'visibility_off' : 'visibility';
+  });
 </script>

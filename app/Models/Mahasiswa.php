@@ -12,9 +12,10 @@ class Mahasiswa extends Model
     protected $fillable = [
         'user_id',
         'nim',
-        'fakultas',
-        'prodi',
-        'angkatan',
+        'fakultas_id',
+        'nama_prodi_id',
+        'jenjang',
+        'angkatan_id',
         'email',
         'status',
         'poto_profil',
@@ -36,9 +37,20 @@ class Mahasiswa extends Model
     {
         return $this->belongsTo(ProgramStudi::class, 'nama_prodi_id');
     }
+    public function angkatan()
+    {
+        return $this->belongsTo(Angkatan::class);
+    }
     public function kelas()
     {
-        return $this->belongsToMany(Kelas::class, 'kelas_mahasiswa');
+        return $this->belongsToMany(Kelas::class, 'kelas_mahasiswa')
+            ->withPivot('status')
+            ->withTimestamps();
+    }
+
+    public function pengumpulanTugas()
+    {
+        return $this->hasMany(PengumpulanTugas::class);
     }
 
 

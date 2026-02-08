@@ -49,13 +49,18 @@ class ProgramStudiSeeder extends Seeder
          ];
      
          foreach ($data as $item) {
-             ProgramStudi::updateOrCreate(
-                 ['kode' => $item['kode']],
-                 [
-                     'nama_prodi'   => $item['nama_prodi'],
-                     'fakultas_id'  => $fakultas[$item['fakultas']]->id,
-                     'status'       => 'aktif',
-                 ]
-             );
+             $prodi = ProgramStudi::firstOrNew(['kode' => $item['kode']]);
+             $prodi->nama_prodi = $item['nama_prodi'];
+             $prodi->fakultas_id = $fakultas[$item['fakultas']]->id;
+             $prodi->status = 'aktif';
+
+             if ($prodi->s1 === null) {
+                 $prodi->s1 = random_int(144, 160);
+             }
+             if ($prodi->d3 === null) {
+                 $prodi->d3 = random_int(108, 120);
+             }
+
+             $prodi->save();
          }
 }}

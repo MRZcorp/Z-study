@@ -48,6 +48,10 @@ class Dosen extends Model
     {
         return $this->hasMany(Tugas::class);
     }
+    public function dosenWalis()
+    {
+        return $this->hasMany(DosenWali::class);
+    }
     
 
    

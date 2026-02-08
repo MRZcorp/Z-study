@@ -16,9 +16,6 @@ return new class extends Migration
             $table->foreignId('user_id')
       ->constrained('users')
       ->cascadeOnDelete();
-            $table->foreignId('nama_prodi_id')
-      ->constrained('program_studis')
-      ->cascadeOnDelete();
             $table->foreignId('fakultas_id')
       ->constrained('fakultas')
       ->cascadeOnDelete();
