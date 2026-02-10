@@ -12,8 +12,8 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-text-fill-color: #0f172a;
-  caret-color: #0f172a;
+  -webkit-text-fill-color: #ffffff;
+  caret-color: #ffffff;
   transition: background-color 5000s ease-in-out 0s;
   -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0) inset !important;
   box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0) inset !important;
@@ -23,15 +23,15 @@ input:-webkit-autofill:active {
 input:autofill {
   -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0) inset !important;
   box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0) inset !important;
-  -webkit-text-fill-color: #0f172a;
-  caret-color: #0f172a;
+  -webkit-text-fill-color: #ffffff;
+  caret-color: #ffffff;
   background-color: transparent !important;
   filter: none !important;
 }
 input:-moz-autofill {
   box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0) inset !important;
-  -webkit-text-fill-color: #0f172a;
-  caret-color: #0f172a;
+  -webkit-text-fill-color: #ffffff;
+  caret-color: #ffffff;
   background-color: transparent !important;
   filter: none !important;
 }
@@ -82,7 +82,7 @@ input:-moz-autofill {
     <div
       id="overlay"
       class="absolute z-20 max-w-md
-            bg-white/30 backdrop-blur-md
+            bg-black/40 backdrop-blur-md
              rounded-xl p-6
              transition-all duration-700 ease-out
          transform-gpu pointer-events-none"
@@ -95,7 +95,7 @@ input:-moz-autofill {
       </h1>
       <p
         id="overlayText"
-        class="text-gray-800 leading-relaxed"
+        class="text-sm font-bold text-slate leading-relaxed"
       >
       Z-Study menggabungkan inovasi teknologi dan pembelajaran
         fleksibel untuk mendorong pertumbuhan intelektual mahasiswa.
@@ -118,7 +118,7 @@ input:-moz-autofill {
         data-y="top-[60%]"
       
         >
-        <img src="/img/bg1.jpg" class="w-full h-full object-cover" />
+        <img src="/img/sld1.png" class="w-full h-full object-cover" />
       </div>
 
       <!-- SLIDE 2 -->
@@ -130,7 +130,7 @@ input:-moz-autofill {
         data-x="left-10"
         data-y="top-10"
       >
-        <img src="/img/bg2.jpg" class="w-full h-full object-cover" />
+        <img src="/img/sld11.png" class="w-full h-full object-cover" />
       </div>
 
       <!-- SLIDE 3 -->
@@ -142,7 +142,7 @@ input:-moz-autofill {
         data-x="left-[58%]"
         data-y="top-[60%]"
       >
-        <img src="/img/bg3.jpg" class="w-full h-full object-cover" />
+        <img src="/img/sld2.png" class="w-full h-full object-cover" />
       </div>
 
       <!-- SLIDE 4 -->
@@ -152,10 +152,10 @@ input:-moz-autofill {
         data-text="Ruang terbuka hijau yang nyaman dan asri untuk menciptakan suasana 
         belajar yang seimbang dan produktif."
         
-        data-x="left-[58%]"
-        data-y="top-10"
+        data-x="left-10"
+        data-y="top-[60%]"
       >
-        <img src="/img/bg3.jpg" class="w-full h-full object-cover" />
+        <img src="/img/sld22.png" class="w-full h-full object-cover" />
       </div>
 
       <!-- SLIDE 5 -->
@@ -168,7 +168,7 @@ input:-moz-autofill {
         data-x="left-10"
         data-y="top-10"
       >
-        <img src="/img/bg3.jpg" class="w-full h-full object-cover" />
+        <img src="/img/sld3.png" class="w-full h-full object-cover" />
       </div>
 
       <!-- SLIDE 6 -->
@@ -182,7 +182,7 @@ input:-moz-autofill {
         data-x="left-[58%]"
         data-y="top-[60%]"
       >
-        <img src="/img/bg3.jpg" class="w-full h-full object-cover" />
+        <img src="/img/sld33.png" class="w-full h-full object-cover" />
       </div>
 
     </div>

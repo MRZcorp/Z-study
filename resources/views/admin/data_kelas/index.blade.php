@@ -18,17 +18,33 @@
     </div>
   
 
-   <!-- BUTTON TAMBAH -->
-  <button
-   id="btnAddKelas"
-   data-modal-target="kelasModal"
-   data-title-add="Tambah Kelas"
-   data-store-url="{{ route('admin.kelas.store') }}"
-   class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2
-   text-sm font-semibold text-white hover:bg-blue-700">
-<span class="material-symbols-rounded text-base">add</span>
-Tambah Kelas
-</button>
+  <div class="flex items-center gap-2">
+    <!-- BUTTON SELESAIKAN SEMUA -->
+    <form action="{{ route('admin.kelas.finish_all') }}" method="POST" id="finishAllForm">
+      @csrf
+      <button
+        type="button"
+        id="btnFinishAll"
+        class="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2
+        text-sm font-semibold text-white hover:bg-emerald-700"
+      >
+        <span class="material-symbols-rounded text-base">task_alt</span>
+        Selesaikan Semua
+      </button>
+    </form>
+
+    <!-- BUTTON TAMBAH -->
+    <button
+     id="btnAddKelas"
+     data-modal-target="kelasModal"
+     data-title-add="Tambah Kelas"
+     data-store-url="{{ route('admin.kelas.store') }}"
+     class="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2
+     text-sm font-semibold text-white hover:bg-blue-700">
+  <span class="material-symbols-rounded text-base">add</span>
+  Tambah Kelas
+  </button>
+  </div>
 </div>
 
 
@@ -275,7 +291,35 @@ Tambah Kelas
   </div>
 </div>
 
+<!-- MODAL KONFIRMASI SELESAIKAN SEMUA -->
+<div id="finishAllModal" class="modal-overlay hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl w-full max-w-sm p-6">
+    <h3 class="text-lg font-semibold text-slate-800 mb-2">Selesaikan Semua Kelas</h3>
+    <p class="text-sm text-slate-600">Semua kelas dengan status aktif/draft akan diubah menjadi selesai.</p>
+    <div class="flex justify-end gap-2 mt-6">
+      <button type="button" id="btnCancelFinishAll" class="px-4 py-2 rounded-lg bg-slate-200">Batal</button>
+      <button type="button" id="btnConfirmFinishAll" class="px-4 py-2 rounded-lg bg-emerald-600 text-white">Selesaikan</button>
+    </div>
+  </div>
+</div>
+
 <script>
+  const finishModal = document.getElementById('finishAllModal');
+  const btnConfirmFinishAll = document.getElementById('btnConfirmFinishAll');
+  const btnCancelFinishAll = document.getElementById('btnCancelFinishAll');
+
+  document.getElementById('btnFinishAll')?.addEventListener('click', () => {
+    finishModal?.classList.remove('hidden');
+  });
+
+  btnCancelFinishAll?.addEventListener('click', () => {
+    finishModal?.classList.add('hidden');
+  });
+
+  btnConfirmFinishAll?.addEventListener('click', () => {
+    document.getElementById('finishAllForm')?.submit();
+  });
+
   const kelasFilterForm = document.getElementById('kelasFilterForm');
   const kelasTableBody = document.querySelector('table tbody');
 

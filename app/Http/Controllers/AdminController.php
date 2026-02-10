@@ -8,10 +8,12 @@ use App\Models\Mahasiswa;
 use App\Models\Kelas;
 use App\Models\KalenderAkademik;
 use App\Models\KrsSetting;
+use App\Models\AdminActivity;
 use Illuminate\Support\Carbon;
 use Illuminate\Container\Attributes\Auth as AttributesAuth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use PhpParser\Node\Stmt\Echo_;
 
 class AdminController extends Controller
@@ -74,6 +76,15 @@ class AdminController extends Controller
                 'title' => 'Kelas baru',
                 'detail' => $kelas->nama_kelas ?? '-',
                 'time' => $kelas->created_at,
+            ]);
+        }
+        $recentAdminActivities = AdminActivity::latest()->take(5)->get();
+        foreach ($recentAdminActivities as $activity) {
+            $recentActions->push([
+                'icon' => $activity->icon ?? 'flag',
+                'title' => $activity->title ?? 'Aktivitas Admin',
+                'detail' => $activity->detail ?? '-',
+                'time' => $activity->created_at,
             ]);
         }
         $recentActions = $recentActions
@@ -202,6 +213,23 @@ class AdminController extends Controller
             'status' => ['required', 'in:aktif,nonaktif'],
         ]);
 
+        $password = (string) $request->input('password', '');
+        if (trim($password) === '') {
+            return back()->with('error', 'Password wajib diisi.');
+        }
+        $userId = session('user_id');
+        $user = $userId ? User::find($userId) : null;
+        if (!$user || !Hash::check($password, $user->password)) {
+            return back()->with('error', 'Password salah. Perubahan KRS dibatalkan.');
+        }
+
+        $previousActive = KrsSetting::where('status', 'aktif')->latest()->first();
+        $existingSetting = KrsSetting::where('mulai_tahun_ajar', $data['mulai_tahun_ajar'])
+            ->where('akhir_tahun_ajar', $data['akhir_tahun_ajar'])
+            ->where('semester', $data['semester'])
+            ->first();
+        $previousStatus = $existingSetting?->status;
+
         KrsSetting::updateOrCreate(
             [
                 'mulai_tahun_ajar' => $data['mulai_tahun_ajar'],
@@ -218,8 +246,28 @@ class AdminController extends Controller
                 ->where('akhir_tahun_ajar', $data['akhir_tahun_ajar'])
                 ->where('semester', '!=', $data['semester'])
                 ->update(['status' => 'nonaktif']);
+
+            if (!$previousActive) {
+                if ($data['semester'] === 'ganjil') {
+                    Mahasiswa::query()->update(['semester_aktif' => 1]);
+                }
+            } elseif ($previousActive->semester !== $data['semester'] || $previousActive->mulai_tahun_ajar !== $data['mulai_tahun_ajar'] || $previousActive->akhir_tahun_ajar !== $data['akhir_tahun_ajar']) {
+                Mahasiswa::query()->increment('semester_aktif');
+            }
         }
 
-        return back();
+        if ($previousStatus !== $data['status']) {
+            $labelSemester = ucfirst($data['semester']);
+            $labelTahun = $data['mulai_tahun_ajar'] . '/' . $data['akhir_tahun_ajar'];
+            AdminActivity::create([
+                'user_id' => $userId,
+                'icon' => $data['status'] === 'aktif' ? 'verified' : 'block',
+                'title' => $data['status'] === 'aktif' ? 'KRS Diaktifkan' : 'KRS Dinonaktifkan',
+                'detail' => $labelSemester . ' ' . $labelTahun,
+            ]);
+        }
+
+        $statusLabel = $data['status'] === 'aktif' ? 'diaktifkan' : 'dinonaktifkan';
+        return back()->with('success', 'KRS berhasil ' . $statusLabel . '.');
     }
 }

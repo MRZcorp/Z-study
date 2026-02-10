@@ -210,12 +210,15 @@ class DosenKelasController extends Controller
             $bg_image = $request->file('bg_image')->store('img', 'public');
         }
 
+        $namaKelas = preg_replace('/^kelas\\s*/i', '', (string) ($request->nama_kelas ?? ''));
+        $namaKelas = strtoupper(trim($namaKelas));
+
         $kelas = Kelas::create([
             'dosen_id' => $dosenId,
             'mata_kuliah_id' => $request->mata_kuliah_id,
             'tahun_ajar' => $request->tahun_ajar,
             'semester' => $request->semester,
-            'nama_kelas' => $request->nama_kelas,
+            'nama_kelas' => $namaKelas,
             'jadwal_kelas' => $request->jadwal_kelas,
             'hari_kelas' => $request->hari_kelas,
             'jam_mulai' => $request->jam_mulai,
@@ -226,7 +229,7 @@ class DosenKelasController extends Controller
         ]);
 
         $matkulName = MataKuliah::where('id', $request->mata_kuliah_id)->value('mata_kuliah');
-        $baseSlug = Str::slug(trim(($matkulName ?? '') . ' ' . ($request->nama_kelas ?? '')), '_');
+        $baseSlug = Str::slug(trim(($matkulName ?? '') . ' ' . ($namaKelas ?? '')), '_');
         $slug = $baseSlug ?: ('kelas_' . $kelas->id);
         if (Kelas::where('slug', $slug)->where('id', '!=', $kelas->id)->exists()) {
             $slug = $slug . '_' . $kelas->id;
@@ -262,11 +265,14 @@ class DosenKelasController extends Controller
             }
         }
 
+        $namaKelas = preg_replace('/^kelas\\s*/i', '', (string) ($request->nama_kelas ?? ''));
+        $namaKelas = strtoupper(trim($namaKelas));
+
         $kelas->update([
             'mata_kuliah_id' => $request->mata_kuliah_id,
             'tahun_ajar' => $request->tahun_ajar,
             'semester' => $request->semester,
-            'nama_kelas' => $request->nama_kelas,
+            'nama_kelas' => $namaKelas,
             'jadwal_kelas' => $request->jadwal_kelas,
             'hari_kelas' => $request->hari_kelas,
             'jam_mulai' => $request->jam_mulai,
@@ -277,7 +283,7 @@ class DosenKelasController extends Controller
         ]);
 
         $matkulName = MataKuliah::where('id', $request->mata_kuliah_id)->value('mata_kuliah');
-        $baseSlug = Str::slug(trim(($matkulName ?? '') . ' ' . ($request->nama_kelas ?? '')), '_');
+        $baseSlug = Str::slug(trim(($matkulName ?? '') . ' ' . ($namaKelas ?? '')), '_');
         $slug = $baseSlug ?: ('kelas_' . $kelas->id);
         if (Kelas::where('slug', $slug)->where('id', '!=', $kelas->id)->exists()) {
             $slug = $slug . '_' . $kelas->id;

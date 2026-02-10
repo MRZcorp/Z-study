@@ -265,6 +265,7 @@
       <form id="krsForm" method="POST" action="{{ route('admin.krs.upsert') }}" class="space-y-4">
         @csrf
         <input type="hidden" name="status" id="krsStatus" value="aktif">
+        <input type="hidden" name="password" id="krsPassword">
         <input type="hidden" name="mulai_tahun_ajar" id="krsMulaiHidden" value="{{ $selectedTahunMulai ?? '' }}">
         <input type="hidden" name="akhir_tahun_ajar" id="krsAkhirHidden" value="{{ $selectedTahunAkhir ?? '' }}">
         <input type="hidden" name="semester" id="krsSemesterHidden" value="{{ $selectedSemester ?? '' }}">
@@ -296,6 +297,64 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Konfirmasi KRS -->
+<div id="modalKrsConfirm" class="fixed inset-0 bg-slate-900/40 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+      <h3 class="text-lg font-semibold text-slate-800">Konfirmasi KRS</h3>
+      <button type="button" id="btnCloseKrsConfirm" class="text-slate-500 hover:text-slate-700">×</button>
+    </div>
+    <div class="p-5 space-y-4 text-sm text-slate-700">
+      <p>Apakah Anda yakin ingin mengubah status KRS?</p>
+      <div class="flex items-center gap-2">
+        <button type="button" id="btnKrsConfirmYes" class="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Ya</button>
+        <button type="button" id="btnKrsConfirmCancel" class="flex-1 px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Batal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Password KRS -->
+<div id="modalKrsPassword" class="fixed inset-0 bg-slate-900/40 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+      <h3 class="text-lg font-semibold text-slate-800">Masukkan Password</h3>
+      <button type="button" id="btnCloseKrsPassword" class="text-slate-500 hover:text-slate-700">×</button>
+    </div>
+    <div class="p-5 space-y-4">
+      <div>
+        <label class="text-xs text-slate-600">Password Admin</label>
+        <input id="krsPasswordInput" type="password" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Masukkan password">
+        <p id="krsPasswordError" class="text-xs text-red-600 mt-1 hidden">Password wajib diisi.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" id="btnKrsPasswordSubmit" class="flex-1 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold">Kirim</button>
+        <button type="button" id="btnKrsPasswordCancel" class="flex-1 px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Batal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Status KRS -->
+@if (session('error') || session('success'))
+  <div id="modalKrsStatus" class="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+        <h3 class="text-lg font-semibold text-slate-800">
+          {{ session('success') ? 'Berhasil' : 'Gagal' }}
+        </h3>
+        <button type="button" id="btnCloseKrsStatus" class="text-slate-500 hover:text-slate-700">×</button>
+      </div>
+      <div class="p-5 space-y-4 text-sm text-slate-700">
+        <p>{{ session('success') ?? session('error') }}</p>
+        <div class="flex justify-end">
+          <button type="button" id="btnCloseKrsStatusFooter" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+@endif
 
 <x-footer></x-footer>
  
@@ -427,6 +486,9 @@
 
   const krsForm = document.getElementById('krsForm');
   const krsStatus = document.getElementById('krsStatus');
+  const krsPassword = document.getElementById('krsPassword');
+  const krsPasswordInput = document.getElementById('krsPasswordInput');
+  const krsPasswordError = document.getElementById('krsPasswordError');
   const krsTahunMulai = document.getElementById('krsTahunMulai');
   const krsTahunAkhir = document.getElementById('krsTahunAkhir');
   const krsSemester = document.getElementById('krsSemester');
@@ -437,6 +499,15 @@
   const btnKrsAktifkan = document.getElementById('btnKrsAktifkan');
   const btnKrsNonaktifkan = document.getElementById('btnKrsNonaktifkan');
   const krsStatusMap = @json($krsSettings ?? []);
+  const krsConfirmModal = document.getElementById('modalKrsConfirm');
+  const krsPasswordModal = document.getElementById('modalKrsPassword');
+  const btnKrsConfirmYes = document.getElementById('btnKrsConfirmYes');
+  const btnKrsConfirmCancel = document.getElementById('btnKrsConfirmCancel');
+  const btnCloseKrsConfirm = document.getElementById('btnCloseKrsConfirm');
+  const btnKrsPasswordSubmit = document.getElementById('btnKrsPasswordSubmit');
+  const btnKrsPasswordCancel = document.getElementById('btnKrsPasswordCancel');
+  const btnCloseKrsPassword = document.getElementById('btnCloseKrsPassword');
+  let pendingKrsStatus = '';
 
   const submitKrs = (statusValue) => {
     if (!krsForm || !krsStatus || !krsTahunMulai || !krsTahunAkhir) return;
@@ -444,8 +515,61 @@
     krsForm.submit();
   };
 
-  btnKrsAktifkan?.addEventListener('click', () => submitKrs('aktif'));
-  btnKrsNonaktifkan?.addEventListener('click', () => submitKrs('nonaktif'));
+  const openConfirmModal = (statusValue) => {
+    pendingKrsStatus = statusValue;
+    if (!krsConfirmModal) return;
+    krsConfirmModal.classList.remove('hidden');
+    krsConfirmModal.classList.add('flex');
+  };
+
+  const closeConfirmModal = () => {
+    if (!krsConfirmModal) return;
+    krsConfirmModal.classList.add('hidden');
+    krsConfirmModal.classList.remove('flex');
+  };
+
+  const openPasswordModal = () => {
+    if (!krsPasswordModal) return;
+    if (krsPasswordInput) krsPasswordInput.value = '';
+    if (krsPasswordError) krsPasswordError.classList.add('hidden');
+    krsPasswordModal.classList.remove('hidden');
+    krsPasswordModal.classList.add('flex');
+  };
+
+  const closePasswordModal = () => {
+    if (!krsPasswordModal) return;
+    krsPasswordModal.classList.add('hidden');
+    krsPasswordModal.classList.remove('flex');
+  };
+
+  btnKrsAktifkan?.addEventListener('click', () => openConfirmModal('aktif'));
+  btnKrsNonaktifkan?.addEventListener('click', () => openConfirmModal('nonaktif'));
+
+  btnKrsConfirmYes?.addEventListener('click', () => {
+    closeConfirmModal();
+    openPasswordModal();
+  });
+  btnKrsConfirmCancel?.addEventListener('click', closeConfirmModal);
+  btnCloseKrsConfirm?.addEventListener('click', closeConfirmModal);
+  krsConfirmModal?.addEventListener('click', (e) => {
+    if (e.target === krsConfirmModal) closeConfirmModal();
+  });
+
+  btnKrsPasswordSubmit?.addEventListener('click', () => {
+    const value = (krsPasswordInput?.value || '').trim();
+    if (!value) {
+      if (krsPasswordError) krsPasswordError.classList.remove('hidden');
+      return;
+    }
+    if (krsPassword) krsPassword.value = value;
+    closePasswordModal();
+    submitKrs(pendingKrsStatus);
+  });
+  btnKrsPasswordCancel?.addEventListener('click', closePasswordModal);
+  btnCloseKrsPassword?.addEventListener('click', closePasswordModal);
+  krsPasswordModal?.addEventListener('click', (e) => {
+    if (e.target === krsPasswordModal) closePasswordModal();
+  });
 
   const setKrsButtonState = (statusValue) => {
     if (!btnKrsAktifkan || !btnKrsNonaktifkan) return;
@@ -495,4 +619,18 @@
   krsTahunMulai?.addEventListener('change', refreshKrsState);
   krsSemester?.addEventListener('change', refreshKrsState);
   refreshKrsState();
+
+  const krsStatusModal = document.getElementById('modalKrsStatus');
+  const btnCloseKrsStatus = document.getElementById('btnCloseKrsStatus');
+  const btnCloseKrsStatusFooter = document.getElementById('btnCloseKrsStatusFooter');
+  const closeKrsStatusModal = () => {
+    if (!krsStatusModal) return;
+    krsStatusModal.classList.add('hidden');
+    krsStatusModal.classList.remove('flex');
+  };
+  btnCloseKrsStatus?.addEventListener('click', closeKrsStatusModal);
+  btnCloseKrsStatusFooter?.addEventListener('click', closeKrsStatusModal);
+  krsStatusModal?.addEventListener('click', (e) => {
+    if (e.target === krsStatusModal) closeKrsStatusModal();
+  });
 </script>

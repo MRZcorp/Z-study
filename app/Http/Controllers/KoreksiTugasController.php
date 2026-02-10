@@ -32,6 +32,7 @@ class KoreksiTugasController extends Controller
                 'pengumpulan.mahasiswa.user',
             ])
             ->when($kelasIds->isNotEmpty(), fn($q) => $q->whereIn('nama_kelas_id', $kelasIds))
+            ->whereHas('kelas', fn($q) => $q->where('status', 'aktif'))
             ->whereNotNull('deadline')
             ->where('deadline', '<', Carbon::now());
 

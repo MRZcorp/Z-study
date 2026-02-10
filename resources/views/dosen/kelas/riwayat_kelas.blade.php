@@ -53,11 +53,13 @@
 
 @if ($tab === 'tugas')
   @include('dosen.tugas._riwayat_tugas_content', [
-    'tugas_selesai' => $tugas_selesai ?? collect()
+    'tugas_selesai' => $tugas_selesai ?? collect(),
+    'showTabs' => false,
   ])
 @elseif ($tab === 'ujian')
   @include('dosen.ujian._riwayat_ujian_content', [
-    'ujian_selesai' => $ujian_selesai ?? collect()
+    'ujian_selesai' => $ujian_selesai ?? collect(),
+    'showTabs' => false,
   ])
 @elseif ($tab === 'rekap')
   @include('dosen.rekap._riwayat_rekap_content', [

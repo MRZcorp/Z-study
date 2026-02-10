@@ -107,6 +107,7 @@ Tambah Mahasiswa
           <th class="px-4 py-3 text-center">Angkatan</th>
          
           <th class="px-4 py-3 text-center">Status</th>
+          <th class="px-4 py-3 text-center">Status Akademik</th>
           <th class="px-4 py-3 text-center">Aksi</th>
         </tr>
       </thead>
@@ -141,6 +142,12 @@ Tambah Mahasiswa
             <span class="px-3 py-1 rounded-full bg-green-100 text-green-700
                          text-xs font-semibold">
             {{$mhs->mahasiswa->status ?? '-' }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center">
+            <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-700
+                         text-xs font-semibold">
+            {{$mhs->mahasiswa->status_akademik ?? 'AKTIF' }}
             </span>
           </td>
           <td class="px-4 py-3">

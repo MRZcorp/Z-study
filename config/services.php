@@ -35,4 +35,22 @@ return [
         ],
     ],
 
+    'llmapi' => [
+        'base_url' => env('LLMAPI_BASE_URL', 'https://app.llmapi.ai'),
+        'chat_path' => env('LLMAPI_CHAT_PATH', '/v1/chat/completions'),
+        'api_key' => env('LLMAPI_API_KEY'),
+        'model' => env('LLMAPI_MODEL'),
+        'provider_name' => env('LLMAPI_PROVIDER_NAME', 'LLMAPI'),
+        'source' => env('LLMAPI_SOURCE'),
+        'reasoning_effort' => env('LLMAPI_REASONING_EFFORT', ''),
+    ],
+
+    'openrouter' => [
+        'base_url' => env('OPENROUTER_BASE_URL', 'https://openrouter.ai'),
+        'chat_path' => env('OPENROUTER_CHAT_PATH', '/api/v1/chat/completions'),
+        'api_key' => env('OPENROUTER_API_KEY'),
+        'model' => env('OPENROUTER_MODEL'),
+        'provider_name' => 'OpenRouter',
+    ],
+
 ];

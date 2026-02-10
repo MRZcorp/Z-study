@@ -7,48 +7,45 @@
   $ujianKe = $ujianKe ?? ($ujian->ujian_ke ?? '-');
   $nilaiUjianKe = $nilaiUjianKe ?? ($ujian->nilai_ujian_ke ?? '-');
   $soalList = $soalList ?? collect();
+  $llmProvider = config('services.llmapi.provider_name', 'LLMAPI');
+  $llmModel = config('services.llmapi.model', '');
+  $activeProvider = config('services.llmapi.api_key') ? $llmProvider : 'OpenRouter';
+  $activeModel = config('services.llmapi.api_key') ? $llmModel : (config('services.openrouter.model') ?? '');
 @endphp
 
 <div class="p-6 bg-gray-100 min-h-screen">
-  @php
-    $bgImage = $ujian->kelas->bg_image ?? '';
-    $bgUrl = $bgImage ? asset('storage/' . $bgImage) : asset('img/Logo_Zstudy.png');
-  @endphp
-  <div class="mb-6 rounded-2xl border bg-white shadow-sm overflow-hidden relative">
-    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{{ $bgUrl }}');"></div>
-    <div class="absolute inset-0 bg-slate-900/50"></div>
-    <div class="relative p-5 flex items-center justify-between gap-4">
-      <div class="flex items-center gap-3 text-white">
-        <a href="{{ url('/dosen/ujian') }}" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white/20 text-white shadow hover:bg-white/30" title="Kembali">
+  <div class="mb-6 rounded-2xl border bg-white shadow-sm">
+    <div class="p-5 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3 text-slate-800">
+        <a href="{{ url('/dosen/ujian') }}" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-700 shadow hover:bg-slate-200" title="Kembali">
           <span class="material-symbols-rounded text-base">chevron_left</span>
         </a>
         <div>
-          <h2 class="text-xl font-semibold text-white">{{ $ujian->nama_ujian ?? 'Ujian' }}</h2>
-          <p class="text-sm text-white/80">{{ $mataKuliahNama }}</p>
-          <p class="text-sm font-semibold text-white/90">Ujian ke: {{ $ujianKe }}</p>
+          <h2 class="text-xl font-semibold text-slate-800">{{ $ujian->nama_ujian ?? 'Ujian' }}</h2>
+          <p class="text-sm text-slate-500">{{ $mataKuliahNama }}</p>
+          <p class="text-sm font-semibold text-slate-600">Ujian ke: {{ $ujianKe }}</p>
         </div>
       </div>
 
       <div class="flex flex-col items-end gap-2">
-      <div class="flex items-center gap-2 -mt-1">
-        <button id="btnOpenMozart" type="button" class="inline-flex items-center gap-3 rounded-2xl bg-white border border-slate-200 px-4 py-2 shadow-sm hover:shadow">
-          <img src="{{ asset('img/Logo_Zstudy.png') }}" alt="Mozart" class="w-8 h-8 object-contain">
-          <span class="text-sm font-semibold text-slate-700">Mozart</span>
-        </button>
-        <button id="btnOpenSoal" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-2 text-sm font-semibold text-white">
-          <span class="material-symbols-rounded text-base">add</span>
-          Soal
-        </button>
-        
-      </div>
-      <div class="flex items-center gap-2">
-        <button id="btnOpenImportSoal" type="button" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100" title="Import CSV">
-          <span class="material-symbols-rounded text-base">upload</span>
-        </button>
-        <button id="btnOpenDeleteAllSoal" type="button" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-red-50 text-red-700 hover:bg-red-100" title="Hapus Semua Soal">
-          <span class="material-symbols-rounded text-base">delete</span>
-        </button>
-      </div>
+        <div class="flex items-center gap-2 -mt-1">
+          <button id="btnOpenMozart" type="button" class="inline-flex items-center gap-3 rounded-2xl bg-white border border-slate-200 px-4 py-2 shadow-sm hover:shadow">
+            <img src="{{ asset('img/Logo_Zstudy.png') }}" alt="Mozart" class="w-8 h-8 object-contain">
+            <span class="text-sm font-semibold text-slate-700">Mozart</span>
+          </button>
+          <button id="btnOpenSoal" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-2 text-sm font-semibold text-white">
+            <span class="material-symbols-rounded text-base">add</span>
+            Soal
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btnOpenImportSoal" type="button" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100" title="Import CSV">
+            <span class="material-symbols-rounded text-base">upload</span>
+          </button>
+          <button id="btnOpenDeleteAllSoal" type="button" class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-red-50 text-red-700 hover:bg-red-100" title="Hapus Semua Soal">
+            <span class="material-symbols-rounded text-base">delete</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -267,12 +264,13 @@
         <div>
           <h3 class="text-lg font-semibold text-gray-800">Mozart.Ai</h3>
           <p class="text-xs text-slate-500">Asisten Pembuat Soal.</p>
+          <p class="text-[11px] text-slate-400">Model: {{ $activeModel }}</p>
         </div>
       </div>
       <button id="btnCloseMozart" type="button" class="text-gray-400 hover:text-gray-600">&times;</button>
     </div>
     <div class="p-6 space-y-4">
-      <textarea id="mozartPrompt" rows="7" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm" placeholder="Buatkan saya 30 soal 25 pg dan 5 essay tentang Algoritma dengan kesulitan menengah - tinggi"></textarea>
+      <textarea id="mozartPrompt" rows="7" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm" placeholder="Buatkan saya 30 soal pg dan 5 essay tentang Algoritma dengan kesulitan menengah - tinggi"></textarea>
       <div id="mozartLoader" class="hidden">
         <div class="flex items-center gap-3 text-sm text-slate-600">
           <span class="inline-flex items-center justify-center w-6 h-6 rounded-full border-2 border-blue-600 border-t-transparent animate-spin"></span>

@@ -32,15 +32,20 @@ class TugasController extends Controller
 
         $tugas_kelas = Tugas::with(['mataKuliah', 'kelas', 'files'])
             ->when($kelasIds->isNotEmpty(), fn($q) => $q->whereIn('nama_kelas_id', $kelasIds))
+            ->whereHas('kelas', fn($q) => $q->where('status', 'aktif'))
             ->latest()
             ->get();
+
+        $tugasFileRows = TugasFile::whereIn('tugas_id', $tugas_kelas->pluck('id'))
+            ->get()
+            ->groupBy('tugas_id');
 
         $tugasCountByKelas = Tugas::select('nama_kelas_id', DB::raw('count(*) as total'))
             ->when($kelasIds->isNotEmpty(), fn($q) => $q->whereIn('nama_kelas_id', $kelasIds))
             ->groupBy('nama_kelas_id')
             ->pluck('total', 'nama_kelas_id');
 
-        return view('dosen.tugas.tugas', compact('tugas_kelas', 'kelas_dosen', 'tugasCountByKelas'));
+        return view('dosen.tugas.tugas', compact('tugas_kelas', 'kelas_dosen', 'tugasCountByKelas', 'tugasFileRows'));
         
     }
 
@@ -106,7 +111,7 @@ class TugasController extends Controller
             return collect();
         }
 
-        return Tugas::with([
+        $tugas = Tugas::with([
                 'mataKuliah',
                 'kelas',
                 'files',
@@ -117,6 +122,7 @@ class TugasController extends Controller
                 },
             ])
             ->whereIn('nama_kelas_id', $kelasIds)
+            ->whereHas('kelas', fn($q) => $q->where('status', 'aktif'))
             ->where(function ($q) {
                 $q->whereNull('deadline')
                   ->orWhere('deadline', '>=', Carbon::now());
@@ -129,6 +135,16 @@ class TugasController extends Controller
             })
             ->latest()
             ->get();
+
+        $tugasFileRows = TugasFile::whereIn('tugas_id', $tugas->pluck('id'))
+            ->get()
+            ->groupBy('tugas_id');
+
+        $tugas->each(function ($row) use ($tugasFileRows) {
+            $row->setRelation('files', $tugasFileRows->get($row->id, collect()));
+        });
+
+        return $tugas;
     }
 
     private function getMahasiswaTugasSelesai()
@@ -152,7 +168,7 @@ class TugasController extends Controller
             return collect();
         }
 
-        return Tugas::with([
+        $tugas = Tugas::with([
                 'mataKuliah',
                 'kelas',
                 'files',
@@ -163,6 +179,7 @@ class TugasController extends Controller
                 },
             ])
             ->whereIn('nama_kelas_id', $kelasIds)
+            ->whereHas('kelas', fn($q) => $q->where('status', 'aktif'))
             ->where(function ($q) use ($mahasiswaId) {
                 $q->whereHas('pengumpulan', function ($pq) use ($mahasiswaId) {
                         if ($mahasiswaId) {
@@ -177,6 +194,16 @@ class TugasController extends Controller
             })
             ->latest()
             ->get();
+
+        $tugasFileRows = TugasFile::whereIn('tugas_id', $tugas->pluck('id'))
+            ->get()
+            ->groupBy('tugas_id');
+
+        $tugas->each(function ($row) use ($tugasFileRows) {
+            $row->setRelation('files', $tugasFileRows->get($row->id, collect()));
+        });
+
+        return $tugas;
     }
 
     public function store(Request $request)
@@ -188,7 +215,7 @@ class TugasController extends Controller
             'detail_tugas' => 'nullable|string',
             'mulai_tugas' => 'required|date',
             'deadline' => 'required|date|after:mulai_tugas',
-            'file_tugas' => 'nullable|array',
+            'file_tugas' => 'nullable',
             'file_tugas.*' => 'file|max:51200',
         ]);
 
@@ -206,7 +233,11 @@ class TugasController extends Controller
         ]);
 
         if ($request->hasFile('file_tugas')) {
-            foreach ($request->file('file_tugas') as $file) {
+            $files = $request->file('file_tugas');
+            if (!is_array($files)) {
+                $files = [$files];
+            }
+            foreach ($files as $file) {
                 $path = $file->store('tugas', 'public');
                 TugasFile::create([
                     'tugas_id' => $tugas->id,
@@ -230,7 +261,7 @@ class TugasController extends Controller
             'detail_tugas' => 'nullable|string',
             'mulai_tugas' => 'required|date',
             'deadline' => 'required|date|after:mulai_tugas',
-            'file_tugas' => 'nullable|array',
+            'file_tugas' => 'nullable',
             'file_tugas.*' => 'file|max:51200',
         ]);
 
@@ -249,7 +280,11 @@ class TugasController extends Controller
         ]);
 
         if ($request->hasFile('file_tugas')) {
-            foreach ($request->file('file_tugas') as $file) {
+            $files = $request->file('file_tugas');
+            if (!is_array($files)) {
+                $files = [$files];
+            }
+            foreach ($files as $file) {
                 $path = $file->store('tugas', 'public');
                 TugasFile::create([
                     'tugas_id' => $tugas->id,

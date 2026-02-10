@@ -71,7 +71,14 @@
         </div>
 
         @php
-          $files = ($tugas->files ?? collect())->map(function ($f) {
+          $fileRows = $tugas->files ?? collect();
+          if ($fileRows->isEmpty() && isset($tugasFileRows)) {
+              $fileRows = $tugasFileRows->get($tugas->id, collect());
+          }
+          if ($fileRows->isEmpty()) {
+              $fileRows = \App\Models\TugasFile::where('tugas_id', $tugas->id)->get();
+          }
+          $files = $fileRows->map(function ($f) {
               return [
                   'name' => $f->file_name,
                   'url' => asset('storage/' . $f->file_path),
@@ -87,12 +94,15 @@
               ]]);
           }
         @endphp
+        <script type="application/json" id="tugas-files-{{ $tugas->id }}">
+          @json($files)
+        </script>
         <div class="absolute bottom-4 right-4 flex items-center gap-2">
           @if ($files->isNotEmpty())
             <button
               type="button"
               class="btn-preview-tugas rounded-full bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
-              data-files='@json($files)'
+              data-tugas-id="{{ $tugas->id }}"
               data-matkul="{{ $tugas->mataKuliah->mata_kuliah ?? '-' }}"
               data-nama="{{ $tugas->nama_tugas }}"
               data-deskripsi="{{ $tugas->detail_tugas ?? '-' }}"
@@ -109,6 +119,7 @@
             type="button"
             class="btn-edit-tugas rounded-full bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-200"
             data-id="{{ $tugas->id }}"
+            data-tugas-id="{{ $tugas->id }}"
             data-kelas-id="{{ $tugas->kelas->id ?? '' }}"
             data-matkul-id="{{ $tugas->mataKuliah->id ?? '' }}"
             data-matkul="{{ $tugas->mataKuliah->mata_kuliah ?? '' }}"
@@ -116,6 +127,7 @@
             data-deskripsi="{{ $tugas->detail_tugas ?? '' }}"
             data-mulai="{{ $tugas->mulai_tugas ? \Carbon\Carbon::parse($tugas->mulai_tugas)->format('Y-m-d\\TH:i') : '' }}"
             data-deadline="{{ $tugas->deadline ? \Carbon\Carbon::parse($tugas->deadline)->format('Y-m-d\\TH:i') : '' }}"
+            data-files='@json($files)'
           >
             <span class="material-symbols-rounded text-base">edit</span>
           </button>
@@ -197,6 +209,21 @@
   const previewCountdown = document.getElementById('previewCountdown');
   let countdownTimer = null;
 
+  const parseFilesFromButton = (btn) => {
+    const tugasId = btn?.dataset?.tugasId || '';
+    const filesEl = tugasId ? document.getElementById(`tugas-files-${tugasId}`) : null;
+    const rawScript = filesEl?.textContent?.trim();
+    if (rawScript) {
+      try {
+        const parsed = JSON.parse(rawScript);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (err) {
+        console.warn('Gagal parse files JSON', err);
+      }
+    }
+    return [];
+  };
+
   const closePreview = () => {
     previewModal.classList.add('hidden');
     previewModal.classList.remove('flex');
@@ -240,15 +267,17 @@
     if (!file) {
       renderPreview('', '');
       previewDownload.href = '#';
+      previewDownload.classList.add('hidden');
       return;
     }
     renderPreview(file.url, file.ext);
     previewDownload.href = file.url || '#';
+    previewDownload.classList.toggle('hidden', !file.url);
   };
 
   document.querySelectorAll('.btn-preview-tugas').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const files = JSON.parse(btn.dataset.files || '[]');
+      const files = parseFilesFromButton(btn);
       const mulaiIso = btn.dataset.mulaiIso || '';
       const deadlineIso = btn.dataset.deadlineIso || '';
 
@@ -313,12 +342,25 @@
         setActiveFile(null);
       } else {
         files.forEach((file, idx) => {
+          const row = document.createElement('div');
+          row.className = 'flex items-center justify-between gap-2';
           const btnFile = document.createElement('button');
           btnFile.type = 'button';
           btnFile.className = 'text-left hover:underline';
           btnFile.textContent = file.name || `File ${idx + 1}`;
           btnFile.addEventListener('click', () => setActiveFile(file));
-          previewFileList.appendChild(btnFile);
+          const link = document.createElement('a');
+          link.href = file.url || '#';
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.className = 'text-xs text-blue-600 hover:underline';
+          link.textContent = 'Link';
+          if (!file.url) {
+            link.classList.add('hidden');
+          }
+          row.appendChild(btnFile);
+          row.appendChild(link);
+          previewFileList.appendChild(row);
         });
         setActiveFile(files[0]);
       }
@@ -390,6 +432,7 @@
 
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">Tambah File (opsional)</label>
+        <div id="editFileList" class="mb-2 space-y-1 text-sm text-slate-600"></div>
         <input type="file" name="file_tugas[]" multiple class="w-full rounded-lg border border-slate-300 px-4 py-2">
       </div>
 
@@ -491,6 +534,7 @@
   const editDeskripsiTugas = document.getElementById('editDeskripsiTugas');
   const editMulaiTugas = document.getElementById('editMulaiTugas');
   const editDeadlineTugas = document.getElementById('editDeadlineTugas');
+  const editFileList = document.getElementById('editFileList');
 
   const closeTugasModal = () => {
     tugasModal.classList.add('hidden');
@@ -543,6 +587,8 @@
   document.querySelectorAll('.btn-edit-tugas').forEach((btn) => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.id;
+      const filesEl = btn.dataset.tugasId ? document.getElementById(`tugas-files-${btn.dataset.tugasId}`) : null;
+      const files = filesEl ? JSON.parse(filesEl.textContent || '[]') : JSON.parse(btn.dataset.files || '[]');
       editTugasForm.action = `/dosen/tugas/${id}`;
       const kelasId = btn.dataset.kelasId || '';
       const matkulIdVal = btn.dataset.matkulId || '';
@@ -556,6 +602,29 @@
       editKelasSelect.value = kelasId;
       editMatkulText.value = matkul;
       editMatkulId.value = matkulIdVal;
+
+      if (editFileList) {
+        editFileList.innerHTML = '';
+        if (!files.length) {
+          editFileList.innerHTML = '<span class="text-slate-400 text-sm">Belum ada file.</span>';
+        } else {
+          files.forEach((file) => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between rounded-md border border-slate-200 px-3 py-1.5';
+            const name = document.createElement('span');
+            name.textContent = file.name || 'File';
+            name.className = 'truncate';
+            const link = document.createElement('a');
+            link.href = file.url || '#';
+            link.target = '_blank';
+            link.className = 'text-blue-600 text-xs hover:underline';
+            link.textContent = 'Lihat';
+            row.appendChild(name);
+            row.appendChild(link);
+            editFileList.appendChild(row);
+          });
+        }
+      }
 
       editTugasModal.classList.remove('hidden');
       editTugasModal.classList.add('flex');
@@ -583,7 +652,11 @@
   tugasFileInput?.addEventListener('change', (e) => {
     const files = Array.from(tugasFileInput.files || []);
     files.forEach((file) => tugasFilesStore.items.add(file));
-    tugasFileInput.files = tugasFilesStore.files;
+    try {
+      tugasFileInput.files = tugasFilesStore.files;
+    } catch (err) {
+      // Fallback: some browsers block assigning FileList
+    }
     renderTugasFileList();
   });
 </script>

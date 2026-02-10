@@ -16,6 +16,15 @@ class Mahasiswa extends Model
         'nama_prodi_id',
         'jenjang',
         'angkatan_id',
+        'semester_aktif',
+        'ips_terakhir',
+        'ipk',
+        'maks_sks',
+        'status_akademik',
+        'ips_below_2_count',
+        'ipk_below_2_semester_count',
+        'last_ips_semester',
+        'last_ipk_semester',
         'email',
         'status',
         'poto_profil',
@@ -52,12 +61,6 @@ class Mahasiswa extends Model
     {
         return $this->hasMany(PengumpulanTugas::class);
     }
-
-
-
-
-
-
 
 
     

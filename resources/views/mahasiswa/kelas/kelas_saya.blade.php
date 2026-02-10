@@ -2,6 +2,82 @@
 <x-navbar></x-navbar>
 <x-sidebar>mahasiswa</x-sidebar>
 
+<div class="p-1">
+  <!-- PROFIL MAHASISWA -->
+  <div
+    id="profileCard"
+    class="relative mb-6 rounded-xl shadow overflow-hidden cursor-pointer group"
+    style="background-image: {{ $bg ? "url('".asset('storage/' . $bg)."')" : 'none' }}; background-color: #ffffff; background-size: cover; background-position: center;"
+  >
+    <!-- OVERLAY -->
+    <div class="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition"></div>
+
+    <!-- UPLOAD FORM (HIDDEN) -->
+    <form id="bgUploadForm" action="{{ route('mahasiswa.bg') }}" method="POST" enctype="multipart/form-data">
+      @csrf
+      <input
+        type="file"
+        id="bgUpload"
+        name="bg"
+        accept="image/*"
+        class="hidden"
+      >
+    </form>
+
+    <!-- CONTENT -->
+    <div class="relative p-4 sm:p-5 text-white">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <!-- KIRI -->
+        <div class="flex items-center gap-3 sm:gap-4">
+          <img
+            src="{{ $foto 
+              ? asset('storage/' . $foto) 
+              : asset('img/default_profil.jpg') }}"
+            class="w-20 h-20 sm:w-24 sm:h-24 md:w-26 md:h-26 rounded-full object-cover border-2 border-white"
+            alt="Foto Mahasiswa"
+          >
+
+          <div>
+            <h2 class="text-base sm:text-lg font-semibold">
+              {{$nama}}
+            </h2>
+            <p class="text-xs sm:text-sm text-white">NIM: {{$id_user}} </p>
+            <p class="text-xs sm:text-sm text-white">Fakultas {{$fakultas}} · {{$prodi}} · {{ $jenjang ? strtoupper($jenjang) : '-' }}</p>
+          </div>
+        </div>
+
+        <!-- KANAN -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 text-xs sm:text-sm text-gray-800">
+          <div class="rounded-lg px-3 py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
+            <p class="text-white/70 text-sm">Tahun Ajar</p>
+            <p class="font-semibold text-white text-base sm:text-lg">{{ $tahunAjarAktif ?? '-' }}</p>
+          </div>
+          <div class="rounded-lg px-3 py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
+            <p class="text-white/70 text-sm">Semester</p>
+            <p class="font-semibold text-white text-base sm:text-lg">{{ $semesterAktif ?? '-' }} : {{ $semesterAktifMhs ?? 1 }}</p>
+          </div>
+          <div class="rounded-lg px-3 py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
+            <p class="text-white/70 text-sm">Dosen Wali</p>
+            <p class="font-semibold text-white text-base sm:text-lg">{{ $namaDosenWali ?? '-' }}</p>
+          </div>
+          <div class="rounded-lg px-3 py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
+            <p class="text-white/70 text-sm">IPK</p>
+            <p class="font-semibold text-white text-base sm:text-lg">{{ number_format((float) ($ipsTerakhir ?? 0), 2) }}</p>
+          </div>
+          <div class="rounded-lg px-3 py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
+            <p class="text-white/70 text-sm">SKS Ditempuh</p>
+            <p class="font-semibold text-white text-base sm:text-lg">{{ $sksDitempuh ?? 0 }} / {{ $sksMaks ?? 0 }}</p>
+          </div>
+          <div class="rounded-lg px-3 py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
+            <p class="text-white/70 text-sm">Max SKS</p>
+            <p class="font-semibold text-white text-base sm:text-lg">{{ $sksDitempuh ?? 0 }} / {{ $sksMaksIps ?? 24 }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- SUB NAVBAR -->
 <div class="mb-6">
   <div class="flex items-center gap-2 rounded-xl bg-white p-1 shadow w-fit">
@@ -114,7 +190,7 @@
               data-dosen-foto="{{ $kelas->dosens && $kelas->dosens->poto_profil ? asset('storage/' . $kelas->dosens->poto_profil) : asset('img/default_profil.jpg') }}"
               data-participants='@json($kelas->mahasiswas->map(fn($mhs) => [
                 "name" => $mhs->user->name ?? "-",
-                "foto" => $mhs->poto_profil ? asset("storage/" . $mhs->poto_profil) : asset("img/Logo_Zstudy.png"),
+                "foto" => $mhs->poto_profil ? asset("storage/" . $mhs->poto_profil) : asset("img/default_profil.jpg"),
               ])->values())'
             >
               <span class="material-symbols-rounded text-base">visibility</span>
@@ -223,6 +299,29 @@
       if (e.target === pesertaModal) {
         closePesertaModal();
       }
+    });
+  </script>
+
+  <script>
+    const card = document.getElementById('profileCard');
+    const upload = document.getElementById('bgUpload');
+    const uploadForm = document.getElementById('bgUploadForm');
+
+    card?.addEventListener('click', () => {
+      upload?.click();
+    });
+
+    upload?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (card) card.style.backgroundImage = `url('${reader.result}')`;
+      };
+      reader.readAsDataURL(file);
+
+      uploadForm?.submit();
     });
   </script>
 

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('nama_kelas_id')
                   ->constrained('kelas')
                   ->onDelete('cascade');
+            $table->unsignedInteger('tugas_ke')->nullable();
 
             $table->foreignId('mata_kuliah_id')
                   ->constrained('mata_kuliahs')
@@ -25,10 +26,12 @@ return new class extends Migration
             // DATA TUGAS
             $table->string('nama_tugas');
             $table->text('detail_tugas')->nullable();
+            $table->dateTime('mulai_tugas')->nullable();
             $table->string('file_tugas')->nullable(); // path file
             $table->dateTime('deadline');
         
          
+            $table->unique(['nama_kelas_id', 'tugas_ke']);
             $table->timestamps();
         });
     }

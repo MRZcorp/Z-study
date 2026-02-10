@@ -14,9 +14,10 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
-        host: true,
+        host: process.env.VITE_HOST || '127.0.0.1',
         port: 5173,
         strictPort: true,
+        origin: process.env.VITE_DEV_SERVER_URL || undefined,
         hmr: {
             host: process.env.VITE_HOST || undefined,
         },

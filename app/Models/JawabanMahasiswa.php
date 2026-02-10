@@ -19,5 +19,6 @@ class JawabanMahasiswa extends Model
         'tipe',
         'jawaban_pg',
         'jawaban_text',
+        'essay_score',
     ];
 }

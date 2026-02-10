@@ -150,6 +150,7 @@ class DosenController extends Controller
         if (!$dosen) {
             return view('dosen.perwalian.perwalian', [
                 'perwalians' => collect(),
+                'semesterAktif' => null,
             ]);
         }
 
@@ -159,6 +160,7 @@ class DosenController extends Controller
         if ($waliPairs->isEmpty()) {
             return view('dosen.perwalian.perwalian', [
                 'perwalians' => collect(),
+                'semesterAktif' => null,
             ]);
         }
 
@@ -174,7 +176,10 @@ class DosenController extends Controller
             ->orderBy('id')
             ->get();
 
-        return view('dosen.perwalian.perwalian', compact('perwalians'));
+        $krsAktif = KrsSetting::where('status', 'aktif')->latest()->first();
+        $semesterAktif = $krsAktif?->semester ?? null;
+
+        return view('dosen.perwalian.perwalian', compact('perwalians', 'semesterAktif'));
     }
 
     public function approvePerwalianKelas(Mahasiswa $mahasiswa, Kelas $kelas)

@@ -93,6 +93,7 @@ Route::middleware(['auth.session', 'role.session:Admin'])->group(function () {
         Route::delete('/admin/fakultas/{fakultas}', [FakultasController::class, 'destroy'])->name('admin.fakultas.destroy');
         Route::get('/admin/data_kelas', [KelolaKelasController::class, 'index'])->name('admin.kelas.index');
         Route::post('/admin/data_kelas', [KelolaKelasController::class, 'store'])->name('admin.kelas.store');
+        Route::post('/admin/data_kelas/finish_all', [KelolaKelasController::class, 'finishAll'])->name('admin.kelas.finish_all');
         Route::put('/admin/data_kelas/{kelas}', [KelolaKelasController::class, 'update'])->name('admin.kelas.update');
         Route::delete('/admin/data_kelas/{kelas}', [KelolaKelasController::class, 'destroy'])->name('admin.kelas.destroy');
         Route::get('/admin/kelola_jadwal', [JadwalKelasController::class, 'index'])->name('admin.jadwal.index');
@@ -173,6 +174,7 @@ Route::middleware(['auth.session', 'role.session:Dosen'])->group(function () {
         Route::get('/dosen/rekap', [RekapNilaiController::class, 'index'])->name('dosen.rekap');
         Route::get('/dosen/rekap/{kelas}', [RekapNilaiController::class, 'show'])->name('dosen.rekap.show');
         Route::post('/dosen/rekap/{kelas}/sync', [RekapNilaiController::class, 'sync'])->name('dosen.rekap.sync');
+        Route::post('/dosen/rekap/{kelas}/bobot', [RekapNilaiController::class, 'saveBobot'])->name('dosen.rekap.bobot.save');
         Route::get('/dosen/dikusi', [DiskusiController::class, 'dosen']);
         Route::get('/dosen/pengaturan', [UserSettingController::class, 'dosen']);
         Route::put('/dosen/pengaturan', [UserSettingController::class, 'updateDosen'])->name('dosen.pengaturan.update');
@@ -200,7 +202,8 @@ Route::middleware(['auth.session', 'role.session:Mahasiswa'])->group(function ()
         ->name('mahasiswa.dashboard');
         Route::get('/mahasiswa/kelas', [MahasiswaKelasController::class, 'index'])->name('mahasiswa.kelas_saya');
         Route::get('/mahasiswa/kelas_tersedia', [MahasiswaKelasController::class, 'tersedia'])->name('mahasiswa.kelas_tersedia');
-        Route::get('/mahasiswa/riwayat_kelas', [MahasiswaKelasController::class, 'riwayat'])->name('mahasiswa.kelas_riwayat');
+    Route::get('/mahasiswa/riwayat_kelas', [MahasiswaKelasController::class, 'riwayat'])->name('mahasiswa.kelas_riwayat');
+    Route::get('/mahasiswa/riwayat_kelas/{kelas}', [MahasiswaKelasController::class, 'riwayatDetail'])->name('mahasiswa.kelas_riwayat.detail');
         Route::get('/mahasiswa/materi', [MateriController::class, 'listKelas'])->name('mahasiswa.materi.kelas');
         Route::get('/mahasiswa/materi/{kelas:slug}', [MateriController::class, 'mahasiswaKelas'])->name('mahasiswa.materi.kelas.detail');
         Route::get('/mahasiswa/tugas', [TugasController::class, 'mahasiswa']);

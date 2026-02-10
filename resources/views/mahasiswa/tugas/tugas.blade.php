@@ -87,7 +87,14 @@
         </div>
 
         @php
-          $files = ($tugas->files ?? collect())->map(function ($f) {
+          $fileRows = $tugas->files ?? collect();
+          if ($fileRows->isEmpty() && isset($tugasFileRows)) {
+              $fileRows = $tugasFileRows->get($tugas->id, collect());
+          }
+          if ($fileRows->isEmpty()) {
+              $fileRows = \App\Models\TugasFile::where('tugas_id', $tugas->id)->get();
+          }
+          $files = $fileRows->map(function ($f) {
               return [
                   'name' => $f->file_name,
                   'url' => asset('storage/' . $f->file_path),
@@ -108,11 +115,13 @@
           $pengumpulan = ($tugas->pengumpulan ?? collect())->first();
           $pengumpulanUrl = $pengumpulan && $pengumpulan->file_path ? asset('storage/' . $pengumpulan->file_path) : '';
         @endphp
+        <script type="application/json" id="tugas-files-{{ $tugas->id }}">
+          @json($files)
+        </script>
         <div class="absolute bottom-4 right-4 flex items-center gap-2">
           <button
             type="button"
             class="btn-preview-tugas rounded-full bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
-            data-files='@json($files)'
             data-tugas-id="{{ $tugas->id }}"
             data-matkul="{{ $tugas->mataKuliah->mata_kuliah ?? '-' }}"
             data-nama="{{ $tugas->nama_tugas }}"
@@ -295,6 +304,57 @@
   let countdownTimer = null;
   let isUploadMode = false;
 
+  const enterUploadMode = () => {
+    if (!uploadContainer || !previewContainer) return;
+    uploadContainer.classList.remove('hidden');
+    previewContainer.classList.add('hidden');
+    rightPanel?.classList.remove('hidden');
+    uploadActions?.classList.add('hidden');
+    uploadSaveWrap?.classList.remove('hidden');
+    uploadSelesaiBtn?.classList.remove('hidden');
+    uploadSelesaiWrap?.classList.remove('hidden');
+    if (uploadViewBtn) {
+      const existingUrl = uploadedFileInfo?.dataset.fileUrl || '';
+      if (existingUrl) {
+        uploadViewBtn.href = existingUrl;
+        uploadViewBtn.classList.remove('hidden');
+      } else {
+        uploadViewBtn.href = '#';
+        uploadViewBtn.classList.add('hidden');
+      }
+    }
+    uploadActionsSpacer?.classList.add('hidden');
+    isUploadMode = true;
+  };
+
+  const exitUploadMode = () => {
+    if (!uploadContainer || !previewContainer) return;
+    uploadContainer.classList.add('hidden');
+    previewContainer.classList.remove('hidden');
+    rightPanel?.classList.remove('hidden');
+    uploadActions?.classList.add('hidden');
+    uploadSaveWrap?.classList.add('hidden');
+    uploadSelesaiBtn?.classList.add('hidden');
+    uploadSelesaiWrap?.classList.add('hidden');
+    uploadActionsSpacer?.classList.add('hidden');
+    isUploadMode = false;
+  };
+
+  const parseFilesFromButton = (btn) => {
+    const tugasId = btn?.dataset?.tugasId || '';
+    const filesEl = tugasId ? document.getElementById(`tugas-files-${tugasId}`) : null;
+    const rawScript = filesEl?.textContent?.trim();
+    if (rawScript) {
+      try {
+        const parsed = JSON.parse(rawScript);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (err) {
+        console.warn('Gagal parse files JSON', err);
+      }
+    }
+    return [];
+  };
+
   const closePreview = () => {
     previewModal.classList.add('hidden');
     previewModal.classList.remove('flex');
@@ -376,15 +436,17 @@
     if (!file) {
       renderPreview('', '');
       previewDownload.href = '#';
+      previewDownload.classList.add('hidden');
       return;
     }
     renderPreview(file.url, file.ext);
     previewDownload.href = file.url || '#';
+    previewDownload.classList.toggle('hidden', !file.url);
   };
 
   document.querySelectorAll('.btn-preview-tugas').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const files = JSON.parse(btn.dataset.files || '[]');
+      const files = parseFilesFromButton(btn);
       const mulaiIso = btn.dataset.mulaiIso || '';
       const deadlineIso = btn.dataset.deadlineIso || '';
 
@@ -490,12 +552,25 @@
         setActiveFile(null);
       } else {
         files.forEach((file, idx) => {
+          const row = document.createElement('div');
+          row.className = 'flex items-center justify-between gap-2';
           const btnFile = document.createElement('button');
           btnFile.type = 'button';
           btnFile.className = 'text-left hover:underline';
           btnFile.textContent = file.name || `File ${idx + 1}`;
           btnFile.addEventListener('click', () => setActiveFile(file));
-          previewFileList.appendChild(btnFile);
+          const link = document.createElement('a');
+          link.href = file.url || '#';
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.className = 'text-xs text-blue-600 hover:underline';
+          link.textContent = 'Link';
+          if (!file.url) {
+            link.classList.add('hidden');
+          }
+          row.appendChild(btnFile);
+          row.appendChild(link);
+          previewFileList.appendChild(row);
         });
         setActiveFile(files[0]);
       }
@@ -506,25 +581,15 @@
   });
 
   btnUploadMode?.addEventListener('click', () => {
-    uploadContainer.classList.remove('hidden');
-    previewContainer.classList.add('hidden');
-    rightPanel.classList.remove('hidden');
-    uploadActions.classList.add('hidden');
-    uploadSaveWrap.classList.remove('hidden');
-    uploadSelesaiBtn.classList.remove('hidden');
-    uploadSelesaiWrap.classList.remove('hidden');
-    if (uploadViewBtn) {
-      const existingUrl = uploadedFileInfo?.dataset.fileUrl || '';
-      if (existingUrl) {
-        uploadViewBtn.href = existingUrl;
-        uploadViewBtn.classList.remove('hidden');
-      } else {
-        uploadViewBtn.href = '#';
-        uploadViewBtn.classList.add('hidden');
-      }
+    enterUploadMode();
+  });
+
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('#btnUploadMode');
+    if (target) {
+      e.preventDefault();
+      enterUploadMode();
     }
-    uploadActionsSpacer.classList.add('hidden');
-    isUploadMode = true;
   });
 
   uploadDeskripsi?.addEventListener('input', setSaveState);
@@ -634,15 +699,7 @@
   previewDownload?.addEventListener('click', (e) => {
     if (isUploadMode) {
       e.preventDefault();
-      uploadContainer.classList.add('hidden');
-      previewContainer.classList.remove('hidden');
-      rightPanel.classList.remove('hidden');
-      uploadActions.classList.add('hidden');
-      uploadSaveWrap.classList.add('hidden');
-      uploadSelesaiBtn.classList.add('hidden');
-      uploadSelesaiWrap.classList.add('hidden');
-      uploadActionsSpacer.classList.add('hidden');
-      isUploadMode = false;
+      exitUploadMode();
     }
   });
 

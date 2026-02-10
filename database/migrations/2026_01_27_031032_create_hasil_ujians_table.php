@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('hasil_ujians', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('mahasiswa_id')->nullable();
+            $table->unsignedBigInteger('ujian_id')->nullable();
+            $table->dateTime('submitted_at')->nullable();
+            $table->unsignedSmallInteger('nilai')->nullable();
+            $table->decimal('nilai_kecepatan', 8, 2)->default(0);
             $table->timestamps();
         });
     }

@@ -5,6 +5,7 @@
       $deadline = $ujian->deadline ?? null;
       return $deadline ? \Carbon\Carbon::parse($deadline)->isPast() : false;
   });
+  $showTabs = $showTabs ?? true;
 @endphp
 
 <!-- MODAL LIHAT MAHASISWA -->
@@ -70,12 +71,14 @@
     </div>
   </div>
 
-  <div class="mb-6 flex items-center justify-between">
-    <div class="flex items-center gap-2 rounded-xl bg-white p-1 shadow w-fit">
-      <a href="{{ url('/dosen/ujian') }}" class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:bg-gray-100">Ujian Aktif</a>
-      <span class="px-4 py-2 text-sm font-semibold rounded-lg bg-blue-800 text-white shadow">Ujian Selesai</span>
+  @if ($showTabs)
+    <div class="mb-6 flex items-center justify-between">
+      <div class="flex items-center gap-2 rounded-xl bg-white p-1 shadow w-fit">
+        <a href="{{ url('/dosen/ujian') }}" class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:bg-gray-100">Ujian Aktif</a>
+        <span class="px-4 py-2 text-sm font-semibold rounded-lg bg-blue-800 text-white shadow">Ujian Selesai</span>
+      </div>
     </div>
-  </div>
+  @endif
 
   <div class="space-y-4">
     @if ($ujian_selesai->isEmpty())

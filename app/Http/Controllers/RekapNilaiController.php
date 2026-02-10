@@ -10,6 +10,7 @@ use App\Models\Ujian;
 use App\Models\PengumpulanTugas;
 use App\Models\HasilUjian;
 use App\Models\RekapNilai;
+use App\Models\RekapBobot;
 
 class RekapNilaiController extends Controller
 {
@@ -59,13 +60,16 @@ class RekapNilaiController extends Controller
             ->get()
             ->keyBy('mahasiswa_id');
 
+        $bobot = RekapBobot::where('kelas_id', $kelas->id)->first();
+
         return view('dosen.rekap.rekap', compact(
             'kelas',
             'tugasList',
             'ujianList',
             'pengumpulanMap',
             'hasilUjianMap',
-            'rekapMap'
+            'rekapMap',
+            'bobot'
         ));
     }
 
@@ -102,5 +106,31 @@ class RekapNilaiController extends Controller
         }
 
         return response()->json(['message' => 'Rekap tersimpan.']);
+    }
+
+    public function saveBobot(Request $request, Kelas $kelas)
+    {
+        $data = $request->validate([
+            'harian' => ['required', 'numeric', 'min:0'],
+            'keaktifan' => ['required', 'numeric', 'min:0'],
+            'kecepatan' => ['required', 'numeric', 'min:0'],
+            'absensi' => ['required', 'numeric', 'min:0'],
+            'uts' => ['required', 'numeric', 'min:0'],
+            'uas' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $bobot = RekapBobot::updateOrCreate(
+            ['kelas_id' => $kelas->id],
+            [
+                'harian' => $data['harian'],
+                'keaktifan' => $data['keaktifan'],
+                'kecepatan' => $data['kecepatan'],
+                'absensi' => $data['absensi'],
+                'uts' => $data['uts'],
+                'uas' => $data['uas'],
+            ]
+        );
+
+        return response()->json(['message' => 'Bobot tersimpan.', 'bobot' => $bobot]);
     }
 }

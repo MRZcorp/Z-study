@@ -38,6 +38,7 @@ class UjianController extends Controller
                 'hasilUjian.mahasiswa.user',
             ])
             ->when($kelasIds->isNotEmpty(), fn($q) => $q->whereIn('nama_kelas_id', $kelasIds))
+            ->whereHas('kelas', fn($q) => $q->where('status', 'aktif'))
             ->latest()
             ->get();
 
@@ -62,6 +63,7 @@ class UjianController extends Controller
         $kelasIds = $kelas_dosen->pluck('id');
         $ujian_kelas = Ujian::with(['mataKuliah', 'kelas' => fn($q) => $q->withCount('mahasiswas'), 'soals'])
             ->when($kelasIds->isNotEmpty(), fn($q) => $q->whereIn('nama_kelas_id', $kelasIds))
+            ->whereHas('kelas', fn($q) => $q->where('status', 'aktif'))
             ->latest()
             ->get();
 
@@ -159,6 +161,7 @@ class UjianController extends Controller
             'kumpulCount' => $kumpulCount,
             'kuotaKelas' => $kuotaKelas,
             'jawabanMap' => $jawabanMap,
+            'soalMap' => $soalMap,
             'ujianMulai' => $ujianMulai,
             'ujianDeadline' => $ujianDeadline,
         ]);
@@ -470,12 +473,29 @@ class UjianController extends Controller
             'prompt' => 'required|string|max:2000',
         ]);
 
-        $apiKey = env('OPENROUTER_API_KEY');
-        $model = env('OPENROUTER_MODEL', 'mistralai/mistral-small-3.1-24b-instruct:free');
+        $llmapi = config('services.llmapi');
+        $openrouter = config('services.openrouter');
+
+        $useLlmapi = !empty($llmapi['api_key']);
+        $providerName = $useLlmapi ? ($llmapi['provider_name'] ?? 'LLMAPI') : ($openrouter['provider_name'] ?? 'OpenRouter');
+        $apiKey = $useLlmapi ? ($llmapi['api_key'] ?? null) : ($openrouter['api_key'] ?? null);
+        $model = $useLlmapi ? ($llmapi['model'] ?? null) : ($openrouter['model'] ?? null);
+        $baseUrl = $useLlmapi ? ($llmapi['base_url'] ?? null) : ($openrouter['base_url'] ?? null);
+        $chatPath = $useLlmapi ? ($llmapi['chat_path'] ?? '/v1/chat/completions') : ($openrouter['chat_path'] ?? '/api/v1/chat/completions');
 
         if (!$apiKey) {
-            return response()->json(['message' => 'OPENROUTER_API_KEY belum diset.'], 422);
+            return response()->json(['message' => "{$providerName} API key belum diset."], 422);
         }
+        if (!$model) {
+            return response()->json(['message' => "{$providerName} model belum diset."], 422);
+        }
+        if (!$baseUrl) {
+            return response()->json(['message' => "{$providerName} base URL belum diset."], 422);
+        }
+
+        $baseUrl = rtrim($baseUrl, '/');
+        $chatPath = '/' . ltrim($chatPath ?: '/v1/chat/completions', '/');
+        $endpoint = $baseUrl . $chatPath;
 
         $system = "You are an exam question generator. Return ONLY valid JSON with this schema:\n"
             . "{ \"questions\": [ { \"tipe\": \"pg|essay\", \"pertanyaan\": \"string\", \"difficulty\": \"easy|medium|hard|very hard\", \"options\": [\"A\", \"B\"...], \"pg_correct\": \"A|B|C|D|E\" } ] }\n"
@@ -491,29 +511,70 @@ class UjianController extends Controller
             'temperature' => 0.7,
         ];
 
+        if ($useLlmapi) {
+            $modelKey = strtolower(trim((string) $model));
+            $isGpt5 = str_starts_with($modelKey, 'openai/gpt-5') || str_starts_with($modelKey, 'gpt-5');
+            if (!$isGpt5) {
+                $effort = strtolower(trim((string) ($llmapi['reasoning_effort'] ?? '')));
+                $allowed = ['none', 'low', 'medium', 'high', 'xhigh'];
+                if (!in_array($effort, $allowed, true)) {
+                    $effort = 'none';
+                }
+                $payload['reasoning'] = ['effort' => $effort ?: 'none'];
+            }
+        }
+
+        $makeSource = function ($raw) {
+            $raw = trim((string) $raw);
+            if ($raw === '') {
+                return '';
+            }
+            // Only allow alnum, hyphen, dot, slash
+            $clean = preg_replace('/[^A-Za-z0-9.\/-]/', '-', $raw);
+            $clean = preg_replace('/-+/', '-', $clean);
+            return trim($clean, '-');
+        };
+
+        $sourceRaw = $llmapi['source'] ?? '';
+        if (!$sourceRaw) {
+            $sourceRaw = config('app.name', 'zstudy');
+        }
+        $safeSource = $makeSource($sourceRaw) ?: 'zstudy';
+
+        $headers = [
+            'Authorization' => "Bearer {$apiKey}",
+            'Accept' => 'application/json',
+        ];
+
+        if ($useLlmapi) {
+            $headers['X-Source'] = $safeSource;
+        } else {
+            $headers['HTTP-Referer'] = $request->getSchemeAndHttpHost();
+            $headers['X-Title'] = 'ZStudy Mozart.Ai';
+        }
+
         try {
-            $response = Http::withHeaders([
-                'Authorization' => "Bearer {$apiKey}",
-                'HTTP-Referer' => $request->getSchemeAndHttpHost(),
-                'X-Title' => 'ZStudy Mozart.Ai',
-            ])->timeout(60)->retry(1, 1000)->post('https://openrouter.ai/api/v1/chat/completions', $payload);
+            $response = Http::withHeaders($headers)
+                ->timeout(60)
+                ->retry(1, 1000)
+                ->post($endpoint, $payload);
         } catch (\Throwable $e) {
-            \Log::error('OpenRouter request failed', [
+            \Log::error("{$providerName} request failed", [
                 'error' => $e->getMessage(),
             ]);
             return response()->json([
-                'message' => 'Gagal menghubungi OpenRouter.',
+                'message' => "Gagal menghubungi {$providerName}.",
                 'detail' => $e->getMessage(),
             ], 502);
         }
 
         if (!$response->successful()) {
-            \Log::error('OpenRouter response error', [
+            \Log::error("{$providerName} response error", [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
             return response()->json([
-                'message' => 'Gagal menghubungi OpenRouter.',
+                'message' => "Gagal menghubungi {$providerName}.",
                 'detail' => $response->json(),
                 'status' => $response->status(),
             ], 502);
@@ -603,7 +664,7 @@ class UjianController extends Controller
 
         if (!is_array($decoded)) {
             $snippet = mb_substr($content, 0, 800);
-            \Log::warning('OpenRouter JSON decode failed', [
+            \Log::warning("{$providerName} JSON decode failed", [
                 'content_snippet' => $snippet,
                 'json_error' => json_last_error_msg(),
             ]);
@@ -615,7 +676,7 @@ class UjianController extends Controller
 
         $items = $decoded['questions'] ?? null;
         if (!is_array($items) || count($items) === 0) {
-            \Log::warning('OpenRouter empty questions', [
+            \Log::warning("{$providerName} empty questions", [
                 'decoded' => $decoded,
             ]);
             return response()->json(['message' => 'Tidak ada soal yang dihasilkan.'], 422);
@@ -866,6 +927,7 @@ class UjianController extends Controller
 
         $ujian_kelas = Ujian::with(['mataKuliah', 'kelas'])
             ->whereIn('nama_kelas_id', $kelasIds)
+            ->whereHas('kelas', fn($q) => $q->where('status', 'aktif'))
             ->where(function ($q) {
                 $q->whereNull('deadline')
                   ->orWhere('deadline', '>=', now());
@@ -894,6 +956,7 @@ class UjianController extends Controller
 
         $ujian_kelas = Ujian::with(['mataKuliah', 'kelas', 'soals', 'hasilUjian'])
             ->whereIn('nama_kelas_id', $kelasIds)
+            ->whereHas('kelas', fn($q) => $q->where('status', 'aktif'))
             ->whereNotNull('deadline')
             ->where(function ($q) use ($mahasiswaId) {
                 $q->where('deadline', '<', now())

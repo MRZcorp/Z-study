@@ -9,6 +9,7 @@ use App\Models\Kelas;
 use App\Models\MataKuliah;
 use App\Models\User;
 use Illuminate\Container\Attributes\DB;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class KelasSeeder extends Seeder
@@ -30,12 +31,17 @@ if ($dosens->isEmpty() || $matkuls->isEmpty()) {
 
 $hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
 $kelasList = ['A', 'B', 'C', 'D', 'E'];
-$bgList = ['img/bg1.jpg', 'img/bg2.jpg', 'img/bg3.jpg', 'img/bg4.jpg', 'img/bg5.jpg', ''];
+$bgList = ['img/bg1.jpg', 'img/bg2.jpg', 'img/bg3.jpg', 'img/bg4.jpg', 'img/bg5.jpg', null];
+$now = Carbon::now();
+$tahunMulai = $now->year;
+$tahunAjar = $tahunMulai . ' / ' . ($tahunMulai + 1);
 
 for ($i = 0; $i < 5; $i++) {
     $kelas = Kelas::create([
         'dosen_id' => $dosens[$i % $dosens->count()]->id,
         'mata_kuliah_id' => $matkuls[$i % $matkuls->count()]->id,
+        'tahun_ajar' => $tahunAjar,
+        'semester' => 'ganjil',
 
         'nama_kelas' => $kelasList[$i],
         'jadwal_kelas' => 'Ruang ' . chr(65 + $i),

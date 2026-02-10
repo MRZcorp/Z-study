@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('soals', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('ujian_id')->nullable();
+            $table->string('tipe')->default('essay');
+            $table->text('pertanyaan')->nullable();
+            $table->string('media_path')->nullable();
+            $table->decimal('bobot', 6, 2)->nullable();
+            $table->json('options')->nullable();
+            $table->string('pg_correct')->nullable();
             $table->timestamps();
         });
     }

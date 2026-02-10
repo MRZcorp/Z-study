@@ -4,12 +4,14 @@ namespace Database\Seeders;
 
 use App\Models\Angkatan;
 use App\Models\Fakultas;
+use App\Models\Kelas;
 use App\Models\Mahasiswa;
 use App\Models\ProgramStudi;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class MahasiswaSeeder extends Seeder
@@ -45,7 +47,7 @@ class MahasiswaSeeder extends Seeder
                  'nim'      => '20210002',
                  'email'    => 'mhs2@gmail.com',
                  'foto'     => 'mahasiswa/mhs2.jpg',
-                 'bg'     => 'mahasiswa/mhs1.jpg',
+                 'bg'     => 'mahasiswa/mhs2.jpg',
                  'jenjang'  => 'd3',
              ],
              [
@@ -54,7 +56,7 @@ class MahasiswaSeeder extends Seeder
                  'nim'      => '20210003',
                  'email'    => 'mhs3@gmail.com',
                  'foto'     => 'mahasiswa/mhs3.jpg',
-                 'bg'     => 'mahasiswa/mhs1.jpg',
+                 'bg'     => 'mahasiswa/mhs3.jpg',
                  'jenjang'  => 's1',
              ],
              [
@@ -62,8 +64,8 @@ class MahasiswaSeeder extends Seeder
                  'username' => 'mhs4',
                  'nim'      => '20210004',
                  'email'    => 'mhs4@gmail.com',
-                 'foto'     => null,
-                 'bg'     => 'mahasiswa/mhs1.jpg',
+                 'foto'     => 'mahasiswa/mhs4.jpg',
+                 'bg'     => 'mahasiswa/mhs4.jpg',
                  'jenjang'  => 'd3',
              ],
              [
@@ -71,12 +73,14 @@ class MahasiswaSeeder extends Seeder
                  'username' => 'mhs5',
                  'nim'      => '20210005',
                  'email'    => 'mhs5@gmail.com',
-                 'foto'     => null,
-                 'bg'     => 'mahasiswa/mhs1.jpg',
+                 'foto'     => 'mahasiswa/mhs5.jpg',
+                 'bg'     => 'mahasiswa/mhs5.jpg',
                  'jenjang'  => 's1',
              ],
          ];
      
+         $kelasIds = Kelas::pluck('id');
+
          foreach ($data as $item) {
      
              // =====================
@@ -97,7 +101,7 @@ class MahasiswaSeeder extends Seeder
              // =====================
              // MAHASISWA
              // =====================
-             Mahasiswa::updateOrCreate(
+             $mahasiswa = Mahasiswa::updateOrCreate(
                  ['user_id' => $user->id],
                  [
                      'nim'              => $item['nim'],
@@ -111,6 +115,13 @@ class MahasiswaSeeder extends Seeder
                      'status'           => 'aktif',
                  ]
              );
+
+             foreach ($kelasIds as $kelasId) {
+                 DB::table('kelas_mahasiswa')->updateOrInsert(
+                     ['kelas_id' => $kelasId, 'mahasiswa_id' => $mahasiswa->id],
+                     ['status' => 'disetujui']
+                 );
+             }
          }
     
     }

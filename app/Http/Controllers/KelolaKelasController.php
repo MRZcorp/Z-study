@@ -104,6 +104,15 @@ class KelolaKelasController extends Controller
         $kelas->delete();
         return redirect()->back()->with('success', 'Kelas berhasil dihapus');
     }
+
+    public function finishAll()
+    {
+        Kelas::query()
+            ->where('status', '!=', 'selesai')
+            ->update(['status' => 'selesai']);
+
+        return redirect()->back()->with('success', 'Semua kelas berhasil diselesaikan');
+    }
     
     
 }

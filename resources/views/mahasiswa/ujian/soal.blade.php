@@ -23,6 +23,12 @@
   nav *, .sidebar * {
     pointer-events: none;
   }
+  body.exam-lock .sidebar {
+    width: 80px;
+  }
+  body.exam-lock .main-content {
+    margin-left: 85px;
+  }
 </style>
 
 <div class="p-6 bg-gray-100 min-h-screen" id="ujianSoalPage" data-exam-lock="true">
@@ -240,7 +246,13 @@
 
 <script>
   const sidebar = document.querySelector('.sidebar');
-  sidebar?.classList.add('collapsed');
+  if (sidebar) {
+    sidebar.classList.add('collapsed');
+    try {
+      localStorage.setItem('sidebar_collapsed', '1');
+    } catch (e) {}
+    document.body?.classList.add('exam-lock');
+  }
 
   document.querySelectorAll('.sidebar a, .sidebar button, .sidebar .dropdown-toggle, .sidebar input, .sidebar select, .sidebar textarea').forEach((el) => {
     el.classList.add('pointer-events-none', 'opacity-60');

@@ -21,6 +21,27 @@
   <h2 class="text-lg font-semibold text-gray-800">Riwayat Kelas</h2>
 </div>
 
+<div class="mb-6 flex flex-wrap items-center gap-3">
+  <div class="flex items-center gap-2">
+    <label for="filter_tahun_ajar" class="text-sm text-slate-800">Tahun Ajar</label>
+    <select
+      id="filter_tahun_ajar"
+      class="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800"
+    >
+      <option value="">Semua Tahun</option>
+    </select>
+  </div>
+  <div class="flex items-center gap-2">
+    <label for="filter_semester" class="text-sm text-slate-800">Semester</label>
+    <select
+      id="filter_semester"
+      class="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-800"
+    >
+      <option value="">Semua Semester</option>
+    </select>
+  </div>
+</div>
+
 <div class="p-6 bg-gray-100 min-h-screen">
   <div class="grid gap-6 justify-center [grid-template-columns:repeat(auto-fill,minmax(260px,260px))]">
     @if (($riwayat_kelas ?? collect())->isEmpty())
@@ -30,7 +51,11 @@
     @endif
 
     @foreach (($riwayat_kelas ?? []) as $kelas)
-      <div class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
+      <div
+        class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden riwayat-card"
+        data-tahun-ajar="{{ $kelas->tahun_ajar ?? ($kelas->tahun_ajaran ?? '') }}"
+        data-semester="{{ $kelas->semester ?? '' }}"
+      >
         <div
           class="relative h-28 bg-cover bg-center"
           style="background-image: url({{ $kelas->bg_image ? asset('storage/' . $kelas->bg_image) : asset('img/Logo_Zstudy.png') }});"
@@ -54,7 +79,7 @@
             data-dosen="{{ $kelas->dosens->user->name ?? '-' }}"
             data-participants='@json($kelas->mahasiswas->map(fn($mhs) => [
                "name" => $mhs->user->name ?? "-",
-               "foto" => $mhs->poto_profil ? asset("storage/" . $mhs->poto_profil) : asset("img/Logo_Zstudy.png"),
+               "foto" => $mhs->poto_profil ? asset("storage/" . $mhs->poto_profil) : asset("img/default_profil.jpg"),
             ])->values())'
             class="absolute top-1 right-2 z-10 flex items-center justify-center rounded-full bg-white/90 text-blue-600 text-xs font-semibold w-7 h-7 shadow hover:bg-white"
             aria-label="Lihat peserta"
@@ -141,7 +166,7 @@ class="fixed inset-0 z-50 hidden items-center justify-center
           <img 
             src="{{ $foto 
             ? asset('storage/' . $foto) 
-            : asset('img/Logo_Zstudy.png') }}"
+            : asset('img/default_profil.jpg') }}"
             alt="Foto Profil"
             class="w-11 h-11 rounded-full object-cover">
           <div>
@@ -177,6 +202,58 @@ class="fixed inset-0 z-50 hidden items-center justify-center
 </style>
 
 <script>
+  const tahunSelect = document.getElementById('filter_tahun_ajar');
+  const semesterSelect = document.getElementById('filter_semester');
+  const cards = Array.from(document.querySelectorAll('.riwayat-card'));
+
+  const buildFilterOptions = () => {
+    const tahunSet = new Set();
+    const semesterSet = new Set();
+    cards.forEach((card) => {
+      const tahun = (card.dataset.tahunAjar || '').trim();
+      const semester = (card.dataset.semester || '').trim();
+      if (tahun) tahunSet.add(tahun);
+      if (semester) semesterSet.add(semester);
+    });
+    Array.from(tahunSet).sort().forEach((tahun) => {
+      const opt = document.createElement('option');
+      opt.value = tahun;
+      opt.textContent = tahun;
+      tahunSelect?.appendChild(opt);
+    });
+    Array.from(semesterSet).sort((a, b) => {
+      const na = parseInt(a, 10);
+      const nb = parseInt(b, 10);
+      if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
+      return a.localeCompare(b);
+    }).forEach((sem) => {
+      const opt = document.createElement('option');
+      opt.value = sem;
+      opt.textContent = sem;
+      semesterSelect?.appendChild(opt);
+    });
+  };
+
+  const applyFilters = () => {
+    const selectedTahun = (tahunSelect?.value || '').toLowerCase();
+    const selectedSemester = (semesterSelect?.value || '').toLowerCase();
+    cards.forEach((card) => {
+      const tahun = (card.dataset.tahunAjar || '').toLowerCase();
+      const semester = (card.dataset.semester || '').toLowerCase();
+      const matchTahun = !selectedTahun || tahun === selectedTahun;
+      const matchSemester = !selectedSemester || semester === selectedSemester;
+      if (matchTahun && matchSemester) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+  };
+
+  buildFilterOptions();
+  tahunSelect?.addEventListener('change', applyFilters);
+  semesterSelect?.addEventListener('change', applyFilters);
+
   function openModal(button) {
     const modal = document.getElementById('pesertaModal');
     const list = document.getElementById('pesertaList');

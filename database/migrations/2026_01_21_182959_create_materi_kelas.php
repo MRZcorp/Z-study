@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('judul_materi');
     $table->string('matkul');
+    $table->unsignedTinyInteger('pertemuan')->nullable();
+    $table->unsignedBigInteger('kelas_id')->nullable();
     $table->text('deskripsi');
     $table->string('file_path'); // path file
     $table->string('file_type'); // pdf, zip, mp4, dll

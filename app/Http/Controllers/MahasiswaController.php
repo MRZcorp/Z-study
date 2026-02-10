@@ -13,6 +13,7 @@ use App\Models\DosenWali;
 use App\Models\RekapNilai;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class MahasiswaController extends Controller
@@ -30,12 +31,18 @@ class MahasiswaController extends Controller
         $mahasiswa = Mahasiswa::with('programStudi')->where('user_id', $userId)->first();
         $mahasiswaId = $mahasiswa?->id;
 
+        $krsAktif = KrsSetting::where('status', 'aktif')->latest()->first();
+        $semesterAktifRaw = $krsAktif?->semester;
+        $tahunAjarAktif = $krsAktif ? ($krsAktif->mulai_tahun_ajar . ' / ' . $krsAktif->akhir_tahun_ajar) : '-';
+        $semesterAktif = $krsAktif ? ucfirst($krsAktif->semester) : '-';
+
         $kelasIds = Kelas::query()
             ->when($mahasiswaId, fn($q) => $q->whereHas('mahasiswas', function ($mq) use ($mahasiswaId) {
                 $mq->where('mahasiswa_id', $mahasiswaId)
                     ->where('kelas_mahasiswa.status', 'disetujui');
             }))
-            ->whereIn('status', ['aktif', 'selesai'])
+            ->where('status', 'aktif')
+            ->when($semesterAktifRaw, fn($q) => $q->where('semester', $semesterAktifRaw))
             ->pluck('id');
 
         $jumlahKelas = $kelasIds->count();
@@ -51,10 +58,6 @@ class MahasiswaController extends Controller
         $sksMaks = $jenjang === 'd3'
             ? (int) ($mahasiswa?->programStudi?->d3 ?? 0)
             : (int) ($mahasiswa?->programStudi?->s1 ?? 0);
-
-        $krsAktif = KrsSetting::where('status', 'aktif')->latest()->first();
-        $tahunAjarAktif = $krsAktif ? ($krsAktif->mulai_tahun_ajar . ' / ' . $krsAktif->akhir_tahun_ajar) : '-';
-        $semesterAktif = $krsAktif ? ucfirst($krsAktif->semester) : '-';
 
         $dosenWali = null;
         if ($mahasiswa?->nama_prodi_id) {
@@ -166,6 +169,32 @@ class MahasiswaController extends Controller
             $rataNilai = $totalCount > 0 ? round($totalSum / $totalCount, 2) : 0;
         }
 
+        $ipsTerakhir = 0;
+        $sksMaksIps = 24;
+        $semesterAktifMhs = 1;
+        if ($mahasiswaId) {
+            $pernahAmbilKelas = DB::table('kelas_mahasiswa')
+                ->where('mahasiswa_id', $mahasiswaId)
+                ->exists();
+
+            $ipsTerakhir = (float) (Mahasiswa::where('id', $mahasiswaId)->value('ips_terakhir') ?? 0);
+            $semesterAktifMhs = (int) (Mahasiswa::where('id', $mahasiswaId)->value('semester_aktif') ?? 1);
+
+            if (!$pernahAmbilKelas || $semesterAktifMhs <= 1) {
+                $sksMaksIps = 24;
+            } elseif ($ipsTerakhir >= 3.0) {
+                $sksMaksIps = 24;
+            } elseif ($ipsTerakhir >= 2.5) {
+                $sksMaksIps = 22;
+            } elseif ($ipsTerakhir >= 2.0) {
+                $sksMaksIps = 20;
+            } elseif ($ipsTerakhir >= 1.5) {
+                $sksMaksIps = 18;
+            } else {
+                $sksMaksIps = 15;
+            }
+        }
+
         return view('mahasiswa.dashboard', compact(
             'pengumuman',
             'jumlahKelas',
@@ -174,8 +203,11 @@ class MahasiswaController extends Controller
             'terdekat',
             'sksDitempuh',
             'sksMaks',
+            'ipsTerakhir',
+            'sksMaksIps',
             'tahunAjarAktif',
             'semesterAktif',
+            'semesterAktifMhs',
             'namaDosenWali',
             'rataNilai'
         ));

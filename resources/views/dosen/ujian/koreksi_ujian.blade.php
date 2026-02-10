@@ -6,6 +6,65 @@
   $pengumpulan = $pengumpulan ?? collect();
   $tidakMengumpulkan = $tidakMengumpulkan ?? collect();
   $jawabanMap = $jawabanMap ?? [];
+  $soalMap = $soalMap ?? collect();
+  $mahasiswaMap = $pengumpulan
+      ->map(function ($row) {
+          $foto = $row->mahasiswa?->poto_profil ?? '';
+          return [
+              'id' => $row->mahasiswa_id,
+              'nama' => $row->mahasiswa?->user?->name ?? '-',
+              'nim' => $row->mahasiswa?->nim ?? '-',
+              'foto' => $foto ? asset('storage/' . $foto) : asset('img/default_profil.jpg'),
+          ];
+      })
+      ->keyBy('id')
+      ->toArray();
+  $analisisSoal = [];
+  foreach ($jawabanMap as $mhsId => $jawabans) {
+      foreach ($jawabans as $row) {
+          if (($row['tipe'] ?? '') !== 'pg') {
+              continue;
+          }
+          $soalId = $row['soal_id'] ?? null;
+          if (!$soalId) {
+              continue;
+          }
+          if (!isset($analisisSoal[$soalId])) {
+              $analisisSoal[$soalId] = [
+                  'soal_id' => $soalId,
+                  'soal' => $row['soal'] ?? '-',
+                  'options' => $row['options'] ?? [],
+                  'pg_correct' => $row['pg_correct'] ?? null,
+                  'wrong_count' => 0,
+                  'wrong_answers' => [],
+              ];
+          }
+          $jawabPg = strtoupper((string) ($row['jawaban_pg'] ?? ''));
+          $benar = strtoupper((string) ($row['pg_correct'] ?? ''));
+          if ($jawabPg !== '' && $benar !== '' && $jawabPg !== $benar) {
+              $analisisSoal[$soalId]['wrong_count']++;
+              $analisisSoal[$soalId]['wrong_answers'][$jawabPg] = ($analisisSoal[$soalId]['wrong_answers'][$jawabPg] ?? 0) + 1;
+              $mhsInfo = $mahasiswaMap[$mhsId] ?? null;
+              if ($mhsInfo) {
+                  $analisisSoal[$soalId]['wrong_students'][$jawabPg][] = $mhsInfo;
+              }
+          }
+      }
+  }
+  $analisisSoal = collect($analisisSoal)
+      ->filter(fn($row) => ($row['wrong_count'] ?? 0) > 0)
+      ->sortByDesc('wrong_count')
+      ->values()
+      ->all();
+  $totalBobot = collect($soalMap)->sum('bobot');
+  $nilaiRataRata = $pengumpulan->pluck('nilai')->filter(fn($v) => !is_null($v))->avg() ?? 0;
+  $penyerapanMateri = $totalBobot > 0 ? round(($nilaiRataRata / $totalBobot) * 100, 2) : 0;
+  $penyerapanClass = 'text-red-600';
+  if ($penyerapanMateri > 80) {
+      $penyerapanClass = 'text-emerald-600';
+  } elseif ($penyerapanMateri > 65) {
+      $penyerapanClass = 'text-amber-600';
+  }
 @endphp
 
 <div class="p-6 bg-gray-100 min-h-screen">
@@ -20,6 +79,10 @@
         <p class="text-sm text-slate-500">Daftar peserta dan penilaian ujian.</p>
       </div>
     </div>
+    <button id="btnOpenAnalisis" type="button" class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800">
+      <span class="material-symbols-rounded text-base">query_stats</span>
+      Analisis
+    </button>
   </div>
 
   <div class="rounded-xl border bg-white overflow-hidden">
@@ -192,6 +255,115 @@
   </div>
 </div>
 
+<!-- MODAL ANALISIS -->
+<div id="analisisModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+  <div class="relative w-full max-w-3xl bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-4 border-b">
+      <h3 class="text-lg font-semibold text-slate-800">Hasil Analisis</h3>
+      <button id="btnCloseAnalisis" type="button" class="text-gray-400 hover:text-gray-600">&times;</button>
+    </div>
+    <div class="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+      <div class="text-sm text-slate-600">
+        Penyerapan Materi pada Mahasiswa berdasarkan data dari hasil ujian adalah :
+        <span class="font-semibold {{ $penyerapanClass }}">{{ $penyerapanMateri }} %</span>
+      </div>
+      <div class="text-sm text-slate-600">
+        Banyak mahasiswa menjawab salah pada soal berikut.
+      </div>
+      @if (empty($analisisSoal))
+        <div class="rounded-xl border border-dashed bg-slate-50 p-4 text-sm text-slate-500">
+          Tidak ada data jawaban salah untuk ditampilkan.
+        </div>
+      @else
+        @foreach ($analisisSoal as $idx => $item)
+          @php
+            $options = $item['options'] ?? [];
+            $correctLetter = strtoupper((string) ($item['pg_correct'] ?? ''));
+            $correctText = '';
+            foreach ($options as $i => $opt) {
+                $letter = chr(65 + $i);
+                if ($letter === $correctLetter) {
+                    $correctText = $opt;
+                    break;
+                }
+            }
+            $wrongAnswers = $item['wrong_answers'] ?? [];
+          @endphp
+          <div class="rounded-xl border bg-white p-4 space-y-3">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <div class="text-sm font-semibold text-slate-800">Soal {{ $idx + 1 }}</div>
+                <div class="text-sm text-slate-600 mt-1">{{ $item['soal'] }}</div>
+              </div>
+              <div class="text-sm font-semibold text-red-600">{{ $item['wrong_count'] }} salah</div>
+            </div>
+            <div class="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              Jawaban benar: <span class="font-semibold">{{ $correctLetter ?: '-' }}</span>
+              @if ($correctText)
+                - {{ $correctText }}
+              @endif
+            </div>
+            <div class="space-y-2">
+              <div class="text-sm font-semibold text-slate-700">Jawaban salah terbanyak</div>
+              @if (empty($wrongAnswers))
+                <div class="text-sm text-slate-500">Belum ada jawaban salah.</div>
+              @else
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-600">
+                  @foreach ($wrongAnswers as $letter => $count)
+                    @php
+                      $wrongText = '';
+                      $wrongStudents = $item['wrong_students'][$letter] ?? [];
+                      foreach ($options as $i => $opt) {
+                          if (chr(65 + $i) === strtoupper($letter)) {
+                              $wrongText = $opt;
+                              break;
+                          }
+                      }
+                    @endphp
+                    <div class="rounded-lg border bg-slate-50 px-3 py-2 flex items-start justify-between gap-3">
+                      <div>
+                        <span class="font-semibold text-slate-700">{{ strtoupper($letter) }}</span>
+                        @if ($wrongText)
+                          <span class="text-slate-500">- {{ $wrongText }}</span>
+                        @endif
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="text-red-600 font-semibold">{{ $count }}</span>
+                        <button
+                          type="button"
+                          class="btn-view-wrong-students rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 border hover:bg-slate-100"
+                          data-students='@json($wrongStudents)'
+                          data-jawaban="{{ strtoupper($letter) }}"
+                        >
+                          View
+                        </button>
+                      </div>
+                    </div>
+                  @endforeach
+                </div>
+              @endif
+            </div>
+          </div>
+        @endforeach
+      @endif
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LIST JAWABAN SALAH -->
+<div id="wrongStudentsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+  <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-4 border-b">
+      <h3 class="text-lg font-semibold text-slate-800">Mahasiswa Menjawab Salah</h3>
+      <button id="btnCloseWrongStudents" type="button" class="text-gray-400 hover:text-gray-600">&times;</button>
+    </div>
+    <div class="px-5 py-3 text-sm text-slate-600">
+      Jawaban salah: <span id="wrongAnswerLabel" class="font-semibold text-slate-800">-</span>
+    </div>
+    <div id="wrongStudentsList" class="px-5 pb-5 space-y-3 max-h-[60vh] overflow-y-auto"></div>
+  </div>
+</div>
+
 <!-- MODAL NILAI KECEPATAN -->
 <div id="nilaiKecepatanModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4">
   <div class="relative w-full max-w-xl bg-white rounded-2xl shadow-xl overflow-hidden">
@@ -298,6 +470,16 @@
 </div>
 
 <script>
+  (() => {
+    const onReady = (fn) => {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fn, { once: true });
+      } else {
+        fn();
+      }
+    };
+
+    onReady(() => {
   const previewJawabanModal = document.getElementById('previewJawabanModal');
   const previewJawabanNama = document.getElementById('previewJawabanNama');
   const previewJawabanList = document.getElementById('previewJawabanList');
@@ -316,6 +498,62 @@
   let saveTimer = null;
   let updateEssayTotal = () => {};
   let currentPoinPg = 0;
+  let activePreviewButton = null;
+
+  const saveNilaiAkhir = (nilaiAkhir, showToast = false) => {
+    if (!activeMahasiswaId || !activeUjianId) return;
+    let nilaiKecepatan = null;
+    const btnKecepatan = document.querySelector(
+      `.btn-nilai-kecepatan[data-mhs-id="${activeMahasiswaId}"][data-ujian-id="${activeUjianId}"]`
+    );
+    if (btnKecepatan) {
+      nilaiKecepatan = btnKecepatan.dataset.nilai || null;
+    }
+    fetch('{{ route('dosen.ujian.nilai.save') }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        ujian_id: activeUjianId,
+        mahasiswa_id: activeMahasiswaId,
+        nilai: Math.round(nilaiAkhir),
+        nilai_kecepatan: nilaiKecepatan,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const nilai = Number(data?.nilai ?? nilaiAkhir);
+        const nilaiBox = document.getElementById(`nilaiBox-${activeMahasiswaId}`);
+        if (nilaiBox) {
+          nilaiBox.textContent = isNaN(nilai) ? '?' : String(nilai);
+          nilaiBox.classList.remove('text-slate-400', 'text-red-600', 'text-amber-600', 'text-blue-600', 'text-emerald-600');
+          if (isNaN(nilai)) {
+            nilaiBox.classList.add('text-slate-400');
+          } else if (nilai < 60) {
+            nilaiBox.classList.add('text-red-600');
+          } else if (nilai < 70) {
+            nilaiBox.classList.add('text-amber-600');
+          } else if (nilai < 90) {
+            nilaiBox.classList.add('text-blue-600');
+          } else {
+            nilaiBox.classList.add('text-emerald-600');
+          }
+        }
+        if (showToast && nilaiSuccessModal) {
+          nilaiSuccessModal.classList.remove('hidden');
+          nilaiSuccessModal.classList.add('flex');
+          setTimeout(() => {
+            nilaiSuccessModal.classList.add('hidden');
+            nilaiSuccessModal.classList.remove('flex');
+          }, 1600);
+          closePreviewJawaban();
+        }
+      })
+      .catch(() => {});
+  };
 
   const closePreviewJawaban = () => {
     previewJawabanModal?.classList.add('hidden');
@@ -327,8 +565,8 @@
     if (nilaiAkhirEl) nilaiAkhirEl.textContent = '0';
   };
 
-  document.querySelectorAll('.btn-preview-jawaban').forEach((btn) => {
-    btn.addEventListener('click', () => {
+  const openPreviewJawaban = (btn) => {
+      activePreviewButton = btn;
       const nama = btn.dataset.nama || '-';
       activeMahasiswaId = btn.dataset.mahasiswaId || null;
       activeUjianId = btn.dataset.ujianId || null;
@@ -343,7 +581,15 @@
         if (jawaban.length === 0) {
           previewJawabanList.innerHTML = '<div class="text-sm text-slate-500">Belum ada jawaban.</div>';
         } else {
-          jawaban.forEach((row, idx) => {
+          const jawabanSorted = [...jawaban].sort((a, b) => {
+            const tipeA = (a?.tipe || 'essay').toLowerCase();
+            const tipeB = (b?.tipe || 'essay').toLowerCase();
+            if (tipeA === tipeB) return 0;
+            if (tipeA === 'essay') return -1;
+            if (tipeB === 'essay') return 1;
+            return 0;
+          });
+          jawabanSorted.forEach((row, idx) => {
             const item = document.createElement('div');
             item.className = 'rounded-xl border bg-white p-4 relative';
             const tipe = (row.tipe || 'essay').toLowerCase();
@@ -381,7 +627,7 @@
             const essayHtml = (tipe === 'essay')
               ? `<div class="mt-3 space-y-2">
                   <div class="text-sm text-slate-700 rounded-lg border bg-slate-50 px-3 py-2">${row.jawaban_text || '<span class=\"text-slate-400\">Belum dijawab.</span>'}</div>
-                  <input type="number" min="0" class="essay-score w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Input nilai essay" value="${row.essay_score ?? ''}">
+                  <input type="number" min="0" class="essay-score w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Input nilai essay" value="${row.essay_score ? row.essay_score : ''}" data-soal-id="${row.soal_id || ''}">
                 </div>`
               : '';
             item.innerHTML = `
@@ -402,60 +648,6 @@
       currentPoinPg = poinPg;
       if (totalPgEl) totalPgEl.textContent = String(totalPg);
       if (totalEssayEl) totalEssayEl.textContent = String(totalEssay);
-
-      const saveNilaiAkhir = (nilaiAkhir, showToast = false) => {
-        if (!activeMahasiswaId || !activeUjianId) return;
-        let nilaiKecepatan = null;
-        const btnKecepatan = document.querySelector(
-          `.btn-nilai-kecepatan[data-mhs-id="${activeMahasiswaId}"][data-ujian-id="${activeUjianId}"]`
-        );
-        if (btnKecepatan) {
-          nilaiKecepatan = btnKecepatan.dataset.nilai || null;
-        }
-        fetch('{{ route('dosen.ujian.nilai.save') }}', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            ujian_id: activeUjianId,
-            mahasiswa_id: activeMahasiswaId,
-            nilai: Math.round(nilaiAkhir),
-            nilai_kecepatan: nilaiKecepatan,
-          }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            const nilai = Number(data?.nilai ?? nilaiAkhir);
-            const nilaiBox = document.getElementById(`nilaiBox-${activeMahasiswaId}`);
-            if (nilaiBox) {
-              nilaiBox.textContent = isNaN(nilai) ? '?' : String(nilai);
-              nilaiBox.classList.remove('text-slate-400', 'text-red-600', 'text-amber-600', 'text-blue-600', 'text-emerald-600');
-              if (isNaN(nilai)) {
-                nilaiBox.classList.add('text-slate-400');
-              } else if (nilai < 60) {
-                nilaiBox.classList.add('text-red-600');
-              } else if (nilai < 70) {
-                nilaiBox.classList.add('text-amber-600');
-              } else if (nilai < 90) {
-                nilaiBox.classList.add('text-blue-600');
-              } else {
-                nilaiBox.classList.add('text-emerald-600');
-              }
-            }
-            if (showToast && nilaiSuccessModal) {
-              nilaiSuccessModal.classList.remove('hidden');
-              nilaiSuccessModal.classList.add('flex');
-              setTimeout(() => {
-                nilaiSuccessModal.classList.add('hidden');
-                nilaiSuccessModal.classList.remove('flex');
-              }, 1600);
-            }
-          })
-          .catch(() => {});
-      };
 
       updateEssayTotal = () => {
         if (!poinEssayEl) return;
@@ -486,12 +678,11 @@
         if (nilaiAkhirEl) nilaiAkhirEl.textContent = String(Math.round(nilaiAkhir));
         saveNilaiAkhir(nilaiAkhir);
       } else {
-        essayInputs.forEach((input, index) => {
+        essayInputs.forEach((input) => {
           input.addEventListener('input', updateEssayTotal);
           input.addEventListener('input', () => {
             if (!activeMahasiswaId || !activeUjianId) return;
-            const jawabanRow = jawaban[index];
-            const soalId = jawabanRow?.soal_id || jawabanRow?.id;
+            const soalId = input.dataset.soalId || '';
             if (!soalId) return;
             fetch('{{ route('dosen.ujian.essay.save') }}', {
               method: 'POST',
@@ -514,13 +705,58 @@
 
       previewJawabanModal?.classList.remove('hidden');
       previewJawabanModal?.classList.add('flex');
-    });
+  };
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-preview-jawaban');
+    if (!btn) return;
+    openPreviewJawaban(btn);
   });
 
   btnSaveNilaiUjian?.addEventListener('click', () => {
-    updateEssayTotal();
-    const nilaiAkhir = Number(nilaiAkhirEl?.textContent || 0);
-    saveNilaiAkhir(nilaiAkhir, true);
+    const essayInputs = previewJawabanList?.querySelectorAll('.essay-score') || [];
+    const saveEssayRequests = [];
+    essayInputs.forEach((input) => {
+      const soalId = input.dataset.soalId || '';
+      if (!soalId || !activeMahasiswaId || !activeUjianId) return;
+      saveEssayRequests.push(
+        fetch('{{ route('dosen.ujian.essay.save') }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            ujian_id: activeUjianId,
+            mahasiswa_id: activeMahasiswaId,
+            soal_id: soalId,
+            essay_score: input.value || 0,
+          }),
+        }).catch(() => {})
+      );
+    });
+    Promise.all(saveEssayRequests).finally(() => {
+      if (activePreviewButton) {
+        try {
+          const jawabanData = JSON.parse(activePreviewButton.dataset.jawaban || '[]');
+          const scoreMap = {};
+          essayInputs.forEach((input) => {
+            if (input.dataset.soalId) scoreMap[input.dataset.soalId] = input.value || 0;
+          });
+          const updated = jawabanData.map((row) => {
+            if (row && row.soal_id && Object.prototype.hasOwnProperty.call(scoreMap, row.soal_id)) {
+              return { ...row, essay_score: scoreMap[row.soal_id] };
+            }
+            return row;
+          });
+          activePreviewButton.dataset.jawaban = JSON.stringify(updated);
+        } catch (e) {}
+      }
+      updateEssayTotal();
+      const nilaiAkhir = Number(nilaiAkhirEl?.textContent || 0);
+      saveNilaiAkhir(nilaiAkhir, true);
+    });
   });
 
   btnClosePreviewJawaban?.addEventListener('click', closePreviewJawaban);
@@ -533,9 +769,17 @@
   const nilaiKecepatanInput = document.getElementById('nilaiKecepatanInput');
   const nilaiKecepatanWaktu = document.getElementById('nilaiKecepatanWaktu');
   const nilaiKecepatanLoop = document.getElementById('nilaiKecepatanLoop');
+  const analisisModal = document.getElementById('analisisModal');
+  const btnOpenAnalisis = document.getElementById('btnOpenAnalisis');
+  const btnCloseAnalisis = document.getElementById('btnCloseAnalisis');
+  const wrongStudentsModal = document.getElementById('wrongStudentsModal');
+  const btnCloseWrongStudents = document.getElementById('btnCloseWrongStudents');
+  const wrongStudentsList = document.getElementById('wrongStudentsList');
+  const wrongAnswerLabel = document.getElementById('wrongAnswerLabel');
 
-  document.querySelectorAll('.btn-nilai-kecepatan').forEach((btn) => {
-    btn.addEventListener('click', () => {
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-nilai-kecepatan');
+    if (!btn) return;
       const waktuMengumpulkan = Number(btn.dataset.waktu || 0);
       const nilaiInput = Number(btn.dataset.nilaiInput || 0);
       if (nilaiKecepatanInput) {
@@ -563,7 +807,6 @@
       }
       nilaiKecepatanModal?.classList.remove('hidden');
       nilaiKecepatanModal?.classList.add('flex');
-    });
   });
 
   btnCloseNilaiKecepatan?.addEventListener('click', () => {
@@ -577,4 +820,59 @@
       nilaiKecepatanModal.classList.remove('flex');
     }
   });
+
+  btnOpenAnalisis?.addEventListener('click', () => {
+    analisisModal?.classList.remove('hidden');
+    analisisModal?.classList.add('flex');
+  });
+  btnCloseAnalisis?.addEventListener('click', () => {
+    analisisModal?.classList.add('hidden');
+    analisisModal?.classList.remove('flex');
+  });
+  analisisModal?.addEventListener('click', (e) => {
+    if (e.target === analisisModal) {
+      analisisModal.classList.add('hidden');
+      analisisModal.classList.remove('flex');
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-view-wrong-students');
+    if (!btn) return;
+    const students = JSON.parse(btn.dataset.students || '[]');
+    if (wrongStudentsList) wrongStudentsList.innerHTML = '';
+    if (wrongAnswerLabel) wrongAnswerLabel.textContent = btn.dataset.jawaban || '-';
+    if (students.length === 0) {
+      if (wrongStudentsList) {
+        wrongStudentsList.innerHTML = '<div class="text-sm text-slate-500">Tidak ada data mahasiswa.</div>';
+      }
+    } else if (wrongStudentsList) {
+      students.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-3 rounded-xl border bg-white px-3 py-2';
+        row.innerHTML = `
+          <img src="${item.foto || ''}" class="w-10 h-10 rounded-full object-cover border" alt="Foto">
+          <div>
+            <div class="text-sm font-semibold text-slate-800">${item.nama || '-'}</div>
+            <div class="text-xs text-slate-500">${item.nim || '-'}</div>
+          </div>
+        `;
+        wrongStudentsList.appendChild(row);
+      });
+    }
+    wrongStudentsModal?.classList.remove('hidden');
+    wrongStudentsModal?.classList.add('flex');
+  });
+  btnCloseWrongStudents?.addEventListener('click', () => {
+    wrongStudentsModal?.classList.add('hidden');
+    wrongStudentsModal?.classList.remove('flex');
+  });
+  wrongStudentsModal?.addEventListener('click', (e) => {
+    if (e.target === wrongStudentsModal) {
+      wrongStudentsModal.classList.add('hidden');
+      wrongStudentsModal.classList.remove('flex');
+    }
+  });
+    });
+  })();
 </script>

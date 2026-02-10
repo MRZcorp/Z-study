@@ -56,13 +56,22 @@
         </div>
 
         <div>
-          <h3 class="font-semibold text-slate-800">{{ $ujian->nama_ujian ?? 'Nama Ujian' }}</h3>
-          <p class="text-sm text-slate-500 mt-1">{{ $ujian->deskripsi ?? '-' }}</p>
+          @php
+            $tipeRaw = strtolower(trim((string) ($ujian->deskripsi ?? '')));
+            $isUts = str_contains($tipeRaw, 'tengah');
+            $isUas = str_contains($tipeRaw, 'akhir');
+            $isQuiz = str_contains($tipeRaw, 'quiz');
+            $keLabel = $isUts
+              ? 'Ujian Tengah Semester'
+              : ($isUas ? 'Ujian Akhir Semester' : (($isQuiz ? 'Quiz' : 'Ujian') . ' ke: ' . ($ujian->ujian_ke ?? 1)));
+          @endphp
+          <p class="text-xs font-semibold uppercase text-slate-500">{{ $ujian->deskripsi ?? '-' }}</p>
+          <h3 class="font-semibold text-slate-800 mt-1">{{ $ujian->nama_ujian ?? 'Nama Ujian' }}</h3>
           <div class="flex flex-wrap items-center gap-3 mt-3 text-xs text-slate-500">
             <span class="inline-flex items-center gap-2 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
               <span class="material-symbols-rounded text-sm">school</span>
               Kelas {{ $ujian->kelas->nama_kelas ?? '-' }}
-              <span class="text-blue-600 font-semibold">Ujian ke: {{ $ujian->ujian_ke ?? 1 }}</span>
+              <span class="text-blue-600 font-semibold">{{ $keLabel }}</span>
             </span>
           </div>
         </div>
@@ -159,20 +168,20 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Nama Ujian</label>
-        <input type="text" name="nama_ujian" class="w-full rounded-lg border border-slate-300 px-4 py-2" required>
-        <p id="ujianKeInfo" class="mt-1 text-xs text-blue-600 font-semibold">Ujian ke: -</p>
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Deskripsi</label>
-        <select name="deskripsi" class="w-full rounded-lg border border-slate-300 px-4 py-2">
-          <option value="">Pilih jenis</option>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Tipe</label>
+        <select id="tipeSelect" name="deskripsi" class="w-full rounded-lg border border-slate-300 px-4 py-2">
+          <option value="">Pilih tipe</option>
           <option value="Quiz">Quiz</option>
           <option value="Ujian">Ujian</option>
           <option value="Ujian Tengah Semester">Ujian Tengah Semester</option>
           <option value="Ujian Akhir Semester">Ujian Akhir Semester</option>
         </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Nama Ujian</label>
+        <input id="namaUjianInput" type="text" name="nama_ujian" class="w-full rounded-lg border border-slate-300 px-4 py-2" required>
+        <p id="ujianKeInfo" class="mt-1 text-xs text-blue-600 font-semibold">Ujian ke: -</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -297,13 +306,19 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Nama Ujian</label>
-        <input type="text" name="nama_ujian" id="editNamaUjian" class="w-full rounded-lg border border-slate-300 px-4 py-2" required>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Tipe</label>
+        <select name="deskripsi" id="editDeskripsiUjian" class="w-full rounded-lg border border-slate-300 px-4 py-2">
+          <option value="">Pilih tipe</option>
+          <option value="Quiz">Quiz</option>
+          <option value="Ujian">Ujian</option>
+          <option value="Ujian Tengah Semester">Ujian Tengah Semester</option>
+          <option value="Ujian Akhir Semester">Ujian Akhir Semester</option>
+        </select>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Deskripsi</label>
-        <textarea name="deskripsi" id="editDeskripsiUjian" rows="4" class="w-full rounded-lg border border-slate-300 px-4 py-2" placeholder="Deskripsi ujian"></textarea>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Nama Ujian</label>
+        <input type="text" name="nama_ujian" id="editNamaUjian" class="w-full rounded-lg border border-slate-300 px-4 py-2" required>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -326,6 +341,7 @@
 </div>
 
 <script>
+  (() => {
   const ujianModal = document.getElementById('ujianModal');
   const btnOpenUjian = document.getElementById('btnOpenUjian');
   const btnCloseUjian = document.getElementById('btnCloseUjian');
@@ -334,6 +350,8 @@
   const matkulText = document.getElementById('matkulText');
   const matkulId = document.getElementById('matkulId');
   const ujianKeInfo = document.getElementById('ujianKeInfo');
+  const tipeSelect = document.getElementById('tipeSelect');
+  const namaUjianInput = document.getElementById('namaUjianInput');
   const previewModal = document.getElementById('previewUjianModal');
   const btnClosePreview = document.getElementById('btnClosePreview');
   const previewMatkul = document.getElementById('previewMatkul');
@@ -369,6 +387,25 @@
     ujianModal.classList.remove('flex');
   };
 
+  const updateUjianKeLabel = (tipeValue, nextNumber) => {
+    const raw = (tipeValue || '').toLowerCase();
+    if (raw.includes('tengah')) return 'Ujian Tengah Semester';
+    if (raw.includes('akhir')) return 'Ujian Akhir Semester';
+    if (raw.includes('quiz')) return `Quiz ke: ${nextNumber}`;
+    return `Ujian ke: ${nextNumber}`;
+  };
+
+  const applyTipeToNama = (tipeValue, inputEl) => {
+    if (!inputEl) return;
+    if (tipeValue === 'Ujian Tengah Semester' || tipeValue === 'Ujian Akhir Semester') {
+      inputEl.value = tipeValue;
+      return;
+    }
+    if (inputEl.value === 'Ujian Tengah Semester' || inputEl.value === 'Ujian Akhir Semester') {
+      inputEl.value = '';
+    }
+  };
+
   btnOpenUjian?.addEventListener('click', () => {
     ujianModal.classList.remove('hidden');
     ujianModal.classList.add('flex');
@@ -376,7 +413,7 @@
       const opt = kelasSelect.options[kelasSelect.selectedIndex];
       const next = Number(opt?.dataset?.ujianNext || 1);
       if (ujianKeInfo) {
-        ujianKeInfo.textContent = `Ujian ke: ${next}`;
+        ujianKeInfo.textContent = updateUjianKeLabel(tipeSelect?.value, next);
       }
     }
   });
@@ -394,8 +431,16 @@
     }
     const next = Number(opt?.dataset?.ujianNext || 1);
     if (ujianKeInfo) {
-      ujianKeInfo.textContent = `Ujian ke: ${next}`;
+      ujianKeInfo.textContent = updateUjianKeLabel(tipeSelect?.value, next);
     }
+  });
+
+  tipeSelect?.addEventListener('change', () => {
+    if (!kelasSelect || !ujianKeInfo) return;
+    const opt = kelasSelect.options[kelasSelect.selectedIndex];
+    const next = Number(opt?.dataset?.ujianNext || 1);
+    ujianKeInfo.textContent = updateUjianKeLabel(tipeSelect?.value, next);
+    applyTipeToNama(tipeSelect?.value, namaUjianInput);
   });
 
   const closePreview = () => {
@@ -498,6 +543,10 @@
     });
   });
 
+  editDeskripsiUjian?.addEventListener('change', () => {
+    applyTipeToNama(editDeskripsiUjian?.value, editNamaUjian);
+  });
+
   editKelasSelect?.addEventListener('change', () => {
     const opt = editKelasSelect.options[editKelasSelect.selectedIndex];
     editMatkulText.value = opt?.dataset?.matkul || '';
@@ -565,4 +614,5 @@
       actionErrorModal?.classList.remove('flex');
     }, 1500);
   @endif
+  })();
 </script>

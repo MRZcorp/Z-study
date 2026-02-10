@@ -29,9 +29,6 @@ class Kelas extends Model
     protected $table = 'kelas';
 
 
-
-
-    //Relasi
     public function tugass()
     {
         return $this->hasMany(Tugas::class, 'nama_kelas');

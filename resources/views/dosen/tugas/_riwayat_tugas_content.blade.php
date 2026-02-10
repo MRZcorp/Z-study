@@ -3,6 +3,7 @@
   foreach (($tugas_selesai ?? collect()) as $item) {
       $tugasIndexMap[$item->id] = $item->tugas_ke ?? 1;
   }
+  $showTabs = $showTabs ?? true;
 @endphp
 
 <div class="p-6 bg-gray-100 min-h-screen">
@@ -13,12 +14,14 @@
     </div>
   </div>
 
-  <div class="mb-6 flex items-center justify-between">
-    <div class="flex items-center gap-2 rounded-xl bg-white p-1 shadow w-fit">
-      <a href="{{ url('/dosen/tugas') }}" class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:bg-gray-100">Tugas Aktif</a>
-      <span class="px-4 py-2 text-sm font-semibold rounded-lg bg-blue-800 text-white shadow">Tugas Selesai</span>
+  @if ($showTabs)
+    <div class="mb-6 flex items-center justify-between">
+      <div class="flex items-center gap-2 rounded-xl bg-white p-1 shadow w-fit">
+        <a href="{{ url('/dosen/tugas') }}" class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:bg-gray-100">Tugas Aktif</a>
+        <span class="px-4 py-2 text-sm font-semibold rounded-lg bg-blue-800 text-white shadow">Tugas Selesai</span>
+      </div>
     </div>
-  </div>
+  @endif
 
   <div class="space-y-4">
     @if (($tugas_selesai ?? collect())->isEmpty())
@@ -197,6 +200,7 @@
 </div>
 
 <script>
+  (() => {
   const lihatMahasiswaModal = document.getElementById('lihatMahasiswaModal');
   const btnCloseMahasiswa = document.getElementById('btnCloseMahasiswa');
   const judulTugasMahasiswa = document.getElementById('judulTugasMahasiswa');
@@ -344,4 +348,5 @@
   previewModal?.addEventListener('click', (e) => {
     if (e.target === previewModal) closePreview();
   });
+  })();
 </script>

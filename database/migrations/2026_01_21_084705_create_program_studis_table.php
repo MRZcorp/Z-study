@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignId('fakultas_id')
                 ->constrained('fakultas')
                 ->cascadeOnDelete();
+            $table->unsignedSmallInteger('s1')->nullable();
+            $table->unsignedSmallInteger('d3')->nullable();
             $table->string('nama_prodi');
             $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
             $table->timestamps();

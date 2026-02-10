@@ -19,7 +19,7 @@
         <div class="flex flex-col items-center text-center">
           <img
             id="dosenFotoPreview"
-            src="{{ $foto ? asset('storage/' . $foto) : asset('img/Logo_Zstudy.png') }}"
+            src="{{ $foto ? asset('storage/' . $foto) : asset('img/default_profil.jpg') }}"
             class="w-28 h-28 rounded-full object-cover border-4 border-blue-600 cursor-pointer hover:opacity-90 transition"
             alt="Foto Profil"
             title="Klik untuk ganti foto"
@@ -50,7 +50,7 @@
         <div class="mt-6 border-t pt-4 text-sm text-gray-600 space-y-1">
           <p><span class="font-medium">NIDN :</span> {{ $dosen->nidn ?? ($id_user ?? '-') }}</p>
           <p><span class="font-medium">Fakultas:</span> {{ $fakultas ?? '-' }} </p>
-          <p><span class="font-medium">Jurusan:</span> {{ $prodi ?? '-' }}</p>
+         
           
         </div>
       </div>

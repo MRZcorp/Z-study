@@ -22,10 +22,7 @@ class MateriKelas extends Model
         'file_size',
     ];
 
-    public function materi()
-    {
-        return $this->hasMany(Materi::class);
-    }
+   
 
     public function kelas()
     {

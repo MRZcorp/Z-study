@@ -37,9 +37,9 @@
             <td class="px-4 py-3">{{ $loop->iteration }}</td>
             <td class="px-4 py-3 font-medium">{{ $perwalian->user?->name ?? '-' }}</td>
             <td class="px-4 py-3">{{ $perwalian->nim ?? '-' }}</td>
-            <td class="px-4 py-3 text-center">{{ $perwalian->semester ?? '-' }}</td>
-            <td class="px-4 py-3 text-center">{{ $perwalian->ips ?? '-' }}</td>
-            <td class="px-4 py-3 text-center">{{ $perwalian->ipk ?? '-' }}</td>
+            <td class="px-4 py-3 text-center">{{ $perwalian->semester_aktif ?? '-' }}</td>
+            <td class="px-4 py-3 text-center">{{ number_format((float) ($perwalian->ips_terakhir ?? 0), 2) }}</td>
+            <td class="px-4 py-3 text-center">{{ number_format((float) ($perwalian->ipk ?? 0), 2) }}</td>
             <td class="px-4 py-3 text-center">
               <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $statusClass }}">
                 {{ $statusKrs }}
@@ -74,13 +74,34 @@
     $sksDiambil = $kelasList
       ->filter(fn($k) => $k->pivot?->status === 'disetujui')
       ->sum(fn($k) => (int) ($k->mataKuliah?->sks ?? 0));
+    $sksDiambilSemester = $kelasList
+      ->filter(fn($k) => $k->pivot?->status === 'disetujui')
+      ->filter(fn($k) => !$semesterAktif || strtolower((string) ($k->semester ?? '')) === strtolower((string) $semesterAktif))
+      ->sum(fn($k) => (int) ($k->mataKuliah?->sks ?? 0));
+    $semesterOrder = ['ganjil' => 1, 'genap' => 2];
+    $semesterItems = $kelasList
+      ->filter(fn($k) => in_array($k->status ?? '', ['aktif', 'selesai'], true))
+      ->sort(function ($a, $b) use ($semesterOrder) {
+        $yearA = (int) preg_replace('/[^0-9]/', '', (string) ($a->tahun_ajar ?? '0'));
+        $yearB = (int) preg_replace('/[^0-9]/', '', (string) ($b->tahun_ajar ?? '0'));
+        if ($yearA !== $yearB) {
+          return $yearA <=> $yearB;
+        }
+        $semA = $semesterOrder[strtolower((string) ($a->semester ?? ''))] ?? 99;
+        $semB = $semesterOrder[strtolower((string) ($b->semester ?? ''))] ?? 99;
+        return $semA <=> $semB;
+      })
+      ->map(fn($k) => (($k->tahun_ajar ?? '-') . '|' . ($k->semester ?? '-')))
+      ->unique()
+      ->values();
+    $semesterMap = $semesterItems->mapWithKeys(fn($key, $idx) => [$key => $idx + 1]);
   @endphp
   <div id="perwalianModal-{{ $perwalian->id }}" class="modal-overlay hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
     <div class="bg-white rounded-xl w-full max-w-3xl p-6 max-h-[80vh] overflow-y-auto">
 
       <div
         class="relative mb-4 rounded-xl shadow overflow-hidden"
-        style="background-image: url('{{ $perwalian->bg ? asset('storage/' . $perwalian->bg) : asset('img/Logo_Zstudy.png') }}'); background-size: cover; background-position: center;"
+        style="background-image: {{ $perwalian->bg ? "url('".asset('storage/' . $perwalian->bg)."')" : 'none' }}; background-color: #ffffff; background-size: cover; background-position: center;"
       >
         <div class="absolute inset-0 bg-black/40"></div>
         <div class="relative p-4 text-white">
@@ -94,22 +115,22 @@
               <div>
                 <h2 class="text-lg font-semibold">{{ $perwalian->user?->name ?? '-' }}</h2>
                 <p class="text-xs text-white/80">NIM: {{ $perwalian->nim ?? '-' }}</p>
-                <p class="text-sm text-white">Semester: {{ $perwalian->semester ?? '-' }}</p>
+                <p class="text-sm text-white">Semester: {{ $perwalian->semester_aktif ?? '-' }}</p>
               </div>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-800">
               <div class="rounded-lg px-2 py-1.5 text-center bg-black/40 backdrop-blur-sm border border-white/20">
                 <p class="text-white/70 text-xs">IPS</p>
-                <p class="font-semibold text-white text-sm">{{ $perwalian->ips ?? '-' }}</p>
+                <p class="font-semibold text-white text-sm">{{ number_format((float) ($perwalian->ips_terakhir ?? 0), 2) }}</p>
               </div>
               <div class="rounded-lg px-2 py-1.5 text-center bg-black/40 backdrop-blur-sm border border-white/20">
                 <p class="text-white/70 text-xs">IPK</p>
-                <p class="font-semibold text-white text-sm">{{ $perwalian->ipk ?? '-' }}</p>
+                <p class="font-semibold text-white text-sm">{{ number_format((float) ($perwalian->ipk ?? 0), 2) }}</p>
               </div>
               <div class="rounded-lg px-2 py-1.5 text-center bg-black/40 backdrop-blur-sm border border-white/20">
                 <p class="text-white/70 text-xs">Max SKS</p>
-                <p class="font-semibold text-white text-sm">-</p>
+                <p class="font-semibold text-white text-sm">{{ $sksDiambilSemester }} / {{ $perwalian->maks_sks ?? '-' }}</p>
               </div>
               <div class="rounded-lg px-2 py-1.5 text-center bg-black/40 backdrop-blur-sm border border-white/20 sm:col-span-3">
                 <p class="text-white/70 text-xs">KRS Ditempuh</p>
@@ -131,6 +152,18 @@
         </div>
       @endif
 
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-sm text-slate-700 font-semibold">Filter Semester</div>
+        <select
+          class="perwalian-semester-filter h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700"
+        >
+          <option value="">Semua Semester</option>
+          @foreach ($semesterItems as $key)
+            <option value="{{ $semesterMap[$key] ?? '' }}">Semester {{ $semesterMap[$key] ?? '-' }}</option>
+          @endforeach
+        </select>
+      </div>
+
       <div class="bg-slate-50 rounded-lg overflow-x-auto">
         <table class="min-w-full text-sm">
           <thead class="bg-slate-100 text-slate-600">
@@ -151,7 +184,11 @@
                 $isApproved = $pivotStatus === 'disetujui';
                 $isRejected = $pivotStatus === 'ditolak';
               @endphp
-              <tr class="hover:bg-white">
+              @php
+                $semesterKey = ($kelas->tahun_ajar ?? '-') . '|' . ($kelas->semester ?? '-');
+                $semesterNum = $semesterMap[$semesterKey] ?? null;
+              @endphp
+              <tr class="hover:bg-white perwalian-row" data-semester="{{ $semesterNum ?? '' }}">
                 <td class="px-4 py-3">{{ $kelas->mataKuliah?->kode_mata_kuliah ?? '-' }}</td>
                 <td class="px-4 py-3">{{ $kelas->mataKuliah?->mata_kuliah ?? '-' }}</td>
                 <td class="px-4 py-3 text-center">{{ $kelas->mataKuliah?->sks ?? '-' }}</td>
@@ -214,6 +251,25 @@
     modal.addEventListener('click', (e) => {
       if (e.target === modal) modal.classList.add('hidden');
     });
+  });
+</script>
+
+<script>
+  document.querySelectorAll('.perwalian-semester-filter').forEach((select) => {
+    const modal = select.closest('.modal-overlay');
+    const rows = Array.from(modal?.querySelectorAll('.perwalian-row') || []);
+    const apply = () => {
+      const selected = (select.value || '').toLowerCase();
+      rows.forEach((row) => {
+        const sem = (row.dataset.semester || '').toLowerCase();
+        const match = !selected || sem === selected;
+        row.style.display = match ? '' : 'none';
+      });
+    };
+    const def = (select.dataset.default || '').toLowerCase();
+    if (def) select.value = def;
+    apply();
+    select.addEventListener('change', apply);
   });
 </script>
 

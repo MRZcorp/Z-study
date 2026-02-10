@@ -28,7 +28,7 @@
       <img
         :src="photoPreview ? photoPreview : '{{ $foto 
                                         ? asset('storage/' . $foto) 
-                                        : asset('img/Logo_Zstudy.png') }}'"
+                                        : asset('img/default_profil.jpg') }}'"
         class="w-32 h-32 rounded-full object-cover border-4 border-blue-600
                group-hover:opacity-80 transition"
       >

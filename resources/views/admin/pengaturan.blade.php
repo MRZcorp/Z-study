@@ -18,7 +18,7 @@
         <div class="flex flex-col items-center text-center">
           <img
             id="adminFotoPreview"
-            src="{{ $foto ? asset('storage/' . $foto) : asset('img/Logo_Zstudy.png') }}"
+            src="{{ $foto ? asset('storage/' . $foto) : asset('img/default_profil.jpg') }}"
             class="w-28 h-28 rounded-full object-cover border-4 border-blue-600 cursor-pointer hover:opacity-90 transition"
             alt="Profile"
             title="Klik untuk ganti foto"

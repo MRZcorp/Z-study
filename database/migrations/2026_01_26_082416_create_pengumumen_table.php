@@ -18,6 +18,8 @@ return new class extends Migration
         $table->enum('tipe', ['info', 'peringatan', 'event'])->default('info');
         $table->boolean('is_active')->default(true);
         $table->date('tanggal_publish')->nullable();
+        $table->string('file_name')->nullable();
+        $table->string('file_path')->nullable();
             $table->timestamps();
         });
     }

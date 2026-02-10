@@ -42,7 +42,7 @@
         <!-- HEADER (BACKGROUND UPLOADABLE) -->
         <div
           class="relative h-28 bg-cover bg-center"
-          style="background-image: url({{asset('storage/' . $kelas->bg_image)}});"
+          style="background-image: url({{ $kelas->bg_image ? asset('storage/' . $kelas->bg_image) : asset('img/Logo_Zstudy.png') }});"
         >
         <div class="absolute inset-0 bg-black/30"></div>
       
@@ -58,12 +58,15 @@
           {{$kelas->mataKuliah->sks}}
         </div>
         <div class="absolute top-1 right-2 z-10 flex items-center gap-2">
+          @php
+            $kelasLabel = preg_replace('/^kelas\\s*/i', '', (string) ($kelas->nama_kelas ?? ''));
+          @endphp
           <button
             type="button"
             class="btn-edit-kelas flex items-center gap-1 rounded-full bg-white/90 text-gray-700 text-xs font-semibold px-2 py-1 shadow hover:bg-white"
             data-kelas-id="{{ $kelas->id }}"
             data-mata-kuliah-id="{{ $kelas->mata_kuliah_id }}"
-            data-nama-kelas="{{ $kelas->nama_kelas }}"
+            data-nama-kelas="{{ $kelasLabel }}"
             data-jadwal-kelas="{{ $kelas->jadwal_kelas }}"
             data-hari-kelas="{{ $kelas->hari_kelas }}"
             data-jam-mulai="{{ $kelas->jam_mulai }}"
@@ -111,7 +114,7 @@
   
         <!-- BODY -->
         <div class="pt-4 px-4 pb-4 space-y-1 text-sm text-gray-700">
-          <p>Kelas {{$kelas->nama_kelas}}</p>
+          <p>Kelas {{ $kelasLabel }}</p>
           <p>{{$kelas->jadwal_kelas}}</p>
   
           <!-- spacer tanpa titik -->
@@ -154,11 +157,11 @@
             <button
             onclick="openModal(this)"
              data-kelas-id="{{ $kelas->id }}"
-             data-kelas-nama="{{ $kelas->mataKuliah->mata_kuliah }} - {{ $kelas->nama_kelas }}"
+             data-kelas-nama="{{ $kelas->mataKuliah->mata_kuliah }} - {{ $kelasLabel }}"
              data-dosen="{{ $kelas->dosens->user->name ?? '-' }}"
              data-participants='@json($kelas->mahasiswas->map(fn($mhs) => [
                 "name" => $mhs->user->name ?? "-",
-                "foto" => $mhs->poto_profil ? asset("storage/" . $mhs->poto_profil) : asset("img/Logo_Zstudy.png"),
+                "foto" => $mhs->poto_profil ? asset("storage/" . $mhs->poto_profil) : asset("img/default_profil.jpg"),
              ])->values())'
               class="flex items-center gap-1 rounded-full bg-gradient-to-r 
                      from-blue-500 to-purple-500 px-4 py-1.5 text-sm 
@@ -218,7 +221,7 @@ class="fixed inset-0 z-50 hidden items-center justify-center
                <img 
         src="{{ $foto 
         ? asset('storage/' . $foto) 
-        : asset('img/Logo_Zstudy.png') }}"
+        : asset('img/default_profil.jpg') }}"
           alt="Foto Profil"
           class="w-11 h-11 rounded-full object-cover">
      <div>
@@ -420,9 +423,9 @@ class="fixed inset-0 z-50 hidden items-center justify-center
             <div>
               <label class="block text-sm font-medium mb-1">Kelas</label>
               <select name="nama_kelas" class="w-full rounded-lg border border-slate-300 px-4 py-2">
-                <option>Kelas A</option>
-                <option>Kelas B</option>
-                <option>Kelas C</option>
+                <option>A</option>
+                <option>B</option>
+                <option>C</option>
               </select>
             </div>
             <div>
@@ -511,9 +514,9 @@ class="fixed inset-0 z-50 hidden items-center justify-center
             <div>
               <label class="block text-sm font-medium mb-1">Kelas</label>
               <select name="nama_kelas" id="edit_nama_kelas" class="w-full rounded-lg border border-slate-300 px-4 py-2">
-                <option>Kelas A</option>
-                <option>Kelas B</option>
-                <option>Kelas C</option>
+                <option>A</option>
+                <option>B</option>
+                <option>C</option>
               </select>
             </div>
             <div>
@@ -635,7 +638,9 @@ class="fixed inset-0 z-50 hidden items-center justify-center
 
         editKelasForm.action = `/dosen/kelas/${kelasId}`;
         document.getElementById('edit_mata_kuliah_id').value = btn.dataset.mataKuliahId || '';
-        document.getElementById('edit_nama_kelas').value = btn.dataset.namaKelas || '';
+        const rawNamaKelas = btn.dataset.namaKelas || '';
+        const cleanedNamaKelas = rawNamaKelas.replace(/^kelas\\s*/i, '').trim();
+        document.getElementById('edit_nama_kelas').value = cleanedNamaKelas;
         document.getElementById('edit_jadwal_kelas').value = btn.dataset.jadwalKelas || '';
         document.getElementById('edit_hari_kelas').value = btn.dataset.hariKelas || '';
         document.getElementById('edit_jam_mulai').value = btn.dataset.jamMulai || '';

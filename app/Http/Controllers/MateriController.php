@@ -50,7 +50,11 @@ class MateriController extends Controller
         $userId = session('user_id');
         $mahasiswaId = Mahasiswa::where('user_id', $userId)->value('id');
 
-        if (!$mahasiswaId || !$kelas->mahasiswas()->where('mahasiswa_id', $mahasiswaId)->exists()) {
+        if (
+            !$mahasiswaId
+            || ($kelas->status ?? '') !== 'aktif'
+            || !$kelas->mahasiswas()->where('mahasiswa_id', $mahasiswaId)->exists()
+        ) {
             return redirect()->route('mahasiswa.materi.kelas')
                 ->with('error', 'Kelas tidak ditemukan');
         }
@@ -175,6 +179,7 @@ class MateriController extends Controller
         $pilih_kelas = Kelas::with(['dosens.user', 'mataKuliah'])
             ->withCount('mahasiswas')
             ->when($mahasiswaId, fn($q) => $q->whereHas('mahasiswas', fn($mq) => $mq->where('mahasiswa_id', $mahasiswaId)))
+            ->where('status', 'aktif')
             ->latest()
             ->get();
 

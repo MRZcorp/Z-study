@@ -21,10 +21,13 @@ return new class extends Migration
             $table->foreignId('mata_kuliah_id')
                     ->constrained('mata_kuliahs')
                     ->cascadeOnDelete();
+            $table->string('tahun_ajar')->nullable();
+            $table->enum('semester', ['ganjil', 'genap'])->nullable();
             
         
             // Kelas
             $table->string('nama_kelas'); // A, B, C
+            $table->string('slug')->nullable()->unique();
             $table->string('jadwal_kelas');
             $table->enum('hari_kelas', [
                 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'
@@ -39,7 +42,7 @@ return new class extends Migration
             $table->unsignedSmallInteger('kuota_terdaftar')->default(0);
         
             $table->string('bg_image')->nullable();      // background header card
-            $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
+            $table->enum('status', ['draft', 'aktif', 'selesai'])->default('draft');
             $table->timestamps();
         });
         

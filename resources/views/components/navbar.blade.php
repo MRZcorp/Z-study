@@ -75,7 +75,20 @@
                         <div class="max-h-80 overflow-y-auto">
                             @forelse(($navbarPengumuman ?? collect()) as $item)
                                 <div class="px-4 py-2 hover:bg-blue-50 transition-colors">
-                                    <p class="text-sm font-semibold text-gray-800">{{ $item->judul }}</p>
+                                    <button
+                                        type="button"
+                                        class="text-left text-sm font-semibold text-gray-800 hover:underline btn-preview-announcement"
+                                        data-judul="{{ $item->judul }}"
+                                        data-isi="{{ $item->isi }}"
+                                        data-tipe="{{ $item->tipe ?? 'Info' }}"
+                                        data-status="{{ $item->is_active ? 'Publish' : 'Draft' }}"
+                                        data-berkas="{{ $item->file_name ?? '' }}"
+                                        data-berkas-url="{{ $item->file_path ? asset('storage/' . $item->file_path) : '' }}"
+                                        data-tanggal-display="{{ $item->tanggal_publish ? \Illuminate\Support\Str::lower(\Carbon\Carbon::parse($item->tanggal_publish)->locale('id')->translatedFormat('d F Y')) : '-' }}"
+                                        data-created="{{ $item->created_at ?? '' }}"
+                                    >
+                                        {{ $item->judul }}
+                                    </button>
                                     <p class="text-xs text-gray-500 line-clamp-2">{{ $item->isi }}</p>
                                     <p class="text-[11px] text-gray-400 mt-1">
                                         {{ $item->tanggal_publish ? \Illuminate\Support\Str::lower(\Carbon\Carbon::parse($item->tanggal_publish)->locale('id')->translatedFormat('d F Y')) : '-' }}
@@ -119,7 +132,7 @@
                                 <img
                                 src="{{ $foto 
                                     ? asset('storage/' . $foto) 
-                                    : asset('img/Logo_Zstudy.png') }}"
+                                    : asset('img/default_profil.jpg') }}"
                                 class="h-10 w-10 rounded-full object-cover"
                                 alt="Foto Profil"
                             />
@@ -146,7 +159,7 @@
                                     <img
                                     src="{{ $foto 
                                         ? asset('storage/' . $foto) 
-                                        : asset('img/Logo_Zstudy.png') }}"
+                                        : asset('img/default_profil.jpg') }}"
                                     class="h-10 w-10 rounded-full object-cover"
                                     alt="Foto Profil"
                                 />
@@ -213,127 +226,313 @@
   </nav>
 
 <script>
+  (() => {
     const examLock = document.querySelector('[data-exam-lock="true"]');
     if (examLock) {
-        document.querySelectorAll('nav button, nav a, nav input, nav select, nav textarea').forEach((el) => {
-            el.classList.add('pointer-events-none', 'opacity-60');
-            el.setAttribute('tabindex', '-1');
-            el.setAttribute('aria-disabled', 'true');
-            if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
-                el.setAttribute('disabled', 'disabled');
-            }
-        });
+      document.querySelectorAll('nav button, nav a, nav input, nav select, nav textarea').forEach((el) => {
+        el.classList.add('pointer-events-none', 'opacity-60');
+        el.setAttribute('tabindex', '-1');
+        el.setAttribute('aria-disabled', 'true');
+        if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
+          el.setAttribute('disabled', 'disabled');
+        }
+      });
     }
 
     const searchBtn = document.getElementById('searchBtn');
     const searchForm = document.getElementById('searchForm');
-    const searchInput = searchForm.querySelector('input');
+    const searchInput = searchForm?.querySelector('input');
     const searchDropdown = document.getElementById('searchDropdown');
     const searchResults = document.getElementById('searchResults');
 
     const expandSearch = () => {
-        if (!searchForm) return;
-        searchForm.style.width = '260px';
-        if (searchInput) {
-            searchInput.classList.remove('opacity-0');
-            searchInput.classList.add('opacity-100');
-        }
+      if (!searchForm) return;
+      searchForm.style.width = '260px';
+      if (searchInput) {
+        searchInput.classList.remove('opacity-0');
+        searchInput.classList.add('opacity-100');
+      }
     };
 
     const collapseSearch = () => {
-        if (!searchForm) return;
-        if (searchInput && searchInput.value.trim() !== '') return;
-        searchForm.style.width = '40px';
-        if (searchInput) {
-            searchInput.classList.add('opacity-0');
-            searchInput.classList.remove('opacity-100');
-        }
-        if (searchDropdown) searchDropdown.classList.add('hidden');
+      if (!searchForm) return;
+      if (searchInput && searchInput.value.trim() !== '') return;
+      searchForm.style.width = '40px';
+      if (searchInput) {
+        searchInput.classList.add('opacity-0');
+        searchInput.classList.remove('opacity-100');
+      }
+      if (searchDropdown) searchDropdown.classList.add('hidden');
     };
 
     const renderSearchResults = (items) => {
-        if (!searchResults || !searchDropdown) return;
-        if (!items.length) {
-            searchResults.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500">Tidak ada hasil.</div>';
-            searchDropdown.classList.remove('hidden');
-            return;
-        }
-        const grouped = {};
-        items.forEach((item) => {
-            grouped[item.type] = grouped[item.type] || [];
-            grouped[item.type].push(item);
-        });
-        searchResults.innerHTML = Object.entries(grouped).map(([type, list]) => {
-            const rows = list.map((it) => `
+      if (!searchResults || !searchDropdown) return;
+      if (!items.length) {
+        searchResults.innerHTML = '<div class="px-4 py-3 text-sm text-gray-500">Tidak ada hasil.</div>';
+        searchDropdown.classList.remove('hidden');
+        return;
+      }
+      const grouped = {};
+      items.forEach((item) => {
+        grouped[item.type] = grouped[item.type] || [];
+        grouped[item.type].push(item);
+      });
+      searchResults.innerHTML = Object.entries(grouped).map(([type, list]) => {
+        const rows = list.map((it) => `
                 <a href="${it.url}" class="block px-4 py-2 hover:bg-blue-50">
                   <div class="text-xs uppercase text-gray-400">${type}</div>
                   <div class="text-sm font-semibold text-gray-800">${it.label}</div>
                 </a>
             `).join('');
-            return `<div class="border-b border-gray-100 py-1">${rows}</div>`;
-        }).join('');
-        searchDropdown.classList.remove('hidden');
+        return `<div class="border-b border-gray-100 py-1">${rows}</div>`;
+      }).join('');
+      searchDropdown.classList.remove('hidden');
     };
 
     let searchTimer = null;
     const fetchSearch = () => {
-        const q = searchInput.value.trim();
-        if (!q) {
-            if (searchDropdown) searchDropdown.classList.add('hidden');
-            return;
-        }
-        fetch(`{{ route('search') }}?q=${encodeURIComponent(q)}`, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        })
-          .then((res) => res.json())
-          .then((data) => renderSearchResults(data.items || []))
-          .catch(() => {
-              if (searchDropdown) searchDropdown.classList.add('hidden');
-          });
+      const q = searchInput?.value.trim() || '';
+      if (!q) {
+        if (searchDropdown) searchDropdown.classList.add('hidden');
+        return;
+      }
+      fetch(`{{ route('search') }}?q=${encodeURIComponent(q)}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+        .then((res) => res.json())
+        .then((data) => renderSearchResults(data.items || []))
+        .catch(() => {
+          if (searchDropdown) searchDropdown.classList.add('hidden');
+        });
     };
 
-    searchInput.addEventListener('input', () => {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(fetchSearch, 250);
+    searchInput?.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(fetchSearch, 250);
     });
 
-    searchInput.addEventListener('focus', () => {
-        expandSearch();
-        fetchSearch();
+    searchInput?.addEventListener('focus', () => {
+      expandSearch();
+      fetchSearch();
     });
 
-    searchBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        expandSearch();
-        searchInput?.focus();
-        fetchSearch();
+    searchBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      expandSearch();
+      searchInput?.focus();
+      fetchSearch();
     });
 
     document.addEventListener('click', (e) => {
-        if (!searchDropdown || !searchForm) return;
-        if (!searchForm.contains(e.target)) {
-            searchDropdown.classList.add('hidden');
-            collapseSearch();
-        }
+      if (!searchDropdown || !searchForm) return;
+      if (!searchForm.contains(e.target)) {
+        searchDropdown.classList.add('hidden');
+        collapseSearch();
+      }
     });
 
-    searchForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        fetchSearch();
+    searchForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      fetchSearch();
     });
 
     const notifDropdown = document.getElementById('notifDropdown');
     if (notifDropdown) {
-        notifDropdown.addEventListener('mouseenter', () => {
-            fetch('{{ route('pengumuman.read_all') }}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-            }).then(() => {
-                const dot = document.querySelector('.notification-dot');
-                if (dot) dot.classList.add('hidden');
-            }).catch(() => {});
-        });
+      notifDropdown.addEventListener('mouseenter', () => {
+        fetch('{{ route('pengumuman.read_all') }}', {
+          method: 'POST',
+          headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          },
+        }).then(() => {
+          const dot = document.querySelector('.notification-dot');
+          if (dot) dot.classList.add('hidden');
+        }).catch(() => {});
+      });
     }
+  })();
+</script>
+
+<!-- MODAL PREVIEW PENGUMUMAN (NAVBAR) -->
+<div id="navbarPreviewModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+  <div class="relative bg-white rounded-2xl shadow-xl overflow-hidden" style="width:70vw; max-width:1100px; height:75vh;">
+    <div class="flex items-center justify-between px-5 py-4 border-b">
+      <div>
+        <h3 class="text-lg font-semibold text-slate-800">Detail Pengumuman</h3>
+        <p id="navbarPreviewSubTitle" class="text-sm text-slate-500">-</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a id="navbarPreviewDownload" href="#" target="_blank" class="rounded-full bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700">
+          <span class="material-symbols-rounded text-base">download</span>
+        </a>
+        <button type="button" class="btn-close text-gray-400 hover:text-gray-600 text-3xl leading-none">&times;</button>
+      </div>
+    </div>
+
+    <div class="flex gap-4 p-5" style="height:calc(75vh - 64px);">
+      <div class="w-[75%] h-full">
+        <div id="navbarPreviewContainer" class="w-full h-full rounded-xl border bg-slate-50 flex items-center justify-center text-sm text-slate-500">
+          Tidak ada file.
+        </div>
+      </div>
+      <div class="w-[25%] flex flex-col gap-3 h-full text-sm text-slate-700 break-words">
+        <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700">
+            <span class="material-symbols-rounded text-sm">event</span>
+            <span id="navbarPreviewTanggal">-</span>
+          </span>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500">Deskripsi</p>
+          <p id="navbarPreviewIsi">-</p>
+        </div>
+        <div class="mt-auto">
+          <p class="text-xs text-slate-500">File</p>
+          <div id="navbarPreviewFileList" class="mt-1 flex flex-col gap-1 text-sm text-blue-700 max-h-40 overflow-y-auto pr-1"></div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span id="navbarPreviewTipeBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+            <span class="material-symbols-rounded text-sm">flag</span>
+            <span id="navbarPreviewTipe">-</span>
+          </span>
+          <span id="navbarPreviewStatusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+            <span class="material-symbols-rounded text-sm">task_alt</span>
+            <span id="navbarPreviewStatus">-</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (() => {
+  const previewModal = document.getElementById('navbarPreviewModal');
+  const previewContainer = document.getElementById('navbarPreviewContainer');
+  const previewDownload = document.getElementById('navbarPreviewDownload');
+  const previewFileList = document.getElementById('navbarPreviewFileList');
+  const previewSubTitle = document.getElementById('navbarPreviewSubTitle');
+
+  const renderPreview = (url, ext) => {
+    const lower = (ext || '').toLowerCase();
+    if (!previewContainer) return;
+    if (!url) {
+      previewContainer.innerHTML = 'Tidak ada file.';
+      return;
+    }
+
+    if (['mp4', 'webm', 'ogg'].includes(lower)) {
+      previewContainer.innerHTML = `<video src="${url}" controls class="w-full h-full rounded-xl bg-black"></video>`;
+      return;
+    }
+
+    if (['pdf'].includes(lower)) {
+      previewContainer.innerHTML = `<iframe src="${url}" class="w-full h-full rounded-xl"></iframe>`;
+      return;
+    }
+
+    if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(lower)) {
+      previewContainer.innerHTML = `<div class="text-center text-slate-500 text-sm">Preview tidak tersedia untuk file ini. Silakan download.</div>`;
+      return;
+    }
+
+    previewContainer.innerHTML = `<iframe src="${url}" class="w-full h-full rounded-xl"></iframe>`;
+  };
+
+  const setActiveFile = (file) => {
+    if (!file) {
+      renderPreview('', '');
+      if (previewDownload) previewDownload.href = '#';
+      return;
+    }
+    renderPreview(file.url, file.ext);
+    if (previewDownload) previewDownload.href = file.url || '#';
+  };
+
+  const closePreview = () => {
+    previewModal?.classList.add('hidden');
+    previewModal?.classList.remove('flex');
+    if (previewContainer) previewContainer.innerHTML = 'Tidak ada file.';
+    if (previewFileList) previewFileList.innerHTML = '';
+    if (previewDownload) previewDownload.href = '#';
+  };
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-preview-announcement');
+    if (!btn) return;
+    if (!previewModal) return;
+    const berkasName = btn.dataset.berkas || '';
+    const berkasUrl = btn.dataset.berkasUrl || '';
+    const cleanUrl = berkasUrl ? berkasUrl.split('?')[0].toLowerCase() : '';
+    const ext = cleanUrl ? cleanUrl.split('.').pop() : '';
+    const files = berkasUrl
+      ? [{ name: berkasName || 'Berkas', url: berkasUrl, ext }]
+      : [];
+
+    const tipeValue = (btn.dataset.tipe || '-').toLowerCase();
+    const statusValue = (btn.dataset.status || '-').toLowerCase();
+    document.getElementById('navbarPreviewTipe').textContent = btn.dataset.tipe || '-';
+    document.getElementById('navbarPreviewStatus').textContent = btn.dataset.status || '-';
+    document.getElementById('navbarPreviewTanggal').textContent = btn.dataset.tanggalDisplay || '-';
+    document.getElementById('navbarPreviewIsi').textContent = btn.dataset.isi || '-';
+    if (previewSubTitle) {
+      previewSubTitle.textContent = btn.dataset.judul || '-';
+    }
+
+    const tipeBadge = document.getElementById('navbarPreviewTipeBadge');
+    if (tipeBadge) {
+      tipeBadge.classList.remove('bg-blue-100', 'text-blue-700', 'bg-green-100', 'text-green-700', 'bg-yellow-100', 'text-yellow-700', 'bg-slate-100', 'text-slate-700', 'text-slate-600');
+      if (tipeValue === 'info') {
+        tipeBadge.classList.add('bg-blue-100', 'text-blue-700');
+      } else if (tipeValue === 'event') {
+        tipeBadge.classList.add('bg-green-100', 'text-green-700');
+      } else if (tipeValue === 'peringatan') {
+        tipeBadge.classList.add('bg-yellow-100', 'text-yellow-700');
+      } else {
+        tipeBadge.classList.add('bg-slate-100', 'text-slate-700');
+      }
+    }
+
+    const statusBadge = document.getElementById('navbarPreviewStatusBadge');
+    if (statusBadge) {
+      statusBadge.classList.remove('bg-green-100', 'text-green-700', 'bg-slate-200', 'text-slate-600', 'bg-slate-100');
+      if (statusValue === 'publish') {
+        statusBadge.classList.add('bg-green-100', 'text-green-700');
+      } else if (statusValue === 'draft') {
+        statusBadge.classList.add('bg-slate-200', 'text-slate-600');
+      } else {
+        statusBadge.classList.add('bg-slate-100', 'text-slate-600');
+      }
+    }
+
+    if (previewFileList) {
+      previewFileList.innerHTML = '';
+      if (files.length === 0) {
+        previewFileList.innerHTML = '<span class="text-slate-400 text-sm">Tidak ada file.</span>';
+        setActiveFile(null);
+      } else {
+        files.forEach((file, idx) => {
+          const btnFile = document.createElement('button');
+          btnFile.type = 'button';
+          btnFile.className = 'text-left hover:underline';
+          btnFile.textContent = file.name || `File ${idx + 1}`;
+          btnFile.addEventListener('click', () => setActiveFile(file));
+          previewFileList.appendChild(btnFile);
+        });
+        setActiveFile(files[0]);
+      }
+    }
+
+    previewModal.classList.remove('hidden');
+    previewModal.classList.add('flex');
+  });
+
+  previewModal?.querySelectorAll('.btn-close').forEach((btn) => {
+    btn.addEventListener('click', closePreview);
+  });
+
+  previewModal?.addEventListener('click', (e) => {
+    if (e.target === previewModal) closePreview();
+  });
+  })();
 </script>

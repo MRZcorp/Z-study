@@ -28,7 +28,7 @@
       <img
         :src="photoPreview ? photoPreview : '{{ $foto 
                                         ? asset('storage/' . $foto) 
-                                        : asset('img/Logo_Zstudy.png') }}'"
+                                        : asset('img/default_profil.jpg') }}'"
         class="w-32 h-32 rounded-full object-cover border-4 border-blue-600
                group-hover:opacity-80 transition"
       >
@@ -170,8 +170,8 @@
             <p><span class="font-medium">Program Studi:</span> {{$prodi}} </p>
             <p><span class="font-medium">Jenjang:</span> null</p>
             <p><span class="font-medium">Angkatan:</span> {{{$angkatan}}}</p>
-            <p><span class="font-medium">IPK:</span> 3.75</p>
-            <p><span class="font-medium">SKS Maksimal:</span> 24</p>
+            <p><span class="font-medium">IPK:</span> {{ number_format((float) ($mahasiswa->ipk ?? 0), 2) }}</p>
+            <p><span class="font-medium">SKS Maksimal:</span> {{ $mahasiswa->maks_sks ?? 24 }}</p>
           </div>
         </div>
   
@@ -180,9 +180,9 @@
           <h2 class="text-lg font-semibold mb-4">Status Studi</h2>
   
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <p><span class="font-medium">Semester:</span> Genap 2025 / 2026</p>
+            <p><span class="font-medium">Semester:</span> {{ $mahasiswa->semester_aktif ?? 1 }}</p>
             <p><span class="font-medium">Status Akademik:</span>
-              <span class="text-green-600 font-semibold">Aktif</span>
+              <span class="font-semibold">{{ $mahasiswa->status_akademik ?? 'AKTIF' }}</span>
             </p>
             <p><span class="font-medium">Jumlah SKS Diambil:</span> 21</p>
             <p><span class="font-medium">Batas Studi:</span> 8 Semester</p>

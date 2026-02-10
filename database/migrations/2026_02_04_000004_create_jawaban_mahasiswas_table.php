@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('tipe')->default('essay');
             $table->string('jawaban_pg')->nullable();
             $table->text('jawaban_text')->nullable();
+            $table->decimal('essay_score', 6, 2)->nullable();
             $table->timestamps();
 
             $table->unique(['mahasiswa_id', 'soal_id']);

@@ -14,7 +14,6 @@ class Tugas extends Model
 
     protected $fillable = [
         'nama_kelas_id',
-        
         'tugas_ke',
         'mata_kuliah_id',
         'nama_tugas',
