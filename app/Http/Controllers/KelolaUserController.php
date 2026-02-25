@@ -66,6 +66,9 @@ class KelolaUserController extends Controller
         'status' => $request->status,
         ]);
         
+        if ($request->ajax()) {
+            return response()->json(['message' => 'User berhasil ditambahkan']);
+        }
 
 
         return redirect()->back()->with('success', 'User berhasil ditambahkan');
@@ -75,6 +78,14 @@ class KelolaUserController extends Controller
     public function update(Request $request, $id)
         {
         $user = User::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'role_id' => 'required|exists:roles,id',
+            'status' => 'required|in:aktif,nonaktif',
+            'password' => 'nullable|string|min:3',
+        ]);
 
         $data = [
         'name' => $request->name,
@@ -89,6 +100,9 @@ class KelolaUserController extends Controller
 
         $user->update($data);
 
+        if ($request->ajax()) {
+            return response()->json(['message' => 'User berhasil diupdate']);
+        }
 
         return redirect()->back()->with('success', 'User berhasil diupdate');
         }
@@ -96,6 +110,11 @@ class KelolaUserController extends Controller
         public function destroy($id)
         {
         User::findOrFail($id)->delete();
+
+        if (request()->ajax()) {
+            return response()->json(['message' => 'User berhasil dihapus']);
+        }
+
         return redirect()->back()->with('success', 'User berhasil dihapus');
         }
 

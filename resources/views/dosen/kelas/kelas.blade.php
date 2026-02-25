@@ -150,27 +150,63 @@
 
   
           <!-- BUTTON -->
-          
-         <!-- tombol lihat -->
-  
+          @php
+            $chatUserMap = collect([
+              (string) ($kelas->dosens->user_id ?? '') => [
+                'name' => ($kelas->dosens->user->name ?? '-'),
+                'foto' => ($kelas->dosens && $kelas->dosens->poto_profil ? asset('storage/' . $kelas->dosens->poto_profil) : asset('img/default_profil.jpg')),
+                'phone' => ($kelas->dosens->no_hp ?? '-'),
+                'role' => 'dosen',
+                'gelar' => ($kelas->dosens->gelar ?? ''),
+                'fakultas' => ($kelas->dosens->fakultas->fakultas ?? '-'),
+                'prodi' => ($kelas->dosens->programStudi->nama_prodi ?? '-'),
+              ],
+            ])->merge(
+              $kelas->mahasiswas->mapWithKeys(fn ($mhs) => [
+                (string) ($mhs->user_id ?? '') => [
+                  'name' => ($mhs->user->name ?? '-'),
+                  'foto' => ($mhs->poto_profil ? asset('storage/' . $mhs->poto_profil) : asset('img/default_profil.jpg')),
+                  'phone' => '-',
+                  'role' => 'mahasiswa',
+                  'nim' => ($mhs->nim ?? '-'),
+                  'fakultas' => ($mhs->fakultas->fakultas ?? '-'),
+                  'prodi' => ($mhs->programStudi->nama_prodi ?? '-'),
+                ],
+              ])
+            );
+          @endphp
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              onclick="openChatModal(this)"
+              data-kelas-id="{{ $kelas->id }}"
+              data-kelas-nama="{{ $kelas->mataKuliah->mata_kuliah }} - {{ $kelasLabel }}"
+              data-user-map='@json($chatUserMap)'
+              class="flex items-center gap-1 rounded-full bg-slate-100 text-slate-700 px-3 py-1.5 text-sm font-semibold transition hover:bg-slate-200"
+            >
+              <span class="material-symbols-rounded text-base">chat</span>
+              
+            </button>
 
             <button
-            onclick="openModal(this)"
-             data-kelas-id="{{ $kelas->id }}"
-             data-kelas-nama="{{ $kelas->mataKuliah->mata_kuliah }} - {{ $kelasLabel }}"
-             data-dosen="{{ $kelas->dosens->user->name ?? '-' }}"
-             data-participants='@json($kelas->mahasiswas->map(fn($mhs) => [
+              type="button"
+              onclick="openModal(this)"
+              data-kelas-id="{{ $kelas->id }}"
+              data-kelas-nama="{{ $kelas->mataKuliah->mata_kuliah }} - {{ $kelasLabel }}"
+              data-dosen="{{ $kelas->dosens->user->name ?? '-' }}"
+              data-participants='@json($kelas->mahasiswas->map(fn($mhs) => [
                 "name" => $mhs->user->name ?? "-",
                 "foto" => $mhs->poto_profil ? asset("storage/" . $mhs->poto_profil) : asset("img/default_profil.jpg"),
-             ])->values())'
+              ])->values())'
               class="flex items-center gap-1 rounded-full bg-gradient-to-r 
                      from-blue-500 to-purple-500 px-4 py-1.5 text-sm 
                      font-semibold text-white transition 
                      hover:-translate-y-2 hover:shadow-lg"
             >
-              <span class="material-symbols-rounded text-base">Visibility</span>
+              <span class="material-symbols-rounded text-base">visibility</span>
               Lihat
             </button>
+          </div>
            
    
 
@@ -248,6 +284,8 @@ class="fixed inset-0 z-50 hidden items-center justify-center
 </div>
 </div>
 
+@include('dosen.kelas.partials.chat_modal')
+
 <style>
   @keyframes scaleIn {
     from { transform: scale(.95); opacity: 0 }
@@ -315,58 +353,7 @@ class="fixed inset-0 z-50 hidden items-center justify-center
     });
     </script>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <div id="buatKelasModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+    <div id="buatKelasModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4">
     <div class="relative w-full max-w-3xl bg-white rounded-2xl shadow-xl">
       <div class="flex items-center justify-between px-5 py-4 border-b">
         <h3 class="text-lg font-semibold text-gray-800">Buat Kelas Baru</h3>
@@ -668,3 +655,5 @@ class="fixed inset-0 z-50 hidden items-center justify-center
     }
   </script>
   
+
+

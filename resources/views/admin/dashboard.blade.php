@@ -2,6 +2,19 @@
 <x-navbar></x-navbar>
 <x-sidebar>admin</x-sidebar>
 
+<style>
+  /* Khusus dashboard admin: ringkasan aktivitas jangan terlalu memanjang */
+  .content-grid {
+    grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr) !important;
+  }
+
+  @media (max-width: 992px) {
+    .content-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+
 
 
 
@@ -53,23 +66,23 @@
                 <div class="right-column">
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <!-- TOTAL USERS -->
-                    <div class="bg-white rounded-xl p-4 shadow flex items-center justify-between">
-                      <div>
+                    <div class="bg-white rounded-xl p-4 shadow flex items-center justify-between gap-3 overflow-hidden">
+                      <div class="min-w-0">
                         <div class="text-2xl font-bold text-slate-800">{{ $totalUsers ?? 0 }}</div>
                         <div class="text-sm text-slate-500">Total Pengguna</div>
                       </div>
-                      <div class="p-3 rounded-lg bg-blue-100 text-blue-600">
+                      <div class="shrink-0 p-3 rounded-lg bg-blue-100 text-blue-600">
                         <span class="material-symbols-rounded text-3xl">group</span>
                       </div>
                     </div>
                   
                     <!-- ACTIVE USERS -->
-                    <div class="bg-white rounded-xl p-4 shadow flex items-center justify-between">
-                      <div>
+                    <div class="bg-white rounded-xl p-4 shadow flex items-center justify-between gap-3 overflow-hidden">
+                      <div class="min-w-0">
                         <div class="text-2xl font-bold text-slate-800">{{ $activeUsers ?? 0 }}</div>
                         <div class="text-sm text-slate-500">Pengguna Aktif</div>
                       </div>
-                      <div class="p-3 rounded-lg bg-green-100 text-green-600">
+                      <div class="shrink-0 p-3 rounded-lg bg-green-100 text-green-600">
                         <span class="material-symbols-rounded text-3xl">verified_user</span>
                       </div>
                     </div>
@@ -77,45 +90,45 @@
                     
                   
                     <!-- DOSEN -->
-                    <div class="bg-white rounded-xl p-4 shadow flex items-center justify-between">
-                      <div>
+                    <div class="bg-white rounded-xl p-4 shadow flex items-center justify-between gap-3 overflow-hidden">
+                      <div class="min-w-0">
                         <div class="text-2xl font-bold text-slate-800">{{ $totalDosen ?? 0 }}</div>
                         <div class="text-sm text-slate-500">Total Dosen</div>
                       </div>
-                      <div class="p-3 rounded-lg bg-indigo-100 text-indigo-600">
+                      <div class="shrink-0 p-3 rounded-lg bg-indigo-100 text-indigo-600">
                         <span class="material-symbols-rounded text-3xl">school</span>
                       </div>
                     </div>
                   
                     <!-- DOSEN AKTIF -->
-                    <div class="bg-white rounded-xl p-4 shadow flex items-center justify-between">
-                      <div>
+                    <div class="bg-white rounded-xl p-4 shadow flex items-center justify-between gap-3 overflow-hidden">
+                      <div class="min-w-0">
                         <div class="text-2xl font-bold text-slate-800">{{ $activeDosen ?? 0 }}</div>
                         <div class="text-sm text-slate-500">Dosen Aktif</div>
                       </div>
-                      <div class="p-3 rounded-lg bg-green-100 text-green-600">
+                      <div class="shrink-0 p-3 rounded-lg bg-green-100 text-green-600">
                         <span class="material-symbols-rounded text-3xl">co_present</span>
                       </div>
                     </div>
                   
                     <!-- MAHASISWA -->
-                    <div class="bg-white rounded-xl p-4 shadow flex items-center justify-between">
-                      <div>
+                    <div class="bg-white rounded-xl p-4 shadow flex items-center justify-between gap-3 overflow-hidden">
+                      <div class="min-w-0">
                         <div class="text-2xl font-bold text-slate-800">{{ $totalMahasiswa ?? 0 }}</div>
                         <div class="text-sm text-slate-500">Total Mahasiswa</div>
                       </div>
-                      <div class="p-3 rounded-lg bg-cyan-100 text-cyan-600">
+                      <div class="shrink-0 p-3 rounded-lg bg-cyan-100 text-cyan-600">
                         <span class="material-symbols-rounded text-3xl">groups</span>
                       </div>
                     </div>
                   
                     <!-- KELAS -->
-                    <div class="bg-white rounded-xl p-4 shadow flex items-center justify-between">
-                      <div>
+                    <div class="bg-white rounded-xl p-4 shadow flex items-center justify-between gap-3 overflow-hidden">
+                      <div class="min-w-0">
                         <div class="text-2xl font-bold text-slate-800">{{ $activeKelas ?? 0 }}</div>
                         <div class="text-sm text-slate-500">Kelas Aktif</div>
                       </div>
-                      <div class="p-3 rounded-lg bg-purple-100 text-purple-600">
+                      <div class="shrink-0 p-3 rounded-lg bg-purple-100 text-purple-600">
                         <span class="material-symbols-rounded text-3xl">calendar_month</span>
                       </div>
                     </div>

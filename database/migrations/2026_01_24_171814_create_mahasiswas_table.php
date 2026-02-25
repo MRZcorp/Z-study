@@ -37,7 +37,6 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('poto_profil')->nullable();
             $table->string('bg')->nullable();
-            $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
             $table->timestamps();
         });
     }
@@ -47,6 +46,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mahasiswa');
+        Schema::dropIfExists('mahasiswas');
     }
 };

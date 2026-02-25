@@ -47,12 +47,35 @@ class MahasiswaController extends Controller
 
         $jumlahKelas = $kelasIds->count();
 
-        $sksDitempuh = $kelasIds->isNotEmpty()
-            ? Kelas::with('mataKuliah')
-                ->whereIn('id', $kelasIds)
-                ->get()
-                ->sum(fn($kelas) => (int) ($kelas->mataKuliah->sks ?? 0))
-            : 0;
+        $approvedKelasAll = Kelas::with('mataKuliah:id,sks')
+            ->select(['id', 'tahun_ajar', 'semester', 'mata_kuliah_id', 'status'])
+            ->when($mahasiswaId, fn($q) => $q->whereHas('mahasiswas', function ($mq) use ($mahasiswaId) {
+                $mq->where('mahasiswa_id', $mahasiswaId)
+                    ->where('kelas_mahasiswa.status', 'disetujui');
+            }))
+            ->whereIn('status', ['aktif', 'selesai'])
+            ->get();
+
+        $sksDitempuh = $approvedKelasAll->sum(fn($kelas) => (int) ($kelas->mataKuliah?->sks ?? 0));
+
+        $normalizedTahunAjarAktif = preg_replace('/\s+/', '', (string) $tahunAjarAktif);
+        $hasActiveKrsPeriod = !empty($semesterAktifRaw) && !empty($normalizedTahunAjarAktif) && $normalizedTahunAjarAktif !== '-';
+        $approvedKelasAktif = $hasActiveKrsPeriod
+            ? $approvedKelasAll->filter(function ($k) use ($semesterAktifRaw, $normalizedTahunAjarAktif) {
+                $statusMatch = strtolower((string) ($k->status ?? '')) === 'aktif';
+                if (!$statusMatch) {
+                    return false;
+                }
+                $semesterMatch = strtolower((string) ($k->semester ?? '')) === strtolower((string) $semesterAktifRaw);
+                if (!$semesterMatch) {
+                    return false;
+                }
+                $tahunKelas = preg_replace('/\s+/', '', (string) ($k->tahun_ajar ?? ''));
+                return $tahunKelas === $normalizedTahunAjarAktif;
+            })
+            : collect();
+
+        $sksDiambilSemester = $approvedKelasAktif->sum(fn($kelas) => (int) ($kelas->mataKuliah?->sks ?? 0));
 
         $jenjang = strtolower((string) ($mahasiswa?->jenjang ?? 's1'));
         $sksMaks = $jenjang === 'd3'
@@ -180,6 +203,36 @@ class MahasiswaController extends Controller
             $ipsTerakhir = (float) (Mahasiswa::where('id', $mahasiswaId)->value('ips_terakhir') ?? 0);
             $semesterAktifMhs = (int) (Mahasiswa::where('id', $mahasiswaId)->value('semester_aktif') ?? 1);
 
+            // Sinkronkan semester tampilan berdasarkan riwayat kelas yang disetujui.
+            $semesterOrder = ['ganjil' => 1, 'genap' => 2];
+            $semesterRiwayat = Kelas::query()
+                ->whereHas('mahasiswas', function ($q) use ($mahasiswaId) {
+                    $q->where('mahasiswa_id', $mahasiswaId)
+                      ->where('kelas_mahasiswa.status', 'disetujui');
+                })
+                ->whereIn('status', ['aktif', 'selesai'])
+                ->get(['tahun_ajar', 'semester'])
+                ->sort(function ($a, $b) use ($semesterOrder) {
+                    preg_match('/\d{4}/', (string) ($a->tahun_ajar ?? ''), $aMatch);
+                    preg_match('/\d{4}/', (string) ($b->tahun_ajar ?? ''), $bMatch);
+                    $yearA = (int) ($aMatch[0] ?? 0);
+                    $yearB = (int) ($bMatch[0] ?? 0);
+                    if ($yearA !== $yearB) {
+                        return $yearA <=> $yearB;
+                    }
+                    $semA = $semesterOrder[strtolower((string) ($a->semester ?? ''))] ?? 99;
+                    $semB = $semesterOrder[strtolower((string) ($b->semester ?? ''))] ?? 99;
+                    return $semA <=> $semB;
+                })
+                ->map(fn($k) => (($k->tahun_ajar ?? '-') . '|' . strtolower((string) ($k->semester ?? '-'))))
+                ->unique()
+                ->values();
+
+            $semesterRiwayatCount = $semesterRiwayat->count();
+            if ($semesterRiwayatCount > 0) {
+                $semesterAktifMhs = max($semesterAktifMhs, $semesterRiwayatCount);
+            }
+
             if (!$pernahAmbilKelas || $semesterAktifMhs <= 1) {
                 $sksMaksIps = 24;
             } elseif ($ipsTerakhir >= 3.0) {
@@ -205,6 +258,7 @@ class MahasiswaController extends Controller
             'sksMaks',
             'ipsTerakhir',
             'sksMaksIps',
+            'sksDiambilSemester',
             'tahunAjarAktif',
             'semesterAktif',
             'semesterAktifMhs',

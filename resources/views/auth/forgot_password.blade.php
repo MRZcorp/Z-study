@@ -1,15 +1,13 @@
 ﻿<x-header>Forgot Password</x-header>
 
-<div class="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-  <div class="w-full max-w-lg rounded-3xl bg-white/80 backdrop-blur-md border border-white/50 shadow-2xl p-8">
-    <div class="flex items-center gap-3 mb-6">
-      <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white">
+<div class="min-h-screen flex items-center justify-center p-6" style="background-color: rgba(119, 206, 243, 0.2);">
+  <div class="relative w-[92%] md:w-full max-w-md rounded-3xl bg-white/55 backdrop-blur-xl border border-white/60 shadow-2xl p-8">
+    <div class="flex flex-col items-center text-center mb-4">
+      <div class="h-14 w-14 mb-3 rounded-2xl bg-gradient-to-br from-[#2563EB] to-[#7C3AED] flex items-center justify-center text-white">
         <span class="material-symbols-rounded">mail</span>
       </div>
-      <div>
-        <h1 class="text-2xl font-semibold text-slate-800">Lupa Password</h1>
-        <p class="text-sm text-slate-500">Masukkan username / NIM / NIDN / email untuk menerima tautan reset.</p>
-      </div>
+      <h1 class="text-xl font-semibold text-slate-900">Lupa Password</h1>
+      <p class="text-sm text-slate-500">Masukkan username / NIM / NIDN / email untuk menerima tautan reset.</p>
     </div>
 
     @if (session('status'))
@@ -26,26 +24,25 @@
 
     <form action="{{ route('password.email') }}" method="POST" class="space-y-5">
       @csrf
-      <div>
-        <label class="block text-sm font-medium text-slate-600 mb-2">Username / NIM / NIDN / Email</label>
-        <input
-          type="text"
-          name="identity"
-          value="{{ old('identity') }}"
-          placeholder="zstudy@kampus.ac.id"
-          class="w-full rounded-xl border border-slate-200 bg-white/70 px-4 py-3 text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
-        />
-      </div>
+      <input
+        type="text"
+        name="identity"
+        value="{{ old('identity') }}"
+        placeholder="Username / NIM / NIDN / Email"
+        class="w-full border-b border-slate-300 bg-transparent
+               px-2 py-3 text-slate-900 placeholder-slate-500
+               focus:border-[#2563EB] focus:border-b-2 focus:outline-none"
+      />
 
-      <div class="flex items-center justify-between">
-        <a href="{{ route('login') }}" class="text-sm text-slate-500 hover:text-slate-700">Kembali ke Login</a>
-        <button
-          type="submit"
-          class="rounded-full bg-gradient-to-r from-indigo-700 to-purple-700 px-6 py-2.5 text-sm font-semibold text-white shadow hover:-translate-y-0.5 hover:shadow-lg"
-        >
-          Kirim Tautan
-        </button>
-      </div>
+      <button
+        type="submit"
+        class="mt-2 w-full rounded-full
+               bg-gradient-to-r from-[#2563EB] to-[#7C3AED]
+               px-6 py-3 text-sm font-semibold text-white
+               transition hover:-translate-y-1 hover:shadow-xl"
+      >
+        Kirim Tautan
+      </button>
     </form>
 
     <div class="mt-6 border-t pt-5">
@@ -53,24 +50,23 @@
       <form action="{{ route('password.verify') }}" method="POST" class="space-y-4">
         @csrf
         <input type="hidden" name="email" value="{{ old('email', session('reset_email')) }}" />
-        <div>
-          <label class="block text-sm font-medium text-slate-600 mb-2">Kode Reset (6 digit)</label>
-          <input
-            type="text"
-            name="token"
-            value="{{ old('token') }}"
-            placeholder="123456"
-            class="w-full rounded-xl border border-slate-200 bg-white/70 px-4 py-3 text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
-          />
-        </div>
-        <div class="flex justify-end">
-          <button
-            type="submit"
-            class="rounded-full bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow hover:-translate-y-0.5 hover:shadow-lg"
-          >
-            Verifikasi Token
-          </button>
-        </div>
+        <input
+          type="text"
+          name="token"
+          value="{{ old('token') }}"
+          placeholder="Kode Reset (6 digit)"
+          class="w-full border-b border-slate-300 bg-transparent
+                 px-2 py-3 text-slate-900 placeholder-slate-500
+                 focus:border-[#2563EB] focus:border-b-2 focus:outline-none"
+        />
+        <button
+          type="submit"
+          class="w-full rounded-full
+                 bg-slate-900 px-6 py-3 text-sm font-semibold text-white
+                 transition hover:-translate-y-1 hover:shadow-xl"
+        >
+          Verifikasi Token
+        </button>
       </form>
     </div>
   </div>

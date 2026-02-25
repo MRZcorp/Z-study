@@ -1,4 +1,4 @@
-@php
+﻿@php
   $kelasNama = $kelas->mataKuliah->mata_kuliah ?? 'Materi Pembelajaran';
   $kelasKode = $kelas->nama_kelas ?? '-';
   $kelasHari = $kelas->hari_kelas ?? '-';
@@ -95,26 +95,36 @@
           Pertemuan
         </p>
 
-        <a href="{{ request()->url() }}"
-           class="block px-3 py-2 rounded-lg text-sm
-                  {{ request('pertemuan') == null ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-slate-100' }}">
-          Semua Pertemuan
-        </a>
+        <button id="riwayatPertemuanToggle"
+                type="button"
+                class="md:hidden w-full px-3 py-2 rounded-lg text-sm bg-blue-100 text-blue-700 font-semibold flex items-center justify-between"
+                aria-expanded="false">
+          <span>Semua Pertemuan</span>
+          <span id="riwayatPertemuanChevron" class="material-symbols-rounded text-base transition-transform duration-200">expand_more</span>
+        </button>
 
-        @for ($i = 1; $i <= 14; $i++)
-          <a href="{{ request()->url() }}?pertemuan={{ $i }}"
+        <div id="riwayatPertemuanLinks" class="hidden md:block space-y-1">
+          <a href="{{ request()->url() }}"
              class="block px-3 py-2 rounded-lg text-sm
-                    {{ request('pertemuan') == $i ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-slate-100' }}">
-            <span class="flex items-center justify-between">
-              <span>Pertemuan {{ $i }}</span>
-              @if (($pertemuanHasMateri ?? collect())->contains($i))
-                <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500 text-white text-[10px]">
-                  âœ“
-                </span>
-              @endif
-            </span>
+                    {{ request('pertemuan') == null ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-slate-100' }}">
+            Semua Pertemuan
           </a>
-        @endfor
+
+          @for ($i = 1; $i <= 14; $i++)
+            <a href="{{ request()->url() }}?pertemuan={{ $i }}"
+               class="block px-3 py-2 rounded-lg text-sm
+                      {{ request('pertemuan') == $i ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-slate-100' }}">
+              <span class="flex items-center justify-between">
+                <span>Pertemuan {{ $i }}</span>
+                @if (($pertemuanHasMateri ?? collect())->contains($i))
+                  <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500 text-white text-[10px]">
+                    ✓
+                  </span>
+                @endif
+              </span>
+            </a>
+          @endfor
+        </div>
       </div>
     </aside>
   </aside>
@@ -276,3 +286,17 @@
     </div>
   </section>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const toggle = document.getElementById('riwayatPertemuanToggle');
+  const links = document.getElementById('riwayatPertemuanLinks');
+  const chevron = document.getElementById('riwayatPertemuanChevron');
+  if (!toggle || !links || !chevron) return;
+
+  toggle.addEventListener('click', function () {
+    links.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
+    toggle.setAttribute('aria-expanded', links.classList.contains('hidden') ? 'false' : 'true');
+  });
+});
+</script>

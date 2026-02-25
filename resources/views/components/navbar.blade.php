@@ -100,6 +100,59 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="dropdown relative" id="messageWrapper">
+                    <button id="messageButton" class="p-2 text-gray-600 hover:text-blue-600 rounded-full hover:bg-gray-100 transition-colors duration-200 relative">
+                        <span class="material-symbols-rounded">chat</span>
+                        @if(($navbarDiskusiHasNew ?? false))
+                        <span class="message-dot absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white"></span>
+                        @endif
+                    </button>
+                    <div class="dropdown-menu absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl py-2 z-50 opacity-0 invisible transition-all duration-300 transform -translate-y-2 border border-gray-100" id="messageDropdown">
+                        <div class="px-4 py-2 border-b border-gray-100 flex items-center justify-between">
+                            <span class="text-sm font-semibold text-gray-700">Pesan Z-Study</span>
+                            <span class="text-xs text-gray-500">{{ $navbarDiskusiCount ?? 0 }}</span>
+                        </div>
+                        <div class="max-h-80 overflow-y-auto">
+                            @forelse(($navbarDiskusi ?? collect()) as $item)
+                                <button
+                                    type="button"
+                                    class="w-full text-left px-4 py-2 hover:bg-blue-50 transition-colors btn-open-diskusi {{ ($item['unread'] ?? false) ? 'bg-red-50/40' : '' }}"
+                                    data-url="{{ $item['url'] ?? '#' }}"
+                                    data-type="{{ $item['type'] ?? 'kelas' }}"
+                                    data-id="{{ $item['context_id'] ?? '' }}"
+                                    data-title="{{ $item['title'] ?? '-' }}"
+                                    data-sender="{{ $item['sender'] ?? '-' }}"
+                                    data-pesan="{{ $item['pesan'] ?? '-' }}"
+                                    data-time="{{ $item['time'] ?? '-' }}"
+                                >
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="flex items-start gap-3 min-w-0">
+                                            <img
+                                              src="{{ $item['thumb'] ?? asset('img/grup.png') }}"
+                                              alt="Kelas"
+                                              class="h-10 w-10 rounded-full object-cover border border-slate-200 shadow-sm"
+                                            >
+                                            <div class="min-w-0">
+                                            <p class="text-[11px] uppercase tracking-wide text-blue-600 font-semibold">{{ $item['type_label'] ?? '-' }}</p>
+                                            <p class="text-sm font-semibold text-gray-800 truncate">{{ $item['title'] ?? '-' }}</p>
+                                            <p class="text-xs text-gray-500 truncate">{{ $item['sender'] ?? '-' }}: {{ \Illuminate\Support\Str::limit($item['pesan'] ?? '-', 55) }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-1 shrink-0">
+                                            @if(($item['unread'] ?? false))
+                                                <span class="inline-block h-2 w-2 rounded-full bg-red-500"></span>
+                                            @endif
+                                            <span class="text-[11px] text-gray-400">{{ $item['time'] ?? '-' }}</span>
+                                        </div>
+                                    </div>
+                                </button>
+                            @empty
+                                <div class="px-4 py-6 text-sm text-gray-500 text-center">Belum ada pesan diskusi.</div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
   {{-- mode --}}
 
 {{--   
@@ -176,7 +229,7 @@
                             </div>
                         </div>
                         
-                        <a href="{{$profil}}" class="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 
+                        <a href="{{$profil}}" class="hidden px-4 py-2.5 text-gray-700 hover:bg-blue-50 
                         hover:text-blue-600 flex items-center transition-colors duration-200">
                             <span class="material-symbols-rounded">Account_Circle</span>
                              <i class="fas fa-user-circle text-gray-400 mr-3 w-5 text-center"></i>
@@ -224,6 +277,110 @@
   
     
   </nav>
+
+<!-- MODAL PESAN DISKUSI -->
+<div id="diskusiModal" class="fixed inset-0 z-[70] hidden items-center justify-center md:justify-start bg-black/45 backdrop-blur-sm px-4 md:px-6">
+  <div class="w-full md:w-[340px] md:min-w-[340px] md:max-w-[340px] h-[720px] max-h-[90vh] rounded-2xl bg-white shadow-xl overflow-hidden flex flex-col">
+      <div class="flex items-center justify-between px-5 py-4 border-b">
+        <h3 class="text-lg font-semibold text-slate-800">Pesan Z-Study</h3>
+        <button id="btnCloseDiskusiModal" type="button" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+      </div>
+      <div class="p-4 border-b bg-slate-50/70">
+        <div class="relative flex items-center">
+          <span class="material-symbols-rounded absolute left-3 text-gray-400 text-[20px]">search</span>
+          <input
+            id="diskusiSearchInput"
+            type="text"
+            placeholder="Cari pesan diskusi..."
+            class="h-10 w-full rounded-full border border-gray-300 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+        </div>
+        <div class="mt-3 flex items-center gap-2">
+          <button type="button" id="diskusiFilterAll" class="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white">Semua</button>
+          <button type="button" id="diskusiFilterUnread" class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200">Belum Dibaca</button>
+        </div>
+      </div>
+      <div id="diskusiModalList" class="flex-1 overflow-y-auto">
+        @forelse(($navbarDiskusi ?? collect()) as $item)
+          <div
+            class="modal-diskusi-item w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-blue-50 transition-colors cursor-pointer {{ ($item['unread'] ?? false) ? 'bg-red-50/40' : '' }}"
+            data-url="{{ $item['url'] ?? '#' }}"
+            data-type="{{ $item['type'] ?? 'kelas' }}"
+            data-id="{{ $item['context_id'] ?? '' }}"
+            data-title="{{ $item['title'] ?? '-' }}"
+            data-sender="{{ $item['sender'] ?? '-' }}"
+            data-pesan="{{ $item['pesan'] ?? '-' }}"
+            data-time="{{ $item['time'] ?? '-' }}"
+            data-unread="{{ ($item['unread'] ?? false) ? '1' : '0' }}"
+            data-search="{{ strtolower(($item['type_label'] ?? '') . ' ' . ($item['title'] ?? '') . ' ' . ($item['sender'] ?? '') . ' ' . ($item['pesan'] ?? '')) }}"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start gap-3 min-w-0">
+                <img
+                  src="{{ $item['thumb'] ?? asset('img/grup.png') }}"
+                  alt="Kelas"
+                  class="h-11 w-11 rounded-full object-cover border border-slate-200 shadow-sm"
+                >
+                <div class="min-w-0">
+                  <p class="text-[11px] uppercase tracking-wide text-blue-600 font-semibold">{{ $item['type_label'] ?? '-' }}</p>
+                  <p class="diskusi-open-title text-sm font-semibold text-gray-800 truncate hover:underline">{{ $item['title'] ?? '-' }}</p>
+                  <p class="text-xs text-gray-500 truncate">{{ $item['sender'] ?? '-' }}: {{ \Illuminate\Support\Str::limit($item['pesan'] ?? '-', 70) }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                @if(($item['unread'] ?? false))
+                  <span class="inline-block h-2 w-2 rounded-full bg-red-500"></span>
+                @endif
+                <span class="text-[11px] text-gray-400">{{ $item['time'] ?? '-' }}</span>
+              </div>
+            </div>
+          </div>
+        @empty
+          <div class="px-4 py-10 text-sm text-gray-500 text-center">Belum ada pesan diskusi.</div>
+        @endforelse
+        <div id="diskusiModalEmpty" class="hidden px-4 py-10 text-sm text-gray-500 text-center">Tidak ada hasil.</div>
+      </div>
+  </div>
+</div>
+
+@php
+  $roleKeyNavbar = strtolower((string) ($role ?? ''));
+  $navbarChatTemplates = [];
+  if ($roleKeyNavbar === 'dosen') {
+      $navbarChatTemplates = [
+          'kelas' => [
+              'base' => route('dosen.kelas.diskusi.index', ['kelas' => '__CTX_ID__']),
+              'message' => route('dosen.kelas.diskusi.update', ['kelas' => '__CTX_ID__', 'diskusi' => '__DISKUSI_ID__']),
+          ],
+          'ujian' => [
+              'base' => route('dosen.ujian.diskusi.index', ['ujian' => '__CTX_ID__']),
+              'message' => route('dosen.ujian.diskusi.update', ['ujian' => '__CTX_ID__', 'diskusi' => '__DISKUSI_ID__']),
+          ],
+          'tugas' => [
+              'base' => route('dosen.tugas.diskusi.index', ['tugas' => '__CTX_ID__']),
+              'message' => route('dosen.tugas.diskusi.update', ['tugas' => '__CTX_ID__', 'diskusi' => '__DISKUSI_ID__']),
+          ],
+      ];
+  } elseif ($roleKeyNavbar === 'mahasiswa') {
+      $navbarChatTemplates = [
+          'kelas' => [
+              'base' => route('mahasiswa.kelas.diskusi.index', ['kelas' => '__CTX_ID__']),
+              'message' => route('mahasiswa.kelas.diskusi.update', ['kelas' => '__CTX_ID__', 'diskusi' => '__DISKUSI_ID__']),
+          ],
+          'ujian' => [
+              'base' => route('mahasiswa.ujian.diskusi.index', ['ujian' => '__CTX_ID__']),
+              'message' => route('mahasiswa.ujian.diskusi.update', ['ujian' => '__CTX_ID__', 'diskusi' => '__DISKUSI_ID__']),
+          ],
+          'tugas' => [
+              'base' => route('mahasiswa.tugas.diskusi.index', ['tugas' => '__CTX_ID__']),
+              'message' => route('mahasiswa.tugas.diskusi.update', ['tugas' => '__CTX_ID__', 'diskusi' => '__DISKUSI_ID__']),
+          ],
+      ];
+  }
+@endphp
+<script>
+  window.__navbarChatTemplates = @json($navbarChatTemplates);
+</script>
 
 <script>
   (() => {
@@ -337,6 +494,269 @@
     });
 
     const notifDropdown = document.getElementById('notifDropdown');
+    const notifButton = document.getElementById('notifButton');
+    const messageDropdown = document.getElementById('messageDropdown');
+    const messageWrapper = document.getElementById('messageWrapper');
+    const messageButton = document.getElementById('messageButton');
+    const messageMarkReadUrl = @json($navbarDiskusiMarkReadRoute ?? null);
+    const diskusiModal = document.getElementById('diskusiModal');
+    const btnCloseDiskusiModal = document.getElementById('btnCloseDiskusiModal');
+    const diskusiSearchInput = document.getElementById('diskusiSearchInput');
+    const diskusiFilterAll = document.getElementById('diskusiFilterAll');
+    const diskusiFilterUnread = document.getElementById('diskusiFilterUnread');
+    const diskusiModalEmpty = document.getElementById('diskusiModalEmpty');
+    const navbarChatTemplates = window.__navbarChatTemplates || {};
+    let diskusiFilterMode = 'all';
+    const isMobileViewport = () => window.matchMedia('(max-width: 767px)').matches;
+    let reopenDiskusiModalAfterChatClose = false;
+    const toggleMobileSidebarForDiskusi = (hide) => {
+      if (!isMobileViewport()) return;
+      const sidebar = document.querySelector('.sidebar');
+      const sidebarBtn = document.querySelector('.sidebar-menu-button');
+      if (hide) {
+        sidebar?.classList.add('hidden');
+        sidebarBtn?.classList.add('hidden');
+        return;
+      }
+      sidebar?.classList.remove('hidden');
+      sidebarBtn?.classList.remove('hidden');
+    };
+
+    const openDiskusiModalPanel = () => {
+      if (!diskusiModal) return;
+      hideDropdown(messageDropdown);
+      toggleMobileSidebarForDiskusi(true);
+      if (diskusiSearchInput) diskusiSearchInput.value = '';
+      diskusiFilterMode = 'all';
+      diskusiFilterAll?.classList.remove('bg-slate-100', 'text-slate-700');
+      diskusiFilterAll?.classList.add('bg-blue-600', 'text-white');
+      diskusiFilterUnread?.classList.remove('bg-blue-600', 'text-white');
+      diskusiFilterUnread?.classList.add('bg-slate-100', 'text-slate-700');
+      applyDiskusiModalFilter();
+      if (!isMobileViewport()) {
+        diskusiModal.classList.add('split-with-chat');
+      } else {
+        diskusiModal.classList.remove('split-with-chat');
+      }
+      diskusiModal.classList.remove('hidden');
+      diskusiModal.classList.add('flex');
+      setTimeout(() => diskusiSearchInput?.focus(), 50);
+    };
+
+    const showDropdown = (dropdown) => {
+      if (!dropdown) return;
+      dropdown.classList.remove('opacity-0', 'invisible', '-translate-y-2');
+      dropdown.classList.add('opacity-100', 'visible', 'translate-y-0');
+    };
+
+    const hideDropdown = (dropdown) => {
+      if (!dropdown) return;
+      dropdown.classList.add('opacity-0', 'invisible', '-translate-y-2');
+      dropdown.classList.remove('opacity-100', 'visible', 'translate-y-0');
+    };
+
+    const toggleDropdown = (dropdown) => {
+      if (!dropdown) return;
+      const isOpen = dropdown.classList.contains('visible');
+      hideDropdown(notifDropdown);
+      hideDropdown(messageDropdown);
+      if (!isOpen) showDropdown(dropdown);
+    };
+
+    notifButton?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleDropdown(notifDropdown);
+    });
+
+    messageButton?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (isMobileViewport()) {
+        openDiskusiModalPanel();
+        return;
+      }
+      openDiskusiModalPanel();
+    });
+
+    messageWrapper?.addEventListener('mouseenter', () => {
+      showDropdown(messageDropdown);
+    });
+
+    messageWrapper?.addEventListener('mouseleave', () => {
+      hideDropdown(messageDropdown);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (notifDropdown && !notifDropdown.contains(e.target) && !notifButton?.contains(e.target)) {
+        hideDropdown(notifDropdown);
+      }
+      if (messageDropdown && !messageDropdown.contains(e.target) && !messageButton?.contains(e.target)) {
+        hideDropdown(messageDropdown);
+      }
+    });
+
+    const markDiskusiRead = (type, id) => {
+      if (!messageMarkReadUrl || !id) return Promise.resolve();
+      return fetch(messageMarkReadUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ type, id }),
+      }).catch(() => {});
+    };
+
+    const openDiskusiChatModal = (btn) => {
+      if (!btn) return;
+      const fromDiskusiModal = btn.classList.contains('modal-diskusi-item');
+      const type = btn.dataset.type || 'kelas';
+      const id = String(btn.dataset.id || '');
+      const title = btn.dataset.title || 'Diskusi';
+      const templates = navbarChatTemplates[type] || null;
+
+      if (!templates || typeof window.openChatModal !== 'function') {
+        return;
+      }
+
+      window.__chatContextType = type;
+      window.__chatBaseUrlTemplate = templates.base;
+      window.__chatMessageUrlTemplate = templates.message;
+
+      const tempBtn = document.createElement('button');
+      tempBtn.dataset.kelasId = id;
+      tempBtn.dataset.kelasNama = title;
+      tempBtn.dataset.userMap = '{}';
+
+      const openSelectedChat = () => {
+        if (isMobileViewport()) {
+          reopenDiskusiModalAfterChatClose = fromDiskusiModal;
+          if (diskusiModal) {
+            diskusiModal.classList.add('hidden');
+            diskusiModal.classList.remove('flex', 'split-with-chat');
+          }
+          // Keep split mode on mobile too so fullscreen/mobile-specific chat styles apply.
+          window.__chatSplitWithNavbar = true;
+        } else {
+          reopenDiskusiModalAfterChatClose = false;
+          if (diskusiModal) {
+            diskusiModal.classList.remove('hidden');
+            diskusiModal.classList.add('flex');
+            diskusiModal.classList.add('split-with-chat');
+          }
+          window.__chatSplitWithNavbar = true;
+        }
+        const chatModal = document.getElementById('chatModal');
+        const isChatOpen = !!chatModal && !chatModal.classList.contains('hidden');
+        if (isChatOpen && typeof window.switchChatContextFromNavbar === 'function') {
+          window.switchChatContextFromNavbar(tempBtn);
+          return;
+        }
+        window.openChatModal(tempBtn);
+      };
+
+      markDiskusiRead(type, Number(id)).finally(() => {
+        openSelectedChat();
+      });
+    };
+
+    const applyDiskusiModalFilter = () => {
+      const q = (diskusiSearchInput?.value || '').trim().toLowerCase();
+      const items = Array.from(document.querySelectorAll('.modal-diskusi-item'));
+      let shown = 0;
+      items.forEach((item) => {
+        const hay = item.dataset.search || '';
+        const unread = item.dataset.unread === '1';
+        const passText = !q || hay.includes(q);
+        const passUnread = diskusiFilterMode === 'all' ? true : unread;
+        const ok = passText && passUnread;
+        item.classList.toggle('hidden', !ok);
+        if (ok) shown += 1;
+      });
+      if (diskusiModalEmpty) {
+        diskusiModalEmpty.classList.toggle('hidden', shown > 0);
+      }
+    };
+
+    diskusiSearchInput?.addEventListener('input', applyDiskusiModalFilter);
+    diskusiFilterAll?.addEventListener('click', () => {
+      diskusiFilterMode = 'all';
+      diskusiFilterAll.classList.remove('bg-slate-100', 'text-slate-700');
+      diskusiFilterAll.classList.add('bg-blue-600', 'text-white');
+      diskusiFilterUnread.classList.remove('bg-blue-600', 'text-white');
+      diskusiFilterUnread.classList.add('bg-slate-100', 'text-slate-700');
+      applyDiskusiModalFilter();
+    });
+    diskusiFilterUnread?.addEventListener('click', () => {
+      diskusiFilterMode = 'unread';
+      diskusiFilterUnread.classList.remove('bg-slate-100', 'text-slate-700');
+      diskusiFilterUnread.classList.add('bg-blue-600', 'text-white');
+      diskusiFilterAll.classList.remove('bg-blue-600', 'text-white');
+      diskusiFilterAll.classList.add('bg-slate-100', 'text-slate-700');
+      applyDiskusiModalFilter();
+    });
+
+    document.getElementById('diskusiModalList')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('.modal-diskusi-item');
+      if (!btn) return;
+      e.preventDefault();
+      openDiskusiChatModal(btn);
+    });
+
+    const closeDiskusiModal = () => {
+      if (!diskusiModal) return;
+      reopenDiskusiModalAfterChatClose = false;
+      const chatModal = document.getElementById('chatModal');
+      const isSplitChatOpen = !!chatModal
+        && !chatModal.classList.contains('hidden')
+        && chatModal.classList.contains('navbar-split-chat');
+      if (isSplitChatOpen) {
+        if (typeof window.closeChatModal === 'function') {
+          window.closeChatModal();
+        } else {
+          chatModal.classList.add('hidden');
+          chatModal.classList.remove('flex', 'navbar-split-chat');
+        }
+      }
+      diskusiModal.classList.remove('split-with-chat');
+      diskusiModal.classList.add('hidden');
+      diskusiModal.classList.remove('flex');
+      toggleMobileSidebarForDiskusi(false);
+    };
+
+    window.addEventListener('navbar-chat-closed', () => {
+      if (!diskusiModal) return;
+      if (isMobileViewport() && reopenDiskusiModalAfterChatClose) {
+        reopenDiskusiModalAfterChatClose = false;
+        openDiskusiModalPanel();
+        return;
+      }
+      const isDiskusiOpen = !diskusiModal.classList.contains('hidden');
+      if (isDiskusiOpen && !isMobileViewport()) {
+        diskusiModal.classList.add('split-with-chat');
+        return;
+      }
+      diskusiModal.classList.remove('split-with-chat');
+    });
+
+    btnCloseDiskusiModal?.addEventListener('click', closeDiskusiModal);
+    diskusiModal?.addEventListener('click', (e) => {
+      if (e.target === diskusiModal) closeDiskusiModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDiskusiModal();
+    });
+
+    messageDropdown?.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-open-diskusi');
+      if (!btn) return;
+      e.preventDefault();
+      hideDropdown(messageDropdown);
+      openDiskusiChatModal(btn);
+    });
+
     if (notifDropdown) {
       notifDropdown.addEventListener('mouseenter', () => {
         fetch('{{ route('pengumuman.read_all') }}', {
@@ -352,6 +772,35 @@
     }
   })();
 </script>
+<style>
+  #diskusiModal.split-with-chat {
+    justify-content: center !important;
+  }
+  @media (min-width: 768px) {
+    #diskusiModal.split-with-chat > div {
+      transform: translateX(-280px);
+    }
+  }
+  @media (max-width: 767px) {
+    #diskusiModal {
+      inset: 64px 0 0 0 !important;
+      height: calc(100dvh - 64px) !important;
+      align-items: stretch !important;
+      justify-content: stretch !important;
+      padding: 0 !important;
+      z-index: 300 !important;
+    }
+    #diskusiModal > div {
+      width: 100vw !important;
+      min-width: 0 !important;
+      max-width: none !important;
+      height: calc(100dvh - 64px) !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+      transform: none !important;
+    }
+  }
+</style>
 
 <!-- MODAL PREVIEW PENGUMUMAN (NAVBAR) -->
 <div id="navbarPreviewModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">

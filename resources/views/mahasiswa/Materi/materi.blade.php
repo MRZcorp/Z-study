@@ -1,4 +1,4 @@
-<x-header>Materi Pembelajaran</x-header>
+﻿<x-header>Materi Pembelajaran</x-header>
 <x-navbar></x-navbar>
 <x-sidebar>mahasiswa</x-sidebar>
 
@@ -122,33 +122,42 @@
           <p class="text-xs font-semibold text-slate-400 uppercase mb-2">
             Pertemuan
           </p>
-      
-          <!-- SEMUA -->
-          <a href="{{ request()->url() }}"
-             class="block px-3 py-2 rounded-lg text-sm
-                    {{ request('pertemuan') == null ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-slate-100' }}">
-            Semua Pertemuan
-          </a>
-      
-          @for ($i = 1; $i <= 14; $i++)
-            <a href="{{ request()->url() }}?pertemuan={{ $i }}"
+
+          <button id="pertemuanToggle"
+                  type="button"
+                  class="md:hidden w-full px-3 py-2 rounded-lg text-sm bg-blue-100 text-blue-700 font-semibold flex items-center justify-between"
+                  aria-expanded="false">
+            <span>Semua Pertemuan</span>
+            <span id="pertemuanChevron" class="material-symbols-rounded text-base transition-transform duration-200">expand_more</span>
+          </button>
+
+          <div id="pertemuanLinks" class="hidden md:block space-y-1">
+            <a href="{{ request()->url() }}"
                class="block px-3 py-2 rounded-lg text-sm
-                      {{ request('pertemuan') == $i ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-slate-100' }}">
-              <span class="flex items-center justify-between">
-                <span>Pertemuan {{ $i }}</span>
-                @php $badge = ($pertemuanBadge ?? collect())->get($i); @endphp
-                @if ($badge === 'new')
-                  <span class="inline-flex items-center justify-center h-4 px-2 rounded-full bg-red-500 text-white text-[10px] font-semibold">
-                    New
-                  </span>
-                @elseif ($badge === 'done')
-                  <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500 text-white text-[10px]">
-                    ✓
-                  </span>
-                @endif
-              </span>
+                      {{ request('pertemuan') == null ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-slate-100' }}">
+              Semua Pertemuan
             </a>
-          @endfor
+
+            @for ($i = 1; $i <= 14; $i++)
+              <a href="{{ request()->url() }}?pertemuan={{ $i }}"
+                 class="block px-3 py-2 rounded-lg text-sm
+                        {{ request('pertemuan') == $i ? 'bg-blue-100 text-blue-700 font-semibold' : 'hover:bg-slate-100' }}">
+                <span class="flex items-center justify-between">
+                  <span>Pertemuan {{ $i }}</span>
+                  @php $badge = ($pertemuanBadge ?? collect())->get($i); @endphp
+                  @if ($badge === 'new')
+                    <span class="inline-flex items-center justify-center h-4 px-2 rounded-full bg-red-500 text-white text-[10px] font-semibold">
+                      New
+                    </span>
+                  @elseif ($badge === 'done')
+                    <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-500 text-white text-[10px]">
+                      ?
+                    </span>
+                  @endif
+                </span>
+              </a>
+            @endfor
+          </div>
         </div>
       
       </aside>
@@ -301,3 +310,19 @@
 
     </section>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const pertemuanToggle = document.getElementById('pertemuanToggle');
+  const pertemuanLinks = document.getElementById('pertemuanLinks');
+  const pertemuanChevron = document.getElementById('pertemuanChevron');
+
+  if (!pertemuanToggle || !pertemuanLinks || !pertemuanChevron) return;
+
+  pertemuanToggle.addEventListener('click', function () {
+    pertemuanLinks.classList.toggle('hidden');
+    pertemuanChevron.classList.toggle('rotate-180');
+    pertemuanToggle.setAttribute('aria-expanded', pertemuanLinks.classList.contains('hidden') ? 'false' : 'true');
+  });
+});
+</script>
+

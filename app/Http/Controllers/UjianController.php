@@ -33,7 +33,16 @@ class UjianController extends Controller
         $kelasIds = $kelas_dosen->pluck('id');
         $ujian_kelas = Ujian::with([
                 'mataKuliah',
-                'kelas' => fn($q) => $q->withCount('mahasiswas'),
+                'kelas' => fn($q) => $q
+                    ->withCount('mahasiswas')
+                    ->with([
+                        'dosens.user',
+                        'dosens.fakultas',
+                        'dosens.programStudi',
+                        'mahasiswas.user',
+                        'mahasiswas.fakultas',
+                        'mahasiswas.programStudi',
+                    ]),
                 'soals',
                 'hasilUjian.mahasiswa.user',
             ])
@@ -61,7 +70,20 @@ class UjianController extends Controller
             ->get();
 
         $kelasIds = $kelas_dosen->pluck('id');
-        $ujian_kelas = Ujian::with(['mataKuliah', 'kelas' => fn($q) => $q->withCount('mahasiswas'), 'soals'])
+        $ujian_kelas = Ujian::with([
+                'mataKuliah',
+                'kelas' => fn($q) => $q
+                    ->withCount('mahasiswas')
+                    ->with([
+                        'dosens.user',
+                        'dosens.fakultas',
+                        'dosens.programStudi',
+                        'mahasiswas.user',
+                        'mahasiswas.fakultas',
+                        'mahasiswas.programStudi',
+                    ]),
+                'soals',
+            ])
             ->when($kelasIds->isNotEmpty(), fn($q) => $q->whereIn('nama_kelas_id', $kelasIds))
             ->whereHas('kelas', fn($q) => $q->where('status', 'aktif'))
             ->latest()
@@ -476,7 +498,22 @@ class UjianController extends Controller
         $llmapi = config('services.llmapi');
         $openrouter = config('services.openrouter');
 
-        $useLlmapi = !empty($llmapi['api_key']);
+        $providerSetting = strtolower(trim((string) config('services.llm.provider', 'auto')));
+        if (!in_array($providerSetting, ['auto', 'llmapi', 'openrouter'], true)) {
+            $providerSetting = 'auto';
+        }
+
+        $hasLlmapiKey = !empty($llmapi['api_key']);
+        $hasOpenrouterKey = !empty($openrouter['api_key']);
+
+        if ($providerSetting === 'llmapi') {
+            $useLlmapi = true;
+        } elseif ($providerSetting === 'openrouter') {
+            $useLlmapi = false;
+        } else {
+            $useLlmapi = $hasLlmapiKey || !$hasOpenrouterKey;
+        }
+
         $providerName = $useLlmapi ? ($llmapi['provider_name'] ?? 'LLMAPI') : ($openrouter['provider_name'] ?? 'OpenRouter');
         $apiKey = $useLlmapi ? ($llmapi['api_key'] ?? null) : ($openrouter['api_key'] ?? null);
         $model = $useLlmapi ? ($llmapi['model'] ?? null) : ($openrouter['model'] ?? null);
@@ -502,25 +539,124 @@ class UjianController extends Controller
             . "Rules: PG must have 3-5 options; Essay must have options=null and pg_correct=null. "
             . "Questions must be in Indonesian. No markdown, no code fences.";
 
+        $providerConfig = $useLlmapi ? $llmapi : $openrouter;
+
+        $toFloat = function ($val) {
+            if ($val === null) {
+                return null;
+            }
+            $val = trim((string) $val);
+            if ($val === '' || !is_numeric($val)) {
+                return null;
+            }
+            return (float) $val;
+        };
+
+        $toInt = function ($val) {
+            if ($val === null) {
+                return null;
+            }
+            $val = trim((string) $val);
+            if ($val === '' || !is_numeric($val)) {
+                return null;
+            }
+            return (int) $val;
+        };
+
         $payload = [
             'model' => $model,
             'messages' => [
                 ['role' => 'system', 'content' => $system],
                 ['role' => 'user', 'content' => $request->prompt],
             ],
-            'temperature' => 0.7,
         ];
+
+        $temperature = $toFloat($providerConfig['temperature'] ?? null);
+        $payload['temperature'] = $temperature ?? 0.7;
+
+        $maxTokens = $toInt($providerConfig['max_tokens'] ?? null);
+        if ($maxTokens !== null) {
+            $payload['max_tokens'] = $maxTokens;
+        }
+
+        $topP = $toFloat($providerConfig['top_p'] ?? null);
+        if ($topP !== null) {
+            $payload['top_p'] = $topP;
+        }
+
+        $frequencyPenalty = $toFloat($providerConfig['frequency_penalty'] ?? null);
+        if ($frequencyPenalty !== null) {
+            $payload['frequency_penalty'] = $frequencyPenalty;
+        }
+
+        $responseFormat = trim((string) ($providerConfig['response_format'] ?? ''));
+        if ($responseFormat !== '') {
+            if (str_starts_with($responseFormat, '{')) {
+                $decoded = json_decode($responseFormat, true);
+                if (is_array($decoded)) {
+                    $payload['response_format'] = $decoded;
+                }
+            } else {
+                $rf = strtolower($responseFormat);
+                if ($rf === 'json_object') {
+                    $payload['response_format'] = ['type' => 'json_object'];
+                } elseif ($rf !== 'text' && $rf !== 'none') {
+                    $payload['response_format'] = ['type' => $responseFormat];
+                }
+            }
+        }
 
         if ($useLlmapi) {
             $modelKey = strtolower(trim((string) $model));
-            $isGpt5 = str_starts_with($modelKey, 'openai/gpt-5') || str_starts_with($modelKey, 'gpt-5');
-            if (!$isGpt5) {
-                $effort = strtolower(trim((string) ($llmapi['reasoning_effort'] ?? '')));
-                $allowed = ['none', 'low', 'medium', 'high', 'xhigh'];
+            $isGptModel = str_contains($modelKey, 'gpt-') || str_starts_with($modelKey, 'openai/gpt-');
+
+            $effortRaw = '';
+            if ($isGptModel) {
+                $effortRaw = (string) ($llmapi['reasoning_effort_gpt'] ?? '');
+            } else {
+                $effortRaw = (string) ($llmapi['reasoning_effort_other'] ?? '');
+            }
+            if (trim($effortRaw) === '') {
+                $effortRaw = (string) ($llmapi['reasoning_effort'] ?? '');
+            }
+
+            $effort = strtolower(trim($effortRaw));
+            if ($effort !== '') {
+                $aliases = [
+                    'max' => 'xhigh',
+                    'maximum' => 'xhigh',
+                    'highest' => 'xhigh',
+                    'very_high' => 'xhigh',
+                    'veryhigh' => 'xhigh',
+                    'ultra' => 'xhigh',
+                    'min' => 'low',
+                    'minimal' => 'low',
+                    'minimum' => 'low',
+                    'off' => 'none',
+                    'false' => 'none',
+                    '0' => 'none',
+                ];
+                if (array_key_exists($effort, $aliases)) {
+                    $effort = $aliases[$effort];
+                }
+
+                $limitedReasoningFamily = $isGptModel;
+                $allowed = $limitedReasoningFamily
+                    ? ['none', 'low', 'medium', 'high']
+                    : ['none', 'low', 'medium', 'high', 'xhigh'];
+
+                if ($limitedReasoningFamily && $effort === 'xhigh') {
+                    $effort = 'high';
+                }
+
                 if (!in_array($effort, $allowed, true)) {
                     $effort = 'none';
                 }
-                $payload['reasoning'] = ['effort' => $effort ?: 'none'];
+                if ($effort !== 'none') {
+                    // LLMAPI follows the OpenAI Chat Completions style parameter name.
+                    // (Do not send both reasoning_effort and reasoning.* in the same request.)
+                    $payload['reasoning_effort'] = $effort;
+                }
             }
         }
 
@@ -925,7 +1061,17 @@ class UjianController extends Controller
             return view('mahasiswa.ujian.ujian', ['ujian_kelas' => collect()]);
         }
 
-        $ujian_kelas = Ujian::with(['mataKuliah', 'kelas'])
+        $ujian_kelas = Ujian::with([
+                'mataKuliah',
+                'kelas' => fn($q) => $q->with([
+                    'dosens.user',
+                    'dosens.fakultas',
+                    'dosens.programStudi',
+                    'mahasiswas.user',
+                    'mahasiswas.fakultas',
+                    'mahasiswas.programStudi',
+                ]),
+            ])
             ->whereIn('nama_kelas_id', $kelasIds)
             ->whereHas('kelas', fn($q) => $q->where('status', 'aktif'))
             ->where(function ($q) {
@@ -954,7 +1100,19 @@ class UjianController extends Controller
             return view('mahasiswa.ujian.ujian_selesai', ['ujian_kelas' => collect()]);
         }
 
-        $ujian_kelas = Ujian::with(['mataKuliah', 'kelas', 'soals', 'hasilUjian'])
+        $ujian_kelas = Ujian::with([
+                'mataKuliah',
+                'kelas' => fn($q) => $q->with([
+                    'dosens.user',
+                    'dosens.fakultas',
+                    'dosens.programStudi',
+                    'mahasiswas.user',
+                    'mahasiswas.fakultas',
+                    'mahasiswas.programStudi',
+                ]),
+                'soals',
+                'hasilUjian',
+            ])
             ->whereIn('nama_kelas_id', $kelasIds)
             ->whereHas('kelas', fn($q) => $q->where('status', 'aktif'))
             ->whereNotNull('deadline')

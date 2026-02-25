@@ -105,6 +105,10 @@ class DataDosenController extends Controller
 
         DosenWali::create($validated);
 
+        if ($request->ajax()) {
+            return response()->json(['message' => 'Dosen wali berhasil ditambahkan']);
+        }
+
         return redirect()->back()->with('success', 'Dosen wali berhasil ditambahkan');
     }
 
@@ -118,12 +122,20 @@ class DataDosenController extends Controller
 
         $dosenWali->update($validated);
 
+        if ($request->ajax()) {
+            return response()->json(['message' => 'Dosen wali berhasil diperbarui']);
+        }
+
         return redirect()->back()->with('success', 'Dosen wali berhasil diperbarui');
     }
 
     public function destroyWali(DosenWali $dosenWali)
     {
         $dosenWali->delete();
+
+        if (request()->ajax()) {
+            return response()->json(['message' => 'Dosen wali berhasil dihapus']);
+        }
 
         return redirect()->back()->with('success', 'Dosen wali berhasil dihapus');
     }

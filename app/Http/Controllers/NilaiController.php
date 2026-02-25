@@ -32,17 +32,6 @@ class NilaiController extends Controller
         $kelasSelesai = $kelasAll->where('status', 'selesai')->values();
         $kelasSelesaiIds = $kelasSelesai->pluck('id');
 
-        if ($kelasSelesaiIds->isEmpty()) {
-            return view('mahasiswa.nilai', [
-                'nilaiRows' => collect(),
-                'ipRows' => collect(),
-                'ipkValue' => 0,
-                'semesterOptions' => [],
-                'radarLabels' => ['Kehadiran', 'Keaktifan', 'Tugas', 'Ujian', 'Kecepatan'],
-                'radarData' => [0, 0, 0, 0, 0],
-            ]);
-        }
-
         $nilaiRows = collect();
         $tugasScores = [];
         $ujianScores = [];
@@ -417,13 +406,33 @@ class NilaiController extends Controller
             }
         }
 
-        $semesterAktif = (int) (Mahasiswa::where('id', $mahasiswaId)->value('semester_aktif') ?? 0);
-        $semesterOptions = $semesterAktif > 0
-            ? collect(range(1, $semesterAktif))->map(fn($n) => [
-                'value' => $n,
+        $semesterFromNilai = $nilaiRows
+            ->pluck('semester')
+            ->filter(fn($s) => is_numeric($s) && (int) $s > 0)
+            ->map(fn($s) => (int) $s);
+
+        $semesterFromIp = $ipRows
+            ->pluck('semester')
+            ->filter(fn($s) => is_numeric($s) && (int) $s > 0)
+            ->map(fn($s) => (int) $s);
+
+        $semesterNumbers = $semesterFromNilai
+            ->merge($semesterFromIp)
+            ->unique()
+            ->sort()
+            ->values();
+
+        if ($semesterNumbers->isEmpty()) {
+            $semesterAktif = (int) (Mahasiswa::where('id', $mahasiswaId)->value('semester_aktif') ?? 0);
+            $semesterNumbers = $semesterAktif > 0 ? collect(range(1, $semesterAktif)) : collect();
+        }
+
+        $semesterOptions = $semesterNumbers
+            ->map(fn($n) => [
+                'value' => (string) $n,
                 'label' => 'Semester ' . $n . ' ' . ($n % 2 === 1 ? 'Ganjil' : 'Genap'),
-              ])->all()
-            : [];
+            ])
+            ->all();
 
         return view('mahasiswa.nilai', [
             'nilaiRows' => $nilaiRows,

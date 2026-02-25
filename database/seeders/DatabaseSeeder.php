@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
            KelasSeeder::class,  
            MateriKelasSeeder::class, TugasSeeder::class, 
            PengumumanSeeder::class, AngkatanSeeder::class,
+           BeasiswaSeeder::class,
            MahasiswaSeeder::class,
            DosenWaliSeeder::class,
            KalenderAkademikSeeder::class,

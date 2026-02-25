@@ -12,6 +12,8 @@ use App\Models\User;
 use App\Models\KrsSetting;
 use App\Models\DosenWali;
 use App\Models\Mahasiswa;
+use App\Models\RekapBobot;
+use App\Models\RekapNilai;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -151,6 +153,7 @@ class DosenController extends Controller
             return view('dosen.perwalian.perwalian', [
                 'perwalians' => collect(),
                 'semesterAktif' => null,
+                'tahunAjarAktif' => null,
             ]);
         }
 
@@ -161,6 +164,7 @@ class DosenController extends Controller
             return view('dosen.perwalian.perwalian', [
                 'perwalians' => collect(),
                 'semesterAktif' => null,
+                'tahunAjarAktif' => null,
             ]);
         }
 
@@ -176,10 +180,125 @@ class DosenController extends Controller
             ->orderBy('id')
             ->get();
 
+        $toBobot = function (float $nilai): float {
+            if ($nilai >= 85) return 4.0;
+            if ($nilai >= 80) return 3.75;
+            if ($nilai >= 75) return 3.5;
+            if ($nilai >= 70) return 3.0;
+            if ($nilai >= 65) return 2.75;
+            if ($nilai >= 60) return 2.5;
+            if ($nilai >= 55) return 2.0;
+            if ($nilai >= 40) return 1.0;
+            return 0.0;
+        };
+
+        $perwalians = $perwalians->map(function ($mhs) use ($toBobot) {
+            $kelasList = $mhs->kelas ?? collect();
+
+            $semesterOrder = ['ganjil' => 1, 'genap' => 2];
+            $semesterItems = $kelasList
+                ->filter(fn($k) => in_array($k->status ?? '', ['aktif', 'selesai'], true))
+                ->sort(function ($a, $b) use ($semesterOrder) {
+                    preg_match('/\d{4}/', (string) ($a->tahun_ajar ?? ''), $aMatch);
+                    preg_match('/\d{4}/', (string) ($b->tahun_ajar ?? ''), $bMatch);
+                    $yearA = (int) ($aMatch[0] ?? 0);
+                    $yearB = (int) ($bMatch[0] ?? 0);
+                    if ($yearA !== $yearB) {
+                        return $yearA <=> $yearB;
+                    }
+                    $semA = $semesterOrder[strtolower((string) ($a->semester ?? ''))] ?? 99;
+                    $semB = $semesterOrder[strtolower((string) ($b->semester ?? ''))] ?? 99;
+                    return $semA <=> $semB;
+                })
+                ->map(fn($k) => (($k->tahun_ajar ?? '-') . '|' . ($k->semester ?? '-')))
+                ->unique()
+                ->values();
+            $semesterMap = $semesterItems->mapWithKeys(fn($key, $idx) => [$key => $idx + 1]);
+            $semesterDisplay = (int) ($semesterMap->max() ?? 0);
+
+            $kelasSelesai = $kelasList->filter(fn($k) => ($k->status ?? '') === 'selesai')->values();
+            $kelasSelesaiIds = $kelasSelesai->pluck('id');
+
+            $ipRows = collect();
+            if ($kelasSelesaiIds->isNotEmpty()) {
+                $rekapByKelas = RekapNilai::query()
+                    ->where('mahasiswa_id', $mhs->id)
+                    ->whereIn('kelas_id', $kelasSelesaiIds)
+                    ->get()
+                    ->keyBy('kelas_id');
+                $bobotByKelas = RekapBobot::query()
+                    ->whereIn('kelas_id', $kelasSelesaiIds)
+                    ->get()
+                    ->keyBy('kelas_id');
+
+                $ipRows = $kelasSelesai->map(function ($kelas) use ($rekapByKelas, $bobotByKelas, $semesterMap, $toBobot) {
+                    $rekap = $rekapByKelas->get($kelas->id);
+                    if (!$rekap) {
+                        return null;
+                    }
+
+                    $bobot = $bobotByKelas->get($kelas->id);
+                    $harianBobot = (float) ($bobot?->harian ?? 15);
+                    $keaktifanBobot = (float) ($bobot?->keaktifan ?? 6.25);
+                    $kecepatanBobot = (float) ($bobot?->kecepatan ?? 3.75);
+                    $absensiBobot = (float) ($bobot?->absensi ?? 5);
+                    $utsUasBobot = (float) (($bobot?->uts ?? 30) + ($bobot?->uas ?? 40));
+
+                    $rataTugas = (float) ($rekap->rata_tugas ?? 0);
+                    $rataUjian = (float) ($rekap->rata_ujian ?? 0);
+                    $nilaiAkhir = ($rataTugas > 0 && $rataUjian > 0)
+                        ? (($rataTugas + $rataUjian) / 2)
+                        : max($rataTugas, $rataUjian);
+
+                    $speedTugas = (float) ($rekap->rata_kecepatan_tugas ?? 0);
+                    $speedUjian = (float) ($rekap->rata_kecepatan_ujian ?? 0);
+                    $kecepatan = ($speedTugas > 0 && $speedUjian > 0)
+                        ? (($speedTugas + $speedUjian) / 2)
+                        : max($speedTugas, $speedUjian);
+
+                    $nilaiTotal =
+                        ($nilaiAkhir * $harianBobot) / 100 +
+                        ((float) ($rekap->keaktifan ?? 0) * $keaktifanBobot) / 100 +
+                        ($kecepatan * $kecepatanBobot) / 100 +
+                        ((float) ($rekap->absensi ?? 0) * $absensiBobot) / 100 +
+                        ($rataUjian * $utsUasBobot) / 100;
+
+                    $semesterKey = ($kelas->tahun_ajar ?? '-') . '|' . ($kelas->semester ?? '-');
+                    return [
+                        'semester' => (int) ($semesterMap[$semesterKey] ?? 0),
+                        'sks' => (int) ($kelas->mataKuliah?->sks ?? 0),
+                        'ip' => $toBobot($nilaiTotal),
+                    ];
+                })->filter()->values();
+            }
+
+            $ipk = (float) ($mhs->ipk ?? 0);
+            $ips = (float) ($mhs->ips_terakhir ?? 0);
+            if ($ipRows->isNotEmpty()) {
+                $totalSks = $ipRows->sum('sks');
+                if ($totalSks > 0) {
+                    $ipk = round($ipRows->sum(fn($r) => $r['ip'] * $r['sks']) / $totalSks, 2);
+                }
+
+                $lastSemester = (int) ($ipRows->max('semester') ?? 0);
+                $lastRows = $ipRows->filter(fn($r) => $r['semester'] === $lastSemester);
+                $lastSks = $lastRows->sum('sks');
+                if ($lastSks > 0) {
+                    $ips = round($lastRows->sum(fn($r) => $r['ip'] * $r['sks']) / $lastSks, 2);
+                }
+            }
+
+            $mhs->semester_display = $semesterDisplay > 0 ? $semesterDisplay : (int) ($mhs->semester_aktif ?? 1);
+            $mhs->ips_display = $ips;
+            $mhs->ipk_display = $ipk;
+            return $mhs;
+        });
+
         $krsAktif = KrsSetting::where('status', 'aktif')->latest()->first();
         $semesterAktif = $krsAktif?->semester ?? null;
+        $tahunAjarAktif = $krsAktif ? ($krsAktif->mulai_tahun_ajar . ' / ' . $krsAktif->akhir_tahun_ajar) : null;
 
-        return view('dosen.perwalian.perwalian', compact('perwalians', 'semesterAktif'));
+        return view('dosen.perwalian.perwalian', compact('perwalians', 'semesterAktif', 'tahunAjarAktif'));
     }
 
     public function approvePerwalianKelas(Mahasiswa $mahasiswa, Kelas $kelas)

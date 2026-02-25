@@ -48,7 +48,7 @@
           <p><span class="font-medium">NIM:</span> {{ $mahasiswa->nim ?? ($id_user ?? '-') }}</p>
           <p><span class="font-medium">Fakultas:</span> {{ $fakultas ?? '-' }}</p>
           <p><span class="font-medium">Jurusan:</span> {{ $prodi ?? '-' }}</p>
-          <p><span class="font-medium">IPK:</span> null</p>
+          <p><span class="font-medium">IPK:</span> {{ number_format((float) ($mahasiswa->ipk ?? 0), 2) }}</p>
         </div>
       </div>
   

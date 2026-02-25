@@ -112,7 +112,7 @@ class MahasiswaSeeder extends Seeder
                      'email'            => $item['email'],
                      'poto_profil'      => $item['foto'],
                      'bg'      => $item['bg'],
-                     'status'           => 'aktif',
+                     'status_akademik'  => 'AKTIF',
                  ]
              );
 

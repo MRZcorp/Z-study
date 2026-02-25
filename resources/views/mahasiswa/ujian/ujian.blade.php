@@ -39,7 +39,7 @@
         $deadlineMs = $deadlineUjian ? ($deadlineUjian->timestamp * 1000) : '';
       @endphp
       <div class="ujian-card bg-white rounded-xl border p-5 flex flex-col gap-4 relative" data-start="{{ $startIso }}" data-deadline="{{ $deadlineIso }}" data-start-ms="{{ $startMs }}" data-deadline-ms="{{ $deadlineMs }}">
-        <div class="absolute top-4 right-4 flex items-center gap-2 text-xs text-slate-500">
+        <div class="absolute top-4 right-4 hidden sm:flex items-center gap-2 text-xs text-slate-500">
           <span class="start-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700">
             <span class="material-symbols-rounded text-sm">schedule</span>
             <span class="start-time">{{ $ujian->mulai_ujian ? \Carbon\Carbon::parse($ujian->mulai_ujian)->format('d M Y H:i') : '-' }}</span>
@@ -53,6 +53,10 @@
           <div class="inline-flex items-center gap-2 text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full w-fit">
             {{ $ujian->mataKuliah->mata_kuliah ?? '-' }}
           </div>
+          <span class="start-badge sm:hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-xs shrink-0">
+            <span class="material-symbols-rounded text-sm">schedule</span>
+            <span class="start-time">{{ $ujian->mulai_ujian ? \Carbon\Carbon::parse($ujian->mulai_ujian)->format('d M Y H:i') : '-' }}</span>
+          </span>
         </div>
 
         <div>
@@ -66,7 +70,46 @@
             </span>
           </div>
         </div>
+        @php
+          $kelasRef = $ujian->kelas;
+          $dosenRef = $kelasRef?->dosens;
+          $chatUserMap = collect();
+          if ($dosenRef && $dosenRef->user_id) {
+              $chatUserMap[(string) $dosenRef->user_id] = [
+                  'name' => $dosenRef->user->name ?? '-',
+                  'foto' => $dosenRef->poto_profil ? asset('storage/' . $dosenRef->poto_profil) : asset('img/default_profil.jpg'),
+                  'phone' => $dosenRef->no_hp ?? '-',
+                  'role' => 'dosen',
+                  'gelar' => $dosenRef->gelar ?? '',
+                  'homebase' => $dosenRef->fakultas->fakultas ?? '-',
+                  'mata_kuliah' => $ujian->mataKuliah->mata_kuliah ?? '-',
+                  'fakultas' => $dosenRef->fakultas->fakultas ?? '-',
+                  'prodi' => $dosenRef->programStudi->nama_prodi ?? '-',
+              ];
+          }
+          foreach (($kelasRef?->mahasiswas ?? collect()) as $mhsRef) {
+              $chatUserMap[(string) ($mhsRef->user_id ?? '')] = [
+                  'name' => $mhsRef->user->name ?? '-',
+                  'foto' => $mhsRef->poto_profil ? asset('storage/' . $mhsRef->poto_profil) : asset('img/default_profil.jpg'),
+                  'phone' => $mhsRef->no_hp ?? '-',
+                  'role' => 'mahasiswa',
+                  'nim' => $mhsRef->nim ?? '-',
+                  'fakultas' => $mhsRef->fakultas->fakultas ?? '-',
+                  'prodi' => $mhsRef->programStudi->nama_prodi ?? '-',
+              ];
+          }
+        @endphp
         <div class="absolute bottom-4 right-4 flex items-center gap-2">
+          <button
+            type="button"
+            onclick="openChatModal(this)"
+            data-kelas-id="{{ $ujian->id }}"
+            data-kelas-nama="{{ $ujian->nama_ujian ?? 'Ujian' }}"
+            data-user-map='@json($chatUserMap)'
+            class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+          >
+            <span class="material-symbols-rounded text-base">chat</span>
+          </button>
           <span class="countdown-start hidden text-xs font-semibold px-2 py-1 rounded-md bg-slate-100 text-slate-600"></span>
           <button
             type="button"
@@ -93,6 +136,13 @@
     </div>
   </div>
 </div>
+
+<script>
+  window.__chatContextType = 'ujian';
+  window.__chatBaseUrlTemplate = @json(route('mahasiswa.ujian.diskusi.index', ['ujian' => '__CTX_ID__']));
+  window.__chatMessageUrlTemplate = @json(route('mahasiswa.ujian.diskusi.update', ['ujian' => '__CTX_ID__', 'diskusi' => '__DISKUSI_ID__']));
+</script>
+@include('mahasiswa.kelas.partials.chat_modal')
 
 <script>
   const confirmStartModal = document.getElementById('confirmStartModal');
@@ -145,9 +195,9 @@
       const deadlineMs = Number(deadlineMsRaw);
       const countdownEl = card.querySelector('.countdown-start');
       const btn = card.querySelector('.btn-start-ujian');
-      const startTimeEl = card.querySelector('.start-time');
+      const startTimeEls = card.querySelectorAll('.start-time');
       const endTimeEl = card.querySelector('.end-time');
-      const startBadge = card.querySelector('.start-badge');
+      const startBadges = card.querySelectorAll('.start-badge');
       const endBadge = card.querySelector('.end-badge');
       if (!btn) return;
       btn.classList.add('hidden');
@@ -166,16 +216,16 @@
 
       if (isExpired) {
         if (countdownEl) countdownEl.classList.add('hidden');
-        if (startTimeEl) {
+        startTimeEls.forEach((startTimeEl) => {
           startTimeEl.textContent = startTimeEl.dataset.original || startTimeEl.textContent;
-        }
+        });
         if (endTimeEl) {
           endTimeEl.textContent = 'Selesai';
         }
-        if (startBadge) {
+        startBadges.forEach((startBadge) => {
           startBadge.classList.remove('bg-emerald-100', 'text-emerald-800', 'bg-amber-100', 'text-amber-800');
           startBadge.classList.add('bg-amber-50', 'text-amber-700');
-        }
+        });
         if (endBadge) {
           endBadge.classList.remove('bg-emerald-100', 'text-emerald-800', 'bg-red-100', 'text-red-800');
           endBadge.classList.add('bg-red-50', 'text-red-700');
@@ -186,12 +236,14 @@
       if (diff > windowMs) {
         btn?.classList.add('hidden');
         if (countdownEl) countdownEl.classList.add('hidden');
-        if (startTimeEl) startTimeEl.textContent = startTimeEl.dataset.original || startTimeEl.textContent;
+        startTimeEls.forEach((startTimeEl) => {
+          startTimeEl.textContent = startTimeEl.dataset.original || startTimeEl.textContent;
+        });
         if (endTimeEl) endTimeEl.textContent = endTimeEl.dataset.original || endTimeEl.textContent;
-        if (startBadge) {
+        startBadges.forEach((startBadge) => {
           startBadge.classList.remove('bg-amber-100', 'text-amber-800', 'bg-emerald-100', 'text-emerald-800');
           startBadge.classList.add('bg-amber-50', 'text-amber-700');
-        }
+        });
         if (endBadge) {
           endBadge.classList.remove('bg-red-100', 'text-red-800', 'bg-emerald-100', 'text-emerald-800');
           endBadge.classList.add('bg-red-50', 'text-red-700');
@@ -203,18 +255,18 @@
         btn?.classList.add('hidden');
         btn.style.display = 'none';
         if (countdownEl) countdownEl.classList.add('hidden');
-        if (startTimeEl) {
+        startTimeEls.forEach((startTimeEl) => {
           startTimeEl.dataset.original = startTimeEl.dataset.original || startTimeEl.textContent;
           startTimeEl.textContent = `Mulai dalam ${formatCountdown(diff)}`;
-        }
+        });
         if (endTimeEl) {
           endTimeEl.dataset.original = endTimeEl.dataset.original || endTimeEl.textContent;
           endTimeEl.textContent = endTimeEl.dataset.original;
         }
-        if (startBadge) {
+        startBadges.forEach((startBadge) => {
           startBadge.classList.remove('bg-amber-50', 'text-amber-700');
           startBadge.classList.add('bg-amber-100', 'text-amber-800');
-        }
+        });
         if (endBadge) {
           endBadge.classList.remove('bg-red-100', 'text-red-800');
           endBadge.classList.add('bg-red-50', 'text-red-700');
@@ -227,17 +279,17 @@
       if (countdownEl) {
         countdownEl.classList.add('hidden');
       }
-      if (startTimeEl) {
+      startTimeEls.forEach((startTimeEl) => {
         startTimeEl.textContent = 'Sedang berlangsung';
-      }
+      });
       if (endTimeEl && deadlineAt) {
         const diffEnd = Math.max(0, deadlineAt - now);
         endTimeEl.textContent = `Sisa ${formatCountdown(diffEnd)}`;
       }
-      if (startBadge) {
+      startBadges.forEach((startBadge) => {
         startBadge.classList.remove('bg-amber-50', 'text-amber-700', 'bg-amber-100', 'text-amber-800');
         startBadge.classList.add('bg-emerald-100', 'text-emerald-800');
-      }
+      });
       if (endBadge) {
         endBadge.classList.remove('bg-red-100', 'text-red-800', 'bg-emerald-100', 'text-emerald-800');
         endBadge.classList.add('bg-red-50', 'text-red-700');

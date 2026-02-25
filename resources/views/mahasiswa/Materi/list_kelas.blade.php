@@ -8,7 +8,7 @@
     <p class="text-sm text-slate-500">Daftar kelas yang sudah kamu ikuti.</p>
   </div>
 
-  <div class="grid gap-6 justify-center [grid-template-columns:repeat(auto-fill,minmax(260px,260px))]">
+  <div class="materi-list-grid grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
     @if ($pilih_kelas->isEmpty())
       <div class="col-span-full text-center text-gray-500">
         Belum ada kelas yang kamu ikuti.
@@ -107,7 +107,7 @@
             data-kelas="{{ $kelas->slug }}"
             data-total="{{ $stats['total'] ?? 0 }}"
           >
-            <span class="material-symbols-rounded text-base">visibility</span>Lihat Materi
+            <span class="material-symbols-rounded text-base">visibility</span>Materi
           </a>
         </div>
       </div>
@@ -115,3 +115,15 @@
     @endforeach
   </div>
 </div>
+
+<style>
+  @media (min-width: 1024px) {
+    .materi-list-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+
+    .sidebar.collapsed ~ .main-content .materi-list-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+  }
+</style>

@@ -15,18 +15,19 @@ class Mahasiswa extends Model
         'fakultas_id',
         'nama_prodi_id',
         'jenjang',
+        'beasiswa_id',
         'angkatan_id',
         'semester_aktif',
         'ips_terakhir',
         'ipk',
         'maks_sks',
         'status_akademik',
+        'status_krs',
         'ips_below_2_count',
         'ipk_below_2_semester_count',
         'last_ips_semester',
         'last_ipk_semester',
         'email',
-        'status',
         'poto_profil',
         'bg',
     ];
@@ -45,6 +46,10 @@ class Mahasiswa extends Model
     public function programStudi()
     {
         return $this->belongsTo(ProgramStudi::class, 'nama_prodi_id');
+    }
+    public function beasiswa()
+    {
+        return $this->belongsTo(Beasiswa::class);
     }
     public function angkatan()
     {

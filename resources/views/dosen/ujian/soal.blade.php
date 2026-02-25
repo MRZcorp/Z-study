@@ -7,10 +7,28 @@
   $ujianKe = $ujianKe ?? ($ujian->ujian_ke ?? '-');
   $nilaiUjianKe = $nilaiUjianKe ?? ($ujian->nilai_ujian_ke ?? '-');
   $soalList = $soalList ?? collect();
-  $llmProvider = config('services.llmapi.provider_name', 'LLMAPI');
-  $llmModel = config('services.llmapi.model', '');
-  $activeProvider = config('services.llmapi.api_key') ? $llmProvider : 'OpenRouter';
-  $activeModel = config('services.llmapi.api_key') ? $llmModel : (config('services.openrouter.model') ?? '');
+  $providerSetting = strtolower(trim((string) config('services.llm.provider', 'auto')));
+  if (!in_array($providerSetting, ['auto', 'llmapi', 'openrouter'], true)) {
+    $providerSetting = 'auto';
+  }
+
+  $hasLlmapiKey = (bool) config('services.llmapi.api_key');
+  $hasOpenrouterKey = (bool) config('services.openrouter.api_key');
+
+  if ($providerSetting === 'llmapi') {
+    $useLlmapi = true;
+  } elseif ($providerSetting === 'openrouter') {
+    $useLlmapi = false;
+  } else {
+    $useLlmapi = $hasLlmapiKey || !$hasOpenrouterKey;
+  }
+
+  $activeProvider = $useLlmapi
+    ? config('services.llmapi.provider_name', 'LLMAPI')
+    : config('services.openrouter.provider_name', 'OpenRouter');
+  $activeModel = $useLlmapi
+    ? (config('services.llmapi.model', '') ?: '-')
+    : (config('services.openrouter.model', '') ?: '-');
 @endphp
 
 <div class="p-6 bg-gray-100 min-h-screen">

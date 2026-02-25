@@ -130,6 +130,33 @@
             }
             $nilaiKecepatan = $hasilNilai;
         }
+        $kelasRef = $tugas->kelas;
+        $dosenRef = $kelasRef?->dosens;
+        $chatUserMap = collect();
+        if ($dosenRef && $dosenRef->user_id) {
+            $chatUserMap[(string) $dosenRef->user_id] = [
+                'name' => $dosenRef->user->name ?? '-',
+                'foto' => $dosenRef->poto_profil ? asset('storage/' . $dosenRef->poto_profil) : asset('img/default_profil.jpg'),
+                'phone' => $dosenRef->no_hp ?? '-',
+                'role' => 'dosen',
+                'gelar' => $dosenRef->gelar ?? '',
+                'homebase' => $dosenRef->fakultas->fakultas ?? '-',
+                'mata_kuliah' => $tugas->mataKuliah->mata_kuliah ?? '-',
+                'fakultas' => $dosenRef->fakultas->fakultas ?? '-',
+                'prodi' => $dosenRef->programStudi->nama_prodi ?? '-',
+            ];
+        }
+        foreach (($kelasRef?->mahasiswas ?? collect()) as $mhsRef) {
+            $chatUserMap[(string) ($mhsRef->user_id ?? '')] = [
+                'name' => $mhsRef->user->name ?? '-',
+                'foto' => $mhsRef->poto_profil ? asset('storage/' . $mhsRef->poto_profil) : asset('img/default_profil.jpg'),
+                'phone' => $mhsRef->no_hp ?? '-',
+                'role' => 'mahasiswa',
+                'nim' => $mhsRef->nim ?? '-',
+                'fakultas' => $mhsRef->fakultas->fakultas ?? '-',
+                'prodi' => $mhsRef->programStudi->nama_prodi ?? '-',
+            ];
+        }
       @endphp
 
       <div class="bg-white rounded-xl border p-5 flex flex-col gap-4 relative">
@@ -137,7 +164,8 @@
           <div class="inline-flex items-center gap-2 text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full w-fit">
             {{ $tugas->mataKuliah->mata_kuliah ?? '-' }}
           </div>
-          <div class="flex items-center gap-2 text-xs text-slate-500">
+          <div class="flex flex-col items-end gap-2 text-xs text-slate-500">
+            <div class="flex items-center gap-2">
             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700">
               <span class="material-symbols-rounded text-sm">schedule</span>
               {{ $tugas->mulai_tugas ? \Carbon\Carbon::parse($tugas->mulai_tugas)->format('d M Y H:i') : '-' }}
@@ -146,43 +174,16 @@
               <span class="material-symbols-rounded text-sm">event</span>
               {{ $tugas->deadline ? \Carbon\Carbon::parse($tugas->deadline)->format('d M Y H:i') : '-' }}
             </span>
+            </div>
           </div>
         </div>
 
         <div>
-          <h3 class="font-semibold text-slate-800">{{ $tugas->nama_tugas }}</h3>
-          <p class="text-sm text-slate-500 mt-1">{{ $tugas->detail_tugas ?? '-' }}</p>
-          <div class="flex flex-wrap items-center gap-3 mt-3 text-xs text-slate-500">
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
-              <span class="material-symbols-rounded text-sm">school</span>
-              Kelas {{ $tugas->kelas->nama_kelas ?? '-' }}
-              <span class="text-blue-600 font-semibold">Tugas ke: {{ $tugas->tugas_ke ?? 1 }}</span>
-            </span>
-          </div>
-        </div>
-
-        @if ($files->isNotEmpty() || $pengumpulanFile)
-          <div class="absolute bottom-4 right-4 flex items-center gap-3">
-            @if ($tidakMengumpulkan)
-              <span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">
-                Tidak Mengumpulkan
-              </span>
-            @endif
-            <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-3xl font-bold {{ $nilaiClass }}">
-              {{ $nilaiLabel }}
-            </div>
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="font-semibold text-slate-800">{{ $tugas->nama_tugas }}</h3>
             <button
               type="button"
-              class="btn-nilai-kecepatan w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center text-xl font-semibold text-yellow-800 hover:bg-yellow-200"
-              data-nilai="{{ $nilaiKecepatan }}"
-              data-waktu="{{ $waktuMengumpulkan }}"
-              data-nilai-input="{{ $nilaiInput }}"
-            >
-              {{ $nilaiKecepatan }}
-            </button>
-            <button
-              type="button"
-              class="btn-preview-tugas rounded-full bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
+              class="btn-preview-tugas rounded-full bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 shrink-0"
               data-files='@json($files)'
               data-matkul="{{ $tugas->mataKuliah->mata_kuliah ?? '-' }}"
               data-nama="{{ $tugas->nama_tugas }}"
@@ -198,11 +199,61 @@
               <span class="material-symbols-rounded text-base">visibility</span>
             </button>
           </div>
-        @endif
+          <p class="text-sm text-slate-500 mt-1">{{ $tugas->detail_tugas ?? '-' }}</p>
+          <div class="mt-3 flex items-start justify-between gap-3 text-xs text-slate-500">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+              <span class="material-symbols-rounded text-sm">school</span>
+              Kelas {{ $tugas->kelas->nama_kelas ?? '-' }}
+              <span class="text-blue-600 font-semibold">Tugas ke: {{ $tugas->tugas_ke ?? 1 }}</span>
+            </span>
+
+            <div class="flex items-start justify-end gap-2 md:gap-3 shrink-0">
+              @if ($tidakMengumpulkan)
+                <span class="hidden md:inline-flex text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                  Tidak Mengumpulkan
+                </span>
+              @endif
+              <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl md:text-3xl font-bold {{ $nilaiClass }}">
+                {{ $nilaiLabel }}
+              </div>
+              <button
+                type="button"
+                class="btn-nilai-kecepatan w-10 h-10 md:w-12 md:h-12 rounded-xl bg-yellow-100 flex items-center justify-center text-base md:text-xl font-semibold text-yellow-800 hover:bg-yellow-200"
+                data-nilai="{{ $nilaiKecepatan }}"
+                data-waktu="{{ $waktuMengumpulkan }}"
+                data-nilai-input="{{ $nilaiInput }}"
+              >
+                {{ $nilaiKecepatan }}
+              </button>
+              <button
+                type="button"
+                onclick="openChatModal(this)"
+                data-kelas-id="{{ $tugas->id }}"
+                data-kelas-nama="{{ $tugas->nama_tugas ?? 'Tugas' }}"
+                data-user-map='@json($chatUserMap)'
+                class="rounded-full bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+              >
+                <span class="material-symbols-rounded text-base">chat</span>
+              </button>
+            </div>
+          </div>
+          @if ($tidakMengumpulkan)
+            <span class="mt-2 inline-flex md:hidden text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full">
+              Tidak Mengumpulkan
+            </span>
+          @endif
+        </div>
       </div>
     @endforeach
   </div>
 </div>
+
+<script>
+  window.__chatContextType = 'tugas';
+  window.__chatBaseUrlTemplate = @json(route('mahasiswa.tugas.diskusi.index', ['tugas' => '__CTX_ID__']));
+  window.__chatMessageUrlTemplate = @json(route('mahasiswa.tugas.diskusi.update', ['tugas' => '__CTX_ID__', 'diskusi' => '__DISKUSI_ID__']));
+</script>
+@include('mahasiswa.kelas.partials.chat_modal')
 
 <!-- MODAL PREVIEW (READ ONLY) -->
 <div id="previewTugasModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4">

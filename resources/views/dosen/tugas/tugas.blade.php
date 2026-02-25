@@ -97,7 +97,44 @@
         <script type="application/json" id="tugas-files-{{ $tugas->id }}">
           @json($files)
         </script>
+        @php
+          $kelasRef = $tugas->kelas;
+          $dosenRef = $kelasRef?->dosens;
+          $chatUserMap = collect();
+          if ($dosenRef && $dosenRef->user_id) {
+              $chatUserMap[(string) $dosenRef->user_id] = [
+                  'name' => $dosenRef->user->name ?? '-',
+                  'foto' => $dosenRef->poto_profil ? asset('storage/' . $dosenRef->poto_profil) : asset('img/default_profil.jpg'),
+                  'phone' => $dosenRef->no_hp ?? '-',
+                  'role' => 'dosen',
+                  'gelar' => $dosenRef->gelar ?? '',
+                  'fakultas' => $dosenRef->fakultas->fakultas ?? '-',
+                  'prodi' => $dosenRef->programStudi->nama_prodi ?? '-',
+              ];
+          }
+          foreach (($kelasRef?->mahasiswas ?? collect()) as $mhsRef) {
+              $chatUserMap[(string) ($mhsRef->user_id ?? '')] = [
+                  'name' => $mhsRef->user->name ?? '-',
+                  'foto' => $mhsRef->poto_profil ? asset('storage/' . $mhsRef->poto_profil) : asset('img/default_profil.jpg'),
+                  'phone' => $mhsRef->no_hp ?? '-',
+                  'role' => 'mahasiswa',
+                  'nim' => $mhsRef->nim ?? '-',
+                  'fakultas' => $mhsRef->fakultas->fakultas ?? '-',
+                  'prodi' => $mhsRef->programStudi->nama_prodi ?? '-',
+              ];
+          }
+        @endphp
         <div class="absolute bottom-4 right-4 flex items-center gap-2">
+          <button
+            type="button"
+            onclick="openChatModal(this)"
+            data-kelas-id="{{ $tugas->id }}"
+            data-kelas-nama="{{ $tugas->nama_tugas ?? 'Tugas' }}"
+            data-user-map='@json($chatUserMap)'
+            class="rounded-full bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+          >
+            <span class="material-symbols-rounded text-base">chat</span>
+          </button>
           @if ($files->isNotEmpty())
             <button
               type="button"
@@ -193,6 +230,13 @@
     </div>
   </div>
 </div>
+
+<script>
+  window.__chatContextType = 'tugas';
+  window.__chatBaseUrlTemplate = @json(route('dosen.tugas.diskusi.index', ['tugas' => '__CTX_ID__']));
+  window.__chatMessageUrlTemplate = @json(route('dosen.tugas.diskusi.update', ['tugas' => '__CTX_ID__', 'diskusi' => '__DISKUSI_ID__']));
+</script>
+@include('dosen.kelas.partials.chat_modal')
 
 <script>
   const previewModal = document.getElementById('previewTugasModal');

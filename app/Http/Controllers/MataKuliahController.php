@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MataKuliah;
+use App\Models\Fakultas;
 use App\Models\ProgramStudi;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -40,8 +41,9 @@ public function index()
 
    $matkuls = $query->orderByDesc('kelas_count')->latest()->get();
    $prodis = ProgramStudi::orderBy('nama_prodi')->get();
+   $fakultas = Fakultas::orderBy('fakultas')->get();
 
-return view('admin.mata_kuliah.index', compact('matkuls', 'prodis'));
+return view('admin.mata_kuliah.index', compact('matkuls', 'prodis', 'fakultas'));
   
 }
 

@@ -1,6 +1,104 @@
 <x-header>Riwayat Kelas</x-header>
 <x-navbar></x-navbar>
 <x-sidebar>mahasiswa</x-sidebar>
+<style>
+  @media (max-width: 640px) {
+    #profileCard .profile-stat-grid {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      gap: 6px !important;
+    }
+    #profileCard .profile-stat-item {
+      flex: 0 0 calc(50% - 3px) !important;
+      max-width: calc(50% - 3px) !important;
+      min-width: 0 !important;
+      padding: 6px 6px !important;
+    }
+    #profileCard .profile-stat-item p {
+      line-height: 1.15 !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .kelas-card-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+
+    .sidebar.collapsed ~ .main-content .kelas-card-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+  }
+</style>
+
+<div class="p-1">
+  <!-- PROFIL MAHASISWA -->
+  <div
+    id="profileCard"
+    class="relative mb-6 rounded-xl shadow overflow-hidden cursor-pointer group"
+    style="background-image: {{ $bg ? "url('".asset('storage/' . $bg)."')" : 'none' }}; background-color: #ffffff; background-size: cover; background-position: center;"
+  >
+    <div class="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition"></div>
+
+    <form id="bgUploadForm" action="{{ route('mahasiswa.bg') }}" method="POST" enctype="multipart/form-data">
+      @csrf
+      <input type="file" id="bgUpload" name="bg" accept="image/*" class="hidden">
+    </form>
+
+    <div class="relative p-4 sm:p-5 text-white">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="flex items-center gap-3 sm:gap-4">
+          <img
+            src="{{ $foto ? asset('storage/' . $foto) : asset('img/default_profil.jpg') }}"
+            class="w-20 h-20 sm:w-24 sm:h-24 md:w-26 md:h-26 rounded-full object-cover border-2 border-white"
+            alt="Foto Mahasiswa"
+          >
+
+          <div>
+            <h2 class="text-base sm:text-lg font-semibold">{{ $nama }}</h2>
+            <p class="text-xs sm:text-sm text-white">NIM: {{ $id_user }}</p>
+            <p class="text-xs sm:text-sm text-white">Fakultas {{ $fakultas }} · {{ $prodi }} · {{ $jenjang ? strtoupper($jenjang) : '-' }}</p>
+          </div>
+        </div>
+
+        <div class="profile-stat-grid grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-3 text-[11px] sm:text-sm text-gray-800">
+          <div class="profile-stat-item rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
+            <p class="text-white/70 text-[11px] sm:text-sm">Tahun Ajar</p>
+            <p class="font-semibold text-white text-sm sm:text-lg">{{ $tahunAjarAktif ?? '-' }}</p>
+          </div>
+          <div class="profile-stat-item rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
+            <p class="text-white/70 text-[11px] sm:text-sm">Semester</p>
+            @php
+              $semesterNum = (int) ($semesterAktifMhs ?? 1);
+              $semesterLabel = $semesterNum % 2 === 0 ? 'Genap' : 'Ganjil';
+            @endphp
+            <p class="font-semibold text-white text-sm sm:text-lg">{{ $semesterLabel }} : {{ $semesterNum }}</p>
+          </div>
+          <div class="profile-stat-item rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
+            <p class="text-white/70 text-[11px] sm:text-sm">Dosen Wali</p>
+            <p class="font-semibold text-white text-sm sm:text-lg">{{ $namaDosenWali ?? '-' }}</p>
+          </div>
+          <div class="profile-stat-item rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
+            <p class="text-white/70 text-[11px] sm:text-sm">IPK</p>
+            <p class="font-semibold text-white text-sm sm:text-lg">{{ number_format((float) ($ipsTerakhir ?? 0), 2) }}</p>
+          </div>
+          <div class="profile-stat-item rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
+            <p class="text-white/70 text-[11px] sm:text-sm">SKS Ditempuh</p>
+            <p class="font-semibold text-white text-sm sm:text-lg">{{ $sksDitempuh ?? 0 }} / {{ $sksMaks ?? 0 }}</p>
+          </div>
+          <div class="profile-stat-item rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
+            <p class="text-white/70 text-[11px] sm:text-sm">Max SKS</p>
+            @php
+              $sksLimit = (int) ($sksMaksIps ?? 24);
+              $sksSemesterRaw = (int) ($sksDiambilSemester ?? 0);
+              $sksSemesterDisplay = max(0, min($sksSemesterRaw, $sksLimit));
+            @endphp
+            <p class="font-semibold text-white text-sm sm:text-lg">{{ $sksSemesterDisplay }} / {{ $sksLimit }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- SUB NAVBAR -->
 <div class="mb-6">
@@ -47,7 +145,7 @@
 </div>
 
 <div class="p-6 bg-gray-100 min-h-screen">
-  <div class="grid gap-6 justify-center [grid-template-columns:repeat(auto-fill,minmax(260px,260px))]">
+  <div class="kelas-card-grid grid grid-cols-2 gap-3 sm:gap-6">
 
         @if ($riwayat_kelas->isEmpty())
           <div class="col-span-full text-center text-gray-500">
@@ -113,20 +211,20 @@
           </div>
           <div class="flex items-center justify-between px-4 py-3 border-t">
             <div class="flex items-center gap-2">
-              <span class="material-symbols-rounded text-blue-600 text-lg">
-                people
-              </span>
-              <span class="text-sm font-semibold text-green-600">
-                {{ $kelas->mahasiswas_count ?? 0 }} / {{ $kelas->kuota_maksimal }}
+              <span class="material-symbols-rounded text-blue-600 text-base sm:text-lg">people</span>
+              <span class="text-xs sm:text-sm font-semibold text-green-600">
+              {{ $kelas->mahasiswas_count ?? 0 }} / {{ $kelas->kuota_maksimal }}
               </span>
             </div>
+            <div class="flex items-center gap-2">
             <a
               href="{{ route('mahasiswa.kelas_riwayat.detail', $kelas->id) }}"
-              class="flex items-center gap-1 rounded-full bg-slate-100 px-4 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+              class="flex items-center gap-1 rounded-full bg-slate-100 px-4 py-1.5 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-200"
             >
-              <span class="material-symbols-rounded text-base">history</span>
-              Riwayat
+              <span class="material-symbols-rounded text-sm sm:text-base">history</span>
+              <span>Riwayat</span>
             </a>
+            </div>
           </div>
         </div>
         @endforeach
@@ -198,6 +296,10 @@ class="fixed inset-0 z-50 hidden items-center justify-center
   const tahunSelect = document.getElementById('filter_tahun_ajar');
   const semesterSelect = document.getElementById('filter_semester');
   const cards = Array.from(document.querySelectorAll('.riwayat-card'));
+  const getStartYear = (tahunAjar) => {
+    const match = (tahunAjar || '').toString().match(/\d{4}/);
+    return match ? Number(match[0]) : null;
+  };
 
   const buildFilterOptions = () => {
     const tahunSet = new Set();
@@ -214,8 +316,8 @@ class="fixed inset-0 z-50 hidden items-center justify-center
     const yearSet = new Set();
     cards.forEach((card) => {
       const tahun = (card.dataset.tahunAjar || '').toString();
-      const match = tahun.match(/\\d{4}/);
-      if (match) yearSet.add(Number(match[0]));
+      const startYear = getStartYear(tahun);
+      if (startYear) yearSet.add(startYear);
     });
     const yearList = Array.from(yearSet).sort((a, b) => a - b);
     const yearIndex = new Map(yearList.map((y, i) => [y, i]));
@@ -224,9 +326,8 @@ class="fixed inset-0 z-50 hidden items-center justify-center
     cards.forEach((card) => {
       const semesterRaw = (card.dataset.semester || '').trim().toLowerCase();
       const tahun = (card.dataset.tahunAjar || '').toString();
-      const match = tahun.match(/\\d{4}/);
-      if (!match || !semesterRaw) return;
-      const year = Number(match[0]);
+      const year = getStartYear(tahun);
+      if (!year || !semesterRaw) return;
       const idx = yearIndex.get(year);
       if (idx === undefined) return;
       const base = (idx * 2) + 1;
@@ -261,6 +362,7 @@ class="fixed inset-0 z-50 hidden items-center justify-center
   };
 
   buildFilterOptions();
+  applyFilters();
   tahunSelect?.addEventListener('change', applyFilters);
   semesterSelect?.addEventListener('change', applyFilters);
 
@@ -327,5 +429,26 @@ class="fixed inset-0 z-50 hidden items-center justify-center
   
   document.getElementById('pesertaModal')?.addEventListener('click', function(e) {
     if (e.target === this) closeModal();
+  });
+
+  const card = document.getElementById('profileCard');
+  const upload = document.getElementById('bgUpload');
+  const uploadForm = document.getElementById('bgUploadForm');
+
+  card?.addEventListener('click', () => {
+    upload?.click();
+  });
+
+  upload?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (card) card.style.backgroundImage = `url('${reader.result}')`;
+    };
+    reader.readAsDataURL(file);
+
+    uploadForm?.submit();
   });
 </script>

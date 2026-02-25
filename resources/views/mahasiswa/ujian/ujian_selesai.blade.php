@@ -105,9 +105,36 @@
             }
             $nilaiKecepatan = $hasilNilai;
         }
+        $kelasRef = $ujian->kelas;
+        $dosenRef = $kelasRef?->dosens;
+        $chatUserMap = collect();
+        if ($dosenRef && $dosenRef->user_id) {
+            $chatUserMap[(string) $dosenRef->user_id] = [
+                'name' => $dosenRef->user->name ?? '-',
+                'foto' => $dosenRef->poto_profil ? asset('storage/' . $dosenRef->poto_profil) : asset('img/default_profil.jpg'),
+                'phone' => $dosenRef->no_hp ?? '-',
+                'role' => 'dosen',
+                'gelar' => $dosenRef->gelar ?? '',
+                'homebase' => $dosenRef->fakultas->fakultas ?? '-',
+                'mata_kuliah' => $ujian->mataKuliah->mata_kuliah ?? '-',
+                'fakultas' => $dosenRef->fakultas->fakultas ?? '-',
+                'prodi' => $dosenRef->programStudi->nama_prodi ?? '-',
+            ];
+        }
+        foreach (($kelasRef?->mahasiswas ?? collect()) as $mhsRef) {
+            $chatUserMap[(string) ($mhsRef->user_id ?? '')] = [
+                'name' => $mhsRef->user->name ?? '-',
+                'foto' => $mhsRef->poto_profil ? asset('storage/' . $mhsRef->poto_profil) : asset('img/default_profil.jpg'),
+                'phone' => $mhsRef->no_hp ?? '-',
+                'role' => 'mahasiswa',
+                'nim' => $mhsRef->nim ?? '-',
+                'fakultas' => $mhsRef->fakultas->fakultas ?? '-',
+                'prodi' => $mhsRef->programStudi->nama_prodi ?? '-',
+            ];
+        }
       @endphp
       <div class="ujian-card bg-white rounded-xl border p-5 flex flex-col gap-4 relative" data-matkul="{{ $ujian->mataKuliah->mata_kuliah ?? '-' }}">
-        <div class="absolute top-4 right-4 flex items-center gap-2 text-xs text-slate-500">
+        <div class="absolute top-4 right-4 hidden sm:flex items-center gap-2 text-xs text-slate-500">
           <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700">
             <span class="material-symbols-rounded text-sm">schedule</span>
             {{ $ujian->mulai_ujian ? \Carbon\Carbon::parse($ujian->mulai_ujian)->format('d M Y H:i') : '-' }}
@@ -122,10 +149,20 @@
           <div class="inline-flex items-center gap-2 text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full w-fit">
             {{ $ujian->mataKuliah->mata_kuliah ?? '-' }}
           </div>
+          <span class="inline-flex sm:hidden items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-xs shrink-0">
+            <span class="material-symbols-rounded text-sm">schedule</span>
+            {{ $ujian->mulai_ujian ? \Carbon\Carbon::parse($ujian->mulai_ujian)->format('d M Y H:i') : '-' }}
+          </span>
         </div>
 
         <div>
-          <h3 class="font-semibold text-slate-800 pr-40">{{ $ujian->nama_ujian ?? 'Nama Ujian' }}</h3>
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="font-semibold text-slate-800 sm:pr-40">{{ $ujian->nama_ujian ?? 'Nama Ujian' }}</h3>
+            <span class="inline-flex sm:hidden items-center gap-1 px-2 py-0.5 rounded-md bg-red-50 text-red-700 text-xs shrink-0">
+              <span class="material-symbols-rounded text-sm">event</span>
+              {{ $ujian->deadline ? \Carbon\Carbon::parse($ujian->deadline)->format('d M Y H:i') : '-' }}
+            </span>
+          </div>
           <p class="text-sm text-slate-500 mt-1">{{ $ujian->deskripsi ?? '-' }}</p>
           <div class="flex flex-wrap items-center gap-3 mt-3 text-xs text-slate-500">
             <span class="inline-flex items-center gap-2 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
@@ -137,6 +174,16 @@
         </div>
 
         <div class="absolute bottom-4 right-4 flex items-center gap-2">
+          <button
+            type="button"
+            onclick="openChatModal(this)"
+            data-kelas-id="{{ $ujian->id }}"
+            data-kelas-nama="{{ $ujian->nama_ujian ?? 'Ujian' }}"
+            data-user-map='@json($chatUserMap)'
+            class="rounded-full bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+          >
+            <span class="material-symbols-rounded text-base">chat</span>
+          </button>
           <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-lg font-bold {{ $nilaiClass }}">
             {{ $nilaiLabel }}
           </div>
@@ -151,7 +198,7 @@
           </button>
           <button
             type="button"
-            class="btn-preview-ujian inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+            class="btn-preview-ujian inline-flex items-center gap-1 md:gap-2 rounded-full bg-blue-600 px-3 md:px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
             data-matkul="{{ $ujian->mataKuliah->mata_kuliah ?? '-' }}"
             data-nama="{{ $ujian->nama_ujian ?? 'Ujian' }}"
             data-deskripsi="{{ $ujian->deskripsi ?? '-' }}"
@@ -161,13 +208,20 @@
             data-soals='@json($soalPreview)'
           >
             <span class="material-symbols-rounded text-base">visibility</span>
-            Preview
+            <span class="hidden md:inline">Preview</span>
           </button>
         </div>
       </div>
     @endforeach
   </div>
 </div>
+
+<script>
+  window.__chatContextType = 'ujian';
+  window.__chatBaseUrlTemplate = @json(route('mahasiswa.ujian.diskusi.index', ['ujian' => '__CTX_ID__']));
+  window.__chatMessageUrlTemplate = @json(route('mahasiswa.ujian.diskusi.update', ['ujian' => '__CTX_ID__', 'diskusi' => '__DISKUSI_ID__']));
+</script>
+@include('mahasiswa.kelas.partials.chat_modal')
 
 <!-- MODAL NILAI KECEPATAN -->
 <div id="nilaiKecepatanModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4">

@@ -79,6 +79,8 @@ Route::middleware(['auth.session', 'role.session:Admin'])->group(function () {
             ->name('admin.dosen.wali.destroy');
         Route::resource('/admin/kelola_dosen', DataDosenController::class);
         Route::resource('/admin/kelola_mahasiswa', DataMahasiswaController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::post('/admin/kelola_mahasiswa/import', [DataMahasiswaController::class, 'importCsv'])->name('admin.mahasiswa.import');
+        Route::post('/admin/kelola_mahasiswa/status-krs', [DataMahasiswaController::class, 'bulkUpdateStatusKrs'])->name('admin.mahasiswa.status_krs.bulk');
         Route::get('/admin/kelola_mata_kuliah', [MataKuliahController::class, 'index'])->name('admin.mata_kuliah.index');
         Route::post('/admin/kelola_mata_kuliah', [MataKuliahController::class, 'store'])->name('admin.mata_kuliah.store');
         Route::put('/admin/kelola_mata_kuliah/{mataKuliah}', [MataKuliahController::class, 'update'])->name('admin.mata_kuliah.update');
@@ -140,6 +142,20 @@ Route::middleware(['auth.session', 'role.session:Dosen'])->group(function () {
         Route::post('/dosen/perwalian/{mahasiswa}/kelas/approve-all', [DosenController::class, 'approveAllPerwalianKelas'])
             ->name('dosen.perwalian.kelas.approve_all');
         Route::get('/dosen/kelas', [DosenKelasController::class, 'index'])->name('dosen.kelas');
+        Route::get('/dosen/kelas/{kelas}/diskusi', [DiskusiController::class, 'kelasMessages'])->name('dosen.kelas.diskusi.index');
+        Route::post('/dosen/kelas/{kelas}/diskusi', [DiskusiController::class, 'storeKelasMessage'])->name('dosen.kelas.diskusi.store');
+        Route::put('/dosen/kelas/{kelas}/diskusi/{diskusi}', [DiskusiController::class, 'updateKelasMessage'])->name('dosen.kelas.diskusi.update');
+        Route::delete('/dosen/kelas/{kelas}/diskusi/{diskusi}', [DiskusiController::class, 'destroyKelasMessage'])->name('dosen.kelas.diskusi.destroy');
+        Route::get('/dosen/diskusi/unread-status', [DiskusiController::class, 'unreadStatus'])->name('dosen.diskusi.unread_status');
+        Route::post('/dosen/diskusi/mark-read', [DiskusiController::class, 'markRead'])->name('dosen.diskusi.mark_read');
+        Route::get('/dosen/ujian/{ujian}/diskusi', [DiskusiController::class, 'ujianMessages'])->name('dosen.ujian.diskusi.index');
+        Route::post('/dosen/ujian/{ujian}/diskusi', [DiskusiController::class, 'storeUjianMessage'])->name('dosen.ujian.diskusi.store');
+        Route::put('/dosen/ujian/{ujian}/diskusi/{diskusi}', [DiskusiController::class, 'updateUjianMessage'])->name('dosen.ujian.diskusi.update');
+        Route::delete('/dosen/ujian/{ujian}/diskusi/{diskusi}', [DiskusiController::class, 'destroyUjianMessage'])->name('dosen.ujian.diskusi.destroy');
+        Route::get('/dosen/tugas/{tugas}/diskusi', [DiskusiController::class, 'tugasMessages'])->name('dosen.tugas.diskusi.index');
+        Route::post('/dosen/tugas/{tugas}/diskusi', [DiskusiController::class, 'storeTugasMessage'])->name('dosen.tugas.diskusi.store');
+        Route::put('/dosen/tugas/{tugas}/diskusi/{diskusi}', [DiskusiController::class, 'updateTugasMessage'])->name('dosen.tugas.diskusi.update');
+        Route::delete('/dosen/tugas/{tugas}/diskusi/{diskusi}', [DiskusiController::class, 'destroyTugasMessage'])->name('dosen.tugas.diskusi.destroy');
         Route::get('/dosen/kelas/riwayat', [DosenKelasController::class, 'riwayat'])->name('dosen.kelas_riwayat');
         Route::get('/dosen/kelas/riwayat/{kelas}', [DosenKelasController::class, 'riwayatDetail'])->name('dosen.kelas_riwayat.detail');
         Route::post('/dosen/kelas/bg', [DosenController::class, 'updateBg'])->name('dosen.kelas.bg');
@@ -201,6 +217,20 @@ Route::middleware(['auth.session', 'role.session:Mahasiswa'])->group(function ()
     Route::get('/mahasiswa', [MahasiswaController::class, 'index'])
         ->name('mahasiswa.dashboard');
         Route::get('/mahasiswa/kelas', [MahasiswaKelasController::class, 'index'])->name('mahasiswa.kelas_saya');
+        Route::get('/mahasiswa/kelas/{kelas}/diskusi', [DiskusiController::class, 'kelasMessages'])->name('mahasiswa.kelas.diskusi.index');
+        Route::post('/mahasiswa/kelas/{kelas}/diskusi', [DiskusiController::class, 'storeKelasMessage'])->name('mahasiswa.kelas.diskusi.store');
+        Route::put('/mahasiswa/kelas/{kelas}/diskusi/{diskusi}', [DiskusiController::class, 'updateKelasMessage'])->name('mahasiswa.kelas.diskusi.update');
+        Route::delete('/mahasiswa/kelas/{kelas}/diskusi/{diskusi}', [DiskusiController::class, 'destroyKelasMessage'])->name('mahasiswa.kelas.diskusi.destroy');
+        Route::get('/mahasiswa/diskusi/unread-status', [DiskusiController::class, 'unreadStatus'])->name('mahasiswa.diskusi.unread_status');
+        Route::post('/mahasiswa/diskusi/mark-read', [DiskusiController::class, 'markRead'])->name('mahasiswa.diskusi.mark_read');
+        Route::get('/mahasiswa/ujian/{ujian}/diskusi', [DiskusiController::class, 'ujianMessages'])->name('mahasiswa.ujian.diskusi.index');
+        Route::post('/mahasiswa/ujian/{ujian}/diskusi', [DiskusiController::class, 'storeUjianMessage'])->name('mahasiswa.ujian.diskusi.store');
+        Route::put('/mahasiswa/ujian/{ujian}/diskusi/{diskusi}', [DiskusiController::class, 'updateUjianMessage'])->name('mahasiswa.ujian.diskusi.update');
+        Route::delete('/mahasiswa/ujian/{ujian}/diskusi/{diskusi}', [DiskusiController::class, 'destroyUjianMessage'])->name('mahasiswa.ujian.diskusi.destroy');
+        Route::get('/mahasiswa/tugas/{tugas}/diskusi', [DiskusiController::class, 'tugasMessages'])->name('mahasiswa.tugas.diskusi.index');
+        Route::post('/mahasiswa/tugas/{tugas}/diskusi', [DiskusiController::class, 'storeTugasMessage'])->name('mahasiswa.tugas.diskusi.store');
+        Route::put('/mahasiswa/tugas/{tugas}/diskusi/{diskusi}', [DiskusiController::class, 'updateTugasMessage'])->name('mahasiswa.tugas.diskusi.update');
+        Route::delete('/mahasiswa/tugas/{tugas}/diskusi/{diskusi}', [DiskusiController::class, 'destroyTugasMessage'])->name('mahasiswa.tugas.diskusi.destroy');
         Route::get('/mahasiswa/kelas_tersedia', [MahasiswaKelasController::class, 'tersedia'])->name('mahasiswa.kelas_tersedia');
     Route::get('/mahasiswa/riwayat_kelas', [MahasiswaKelasController::class, 'riwayat'])->name('mahasiswa.kelas_riwayat');
     Route::get('/mahasiswa/riwayat_kelas/{kelas}', [MahasiswaKelasController::class, 'riwayatDetail'])->name('mahasiswa.kelas_riwayat.detail');

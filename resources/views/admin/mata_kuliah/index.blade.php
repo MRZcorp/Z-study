@@ -117,12 +117,21 @@
                 ->filter()
                 ->unique()
                 ->values();
+              $prodiList = $matkul->programStudis
+                ->pluck('nama_prodi')
+                ->filter()
+                ->unique()
+                ->values();
+              $fakultasText = $fakultasList->count() > 2 ? 'Semua Fakultas' : ($fakultasList->join(', ') ?: '-');
+              $prodiText = $prodiList->count() > 2 ? 'Semua Prodi' : ($prodiList->join(', ') ?: '-');
+              $fakultasFullText = $fakultasList->join(', ') ?: '-';
+              $prodiFullText = $prodiList->join(', ') ?: '-';
             @endphp
             <td class="px-4 py-3 text-slate-600">
-              {{ $fakultasList->join(', ') ?: '-' }}
+              {{ $fakultasText }}
             </td>
             <td class="px-4 py-3 text-slate-600">
-              {{ $matkul->programStudis->pluck('nama_prodi')->join(', ') ?: '-' }}
+              {{ $prodiText }}
             </td>
 
             <td class="px-4 py-3 text-center">
@@ -146,8 +155,8 @@
                   data-nama="{{ $matkul->mata_kuliah }}"
                   data-sks="{{ $matkul->sks }}"
                   data-semester="{{ $matkul->semester }}"
-                  data-fakultas="{{ $fakultasList->join(', ') }}"
-                  data-prodi="{{ $matkul->programStudis->pluck('nama_prodi')->join(', ') }}"
+                  data-fakultas="{{ $fakultasFullText }}"
+                  data-prodi="{{ $prodiFullText }}"
                   data-status="{{ $matkul->status }}"
                   data-created="{{ $matkul->created_at }}"
                 >
@@ -204,11 +213,37 @@
     </select>
     <input type="number" name="sks" id="sks" placeholder="SKS" class="w-full rounded-lg border p-2" required>
 
-    <select name="prodi_ids[]" id="prodi_ids" class="w-full rounded-lg border p-2" multiple>
-      @foreach(($prodis ?? []) as $prodi)
-        <option value="{{ $prodi->id }}">{{ $prodi->nama_prodi }}</option>
-      @endforeach
-    </select>
+    <div class="rounded-lg border p-3 space-y-3">
+      <p class="text-sm font-semibold text-slate-700">Program Studi</p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <select id="modal_fakultas_filter" class="w-full rounded-lg border p-2 text-sm">
+          <option value="">Semua Fakultas</option>
+          @foreach(($fakultas ?? []) as $f)
+            <option value="{{ $f->id }}">{{ $f->fakultas }}</option>
+          @endforeach
+        </select>
+        <select id="modal_prodi_picker" class="w-full rounded-lg border p-2 text-sm md:col-span-2">
+          <option value="">Pilih Prodi</option>
+          <option value="__ALL__">Semua Prodi</option>
+          @foreach(($prodis ?? []) as $prodi)
+            <option value="{{ $prodi->id }}" data-fakultas-id="{{ $prodi->fakultas_id }}">{{ $prodi->nama_prodi }}</option>
+          @endforeach
+        </select>
+      </div>
+      <div class="flex items-center justify-between gap-2">
+        <p class="text-xs text-slate-500">Klik tambah prodi untuk memasukkan ke daftar terpilih.</p>
+        <button type="button" id="btnAddProdi" class="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">
+          <span class="material-symbols-rounded text-sm">add</span>
+          Tambah Prodi
+        </button>
+      </div>
+      <div id="selectedProdiList" class="flex flex-wrap gap-2"></div>
+      <select name="prodi_ids[]" id="prodi_ids" class="hidden" multiple>
+        @foreach(($prodis ?? []) as $prodi)
+          <option value="{{ $prodi->id }}" data-fakultas-id="{{ $prodi->fakultas_id }}">{{ $prodi->nama_prodi }}</option>
+        @endforeach
+      </select>
+    </div>
 
     <select name="status" id="status" class="w-full rounded-lg border p-2">
       <option value="aktif">Aktif</option>
@@ -308,6 +343,11 @@
     const modalTitle = matkulModal?.querySelector('.modal-title');
     const crudForm = matkulModal?.querySelector('.crud-form');
     const crudMethod = matkulModal?.querySelector('.crud-method');
+    const prodiSelect = matkulModal?.querySelector('#prodi_ids');
+    const modalFakultasFilter = matkulModal?.querySelector('#modal_fakultas_filter');
+    const modalProdiPicker = matkulModal?.querySelector('#modal_prodi_picker');
+    const selectedProdiList = matkulModal?.querySelector('#selectedProdiList');
+    const btnAddProdi = matkulModal?.querySelector('#btnAddProdi');
 
     const openModal = () => matkulModal?.classList.remove('hidden');
     const closeModal = () => matkulModal?.classList.add('hidden');
@@ -318,6 +358,10 @@
       crudForm.action = document.getElementById('btnAddMatkul')?.dataset?.storeUrl || '';
       crudMethod.value = 'POST';
       crudForm.reset();
+      if (modalFakultasFilter) modalFakultasFilter.value = '';
+      if (modalProdiPicker) modalProdiPicker.value = '';
+      setSelectedProdiIds([]);
+      syncProdiPickerVisibility();
       openModal();
     });
 
@@ -327,6 +371,69 @@
       Array.from(selectEl.options).forEach((opt) => {
         opt.selected = set.has(String(opt.value));
       });
+      renderSelectedProdiTags();
+    };
+
+    const getSelectedProdiIds = () => {
+      if (!prodiSelect) return [];
+      return Array.from(prodiSelect.options)
+        .filter((opt) => opt.selected)
+        .map((opt) => String(opt.value));
+    };
+
+    const setSelectedProdiIds = (ids) => {
+      if (!prodiSelect) return;
+      const selectedSet = new Set((ids || []).map(String));
+      Array.from(prodiSelect.options).forEach((opt) => {
+        opt.selected = selectedSet.has(String(opt.value));
+      });
+      renderSelectedProdiTags();
+    };
+
+    const renderSelectedProdiTags = () => {
+      if (!selectedProdiList || !prodiSelect) return;
+      selectedProdiList.innerHTML = '';
+      const selectedOptions = Array.from(prodiSelect.options).filter((opt) => opt.selected);
+      if (!selectedOptions.length) {
+        const empty = document.createElement('span');
+        empty.className = 'text-xs text-slate-400';
+        empty.textContent = 'Belum ada prodi dipilih.';
+        selectedProdiList.appendChild(empty);
+        return;
+      }
+      selectedOptions.forEach((opt) => {
+        const badge = document.createElement('span');
+        badge.className = 'inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-700';
+        badge.textContent = opt.textContent || '-';
+
+        const btnRemove = document.createElement('button');
+        btnRemove.type = 'button';
+        btnRemove.className = 'text-slate-500 hover:text-red-600';
+        btnRemove.textContent = 'x';
+        btnRemove.addEventListener('click', () => {
+          opt.selected = false;
+          renderSelectedProdiTags();
+        });
+
+        badge.appendChild(btnRemove);
+        selectedProdiList.appendChild(badge);
+      });
+    };
+
+    const syncProdiPickerVisibility = () => {
+      if (!modalProdiPicker) return;
+      const selectedFakultas = String(modalFakultasFilter?.value || '');
+      Array.from(modalProdiPicker.options).forEach((opt) => {
+        if (!opt.value || opt.value === '__ALL__') {
+          opt.hidden = false;
+          return;
+        }
+        const fid = String(opt.dataset.fakultasId || '');
+        opt.hidden = selectedFakultas !== '' && fid !== selectedFakultas;
+      });
+      if (modalProdiPicker.selectedOptions[0]?.hidden) {
+        modalProdiPicker.value = '';
+      }
     };
 
     const bindMatkulActions = () => {
@@ -362,9 +469,11 @@
           setVal('semester', btn.dataset.semester);
           setVal('sks', btn.dataset.sks);
           setVal('status', btn.dataset.status);
-          const prodiSelect = matkulModal.querySelector('#prodi_ids');
           const prodis = JSON.parse(btn.dataset.prodis || '[]');
           setMultiSelect(prodiSelect, prodis);
+          if (modalFakultasFilter) modalFakultasFilter.value = '';
+          if (modalProdiPicker) modalProdiPicker.value = '';
+          syncProdiPickerVisibility();
 
           openModal();
         });
@@ -386,6 +495,32 @@
       btn.addEventListener('click', closeModal);
     });
 
+    modalFakultasFilter?.addEventListener('change', syncProdiPickerVisibility);
+    btnAddProdi?.addEventListener('click', () => {
+      if (!modalProdiPicker || !prodiSelect) return;
+      const selected = modalProdiPicker.value || '';
+      if (!selected) return;
+
+      const currentIds = getSelectedProdiIds();
+      const merged = new Set(currentIds);
+
+      if (selected === '__ALL__') {
+        Array.from(modalProdiPicker.options).forEach((opt) => {
+          if (!opt.value || opt.value === '__ALL__' || opt.hidden) return;
+          merged.add(String(opt.value));
+        });
+      } else {
+        const targetOpt = Array.from(modalProdiPicker.options).find((opt) => String(opt.value) === String(selected) && !opt.hidden);
+        if (targetOpt) merged.add(String(targetOpt.value));
+      }
+
+      setSelectedProdiIds(Array.from(merged));
+      modalProdiPicker.value = '';
+    });
+
+    syncProdiPickerVisibility();
+    renderSelectedProdiTags();
+
     // Close modal when clicking outside
     document.querySelectorAll('.modal-overlay').forEach((modal) => {
       modal.addEventListener('click', (e) => {
@@ -397,8 +532,14 @@
 
     // Delete confirm modal actions
     const deleteModal = document.getElementById('deleteModal');
+    const previewModal = document.getElementById('previewModal');
     document.getElementById('btnCancelDelete')?.addEventListener('click', () => {
       deleteModal?.classList.add('hidden');
+    });
+    previewModal?.querySelectorAll('.btn-close').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        previewModal.classList.add('hidden');
+      });
     });
     document.getElementById('btnConfirmDelete')?.addEventListener('click', () => {
       if (!deleteModal) return;

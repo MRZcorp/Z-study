@@ -160,7 +160,7 @@ Tambah Dosen Wali
                 <span class="material-symbols-rounded">edit</span>
               </button>
               <button
-                class="btn-delete p-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-700"
+                class="btn-delete-wali p-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-700"
                 title="Hapus"
                 data-delete-url="{{ route('admin.dosen.wali.destroy', $dosenWali->id) }}"
               >
@@ -223,12 +223,11 @@ Tambah Dosen Wali
 
 <!-- MODAL SUCCESS -->
 <div id="successModal" class="modal-overlay hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-  <div class="bg-white rounded-xl w-full max-w-sm p-6">
-    <h3 class="text-lg font-semibold text-slate-800 mb-2">Berhasil</h3>
-    <p id="successMessage" class="text-sm text-slate-600"></p>
-    <div class="flex justify-end mt-6">
-      <button type="button" class="btn-close px-4 py-2 rounded-lg bg-blue-600 text-white">OK</button>
+  <div class="bg-white rounded-xl w-full max-w-sm p-6 text-center">
+    <div class="flex justify-center mb-3">
+      <span class="material-symbols-rounded text-5xl text-green-600">check_circle</span>
     </div>
+    <p id="successMessage" class="text-base font-semibold text-slate-800">Berhasil</p>
   </div>
 </div>
 
@@ -315,7 +314,7 @@ Tambah Dosen Wali
       });
     });
 
-    document.querySelectorAll('.btn-delete').forEach((btn) => {
+    document.querySelectorAll('.btn-delete-wali').forEach((btn) => {
       btn.addEventListener('click', () => {
         const url = btn.dataset.deleteUrl || '';
         if (!url) return;
@@ -353,34 +352,50 @@ Tambah Dosen Wali
     });
   });
 
-  // Success modal from session
-  @if (session('success'))
-    const successModal = document.getElementById('successModal');
-    const successMessage = document.getElementById('successMessage');
-    if (successModal && successMessage) {
-      successMessage.textContent = @json(session('success'));
-      successModal.classList.remove('hidden');
-    }
-  @endif
+  const successModal = document.getElementById('successModal');
+  const successMessage = document.getElementById('successMessage');
+  const showSuccess = (message) => {
+    if (successMessage) successMessage.textContent = message || 'Berhasil';
+    successModal?.classList.remove('hidden');
+    setTimeout(() => {
+      successModal?.classList.add('hidden');
+    }, 1200);
+  };
 
   // Delete confirm modal actions
   const deleteModal = document.getElementById('deleteModal');
   document.getElementById('btnCancelDelete')?.addEventListener('click', () => {
     deleteModal?.classList.add('hidden');
   });
-  document.getElementById('btnConfirmDelete')?.addEventListener('click', () => {
+  document.getElementById('btnConfirmDelete')?.addEventListener('click', async () => {
     if (!deleteModal) return;
     const url = deleteModal.dataset.deleteUrl || '';
     if (!url) return;
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = url;
-    form.innerHTML = `
-      @csrf
-      <input type="hidden" name="_method" value="DELETE">
-    `;
-    document.body.appendChild(form);
-    form.submit();
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+        },
+        body: new URLSearchParams({
+          _token: '{{ csrf_token() }}',
+          _method: 'DELETE',
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.message || 'Gagal menghapus dosen wali.');
+      }
+
+      deleteModal.classList.add('hidden');
+      await fetchFilteredDosen();
+      showSuccess(data.message || 'Dosen wali berhasil dihapus');
+    } catch (error) {
+      alert(error.message || 'Gagal menghapus dosen wali.');
+    }
   });
 
   bindFilterEvents();
@@ -395,6 +410,41 @@ Tambah Dosen Wali
       dosenWaliForm.reset();
       dosenWaliModal.classList.remove('hidden');
     });
+  });
+
+  dosenWaliForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const action = dosenWaliForm.getAttribute('action');
+    if (!action) return;
+
+    const formData = new FormData(dosenWaliForm);
+
+    try {
+      const res = await fetch(action, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+        },
+        body: formData,
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (res.status === 422 && data.errors) {
+          const firstKey = Object.keys(data.errors)[0];
+          const firstMsg = firstKey ? data.errors[firstKey][0] : 'Validasi gagal.';
+          throw new Error(firstMsg);
+        }
+        throw new Error(data.message || 'Gagal menyimpan dosen wali.');
+      }
+
+      dosenWaliModal?.classList.add('hidden');
+      await fetchFilteredDosen();
+      showSuccess(data.message || 'Dosen wali berhasil disimpan');
+    } catch (error) {
+      alert(error.message || 'Gagal menyimpan dosen wali.');
+    }
   });
 </script>
 

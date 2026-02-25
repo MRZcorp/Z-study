@@ -56,7 +56,11 @@
         </div>
         <div class="rounded-lg px-3 py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
           <p class="text-white/70 text-sm">Semester</p>
-          <p class="font-semibold text-white text-base sm:text-lg">{{ $semesterAktif ?? '-' }} : {{ $semesterAktifMhs ?? 1 }}</p>
+          @php
+            $semesterNum = (int) ($semesterAktifMhs ?? 1);
+            $semesterLabel = $semesterNum % 2 === 0 ? 'Genap' : 'Ganjil';
+          @endphp
+          <p class="font-semibold text-white text-base sm:text-lg">{{ $semesterLabel }} : {{ $semesterNum }}</p>
         </div>
         <div class="rounded-lg px-3 py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
           <p class="text-white/70 text-sm">Dosen Wali</p>
@@ -72,7 +76,12 @@
         </div>
         <div class="rounded-lg px-3 py-2 text-center bg-black/40 backdrop-blur-sm border border-white/20">
           <p class="text-white/70 text-sm">Max SKS</p>
-          <p class="font-semibold text-white text-base sm:text-lg">{{ $sksDitempuh ?? 0 }} / {{ $sksMaksIps ?? 24 }}</p>
+          @php
+            $sksLimit = (int) ($sksMaksIps ?? 24);
+            $sksSemesterRaw = (int) ($sksDiambilSemester ?? 0);
+            $sksSemesterDisplay = max(0, min($sksSemesterRaw, $sksLimit));
+          @endphp
+          <p class="font-semibold text-white text-base sm:text-lg">{{ $sksSemesterDisplay }} / {{ $sksLimit }}</p>
         </div>
       </div>
     </div>
@@ -81,7 +90,7 @@
 
   
         <!-- STATISTIK ATAS -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-6">
           {{-- <div class="stats-container"> --}}
             
 
@@ -273,4 +282,6 @@
       </div>
       
     </main>
+
+@include('mahasiswa.kelas.partials.chat_modal')
 

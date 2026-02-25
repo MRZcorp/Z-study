@@ -30,7 +30,18 @@ class TugasController extends Controller
 
         $kelasIds = $kelas_dosen->pluck('id');
 
-        $tugas_kelas = Tugas::with(['mataKuliah', 'kelas', 'files'])
+        $tugas_kelas = Tugas::with([
+                'mataKuliah',
+                'kelas' => fn($q) => $q->with([
+                    'dosens.user',
+                    'dosens.fakultas',
+                    'dosens.programStudi',
+                    'mahasiswas.user',
+                    'mahasiswas.fakultas',
+                    'mahasiswas.programStudi',
+                ]),
+                'files',
+            ])
             ->when($kelasIds->isNotEmpty(), fn($q) => $q->whereIn('nama_kelas_id', $kelasIds))
             ->whereHas('kelas', fn($q) => $q->where('status', 'aktif'))
             ->latest()
@@ -113,7 +124,14 @@ class TugasController extends Controller
 
         $tugas = Tugas::with([
                 'mataKuliah',
-                'kelas',
+                'kelas' => fn($q) => $q->with([
+                    'dosens.user',
+                    'dosens.fakultas',
+                    'dosens.programStudi',
+                    'mahasiswas.user',
+                    'mahasiswas.fakultas',
+                    'mahasiswas.programStudi',
+                ]),
                 'files',
                 'pengumpulan' => function ($q) use ($mahasiswaId) {
                     if ($mahasiswaId) {
@@ -170,7 +188,14 @@ class TugasController extends Controller
 
         $tugas = Tugas::with([
                 'mataKuliah',
-                'kelas',
+                'kelas' => fn($q) => $q->with([
+                    'dosens.user',
+                    'dosens.fakultas',
+                    'dosens.programStudi',
+                    'mahasiswas.user',
+                    'mahasiswas.fakultas',
+                    'mahasiswas.programStudi',
+                ]),
                 'files',
                 'pengumpulan' => function ($q) use ($mahasiswaId) {
                     if ($mahasiswaId) {

@@ -27,7 +27,16 @@ class KoreksiTugasController extends Controller
 
         $tugasQuery = Tugas::with([
                 'mataKuliah',
-                'kelas' => fn($q) => $q->withCount('mahasiswas'),
+                'kelas' => fn($q) => $q
+                    ->withCount('mahasiswas')
+                    ->with([
+                        'dosens.user',
+                        'dosens.fakultas',
+                        'dosens.programStudi',
+                        'mahasiswas.user',
+                        'mahasiswas.fakultas',
+                        'mahasiswas.programStudi',
+                    ]),
                 'files',
                 'pengumpulan.mahasiswa.user',
             ])

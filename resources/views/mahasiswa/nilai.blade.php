@@ -57,8 +57,19 @@
     </div>
   </div>
   <div class="bg-white rounded-lg shadow-md overflow-hidden w-full">
-    <div class="px-4 py-3 border-b">
+    <div class="px-4 py-3 border-b flex items-center justify-between gap-3">
       <h3 class="text-sm font-semibold text-slate-800">Indeks Prestasi Semester</h3>
+      <button
+        type="button"
+        id="btnToggleIpTable"
+        class="inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-semibold transition bg-blue-100 text-blue-700 border-blue-200"
+        title="Sembunyikan/Tampilkan tabel Indeks Prestasi Semester"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      </button>
     </div>
     <div class="px-4 py-3 border-b">
       <div class="flex flex-wrap items-center justify-between gap-3">
@@ -80,7 +91,8 @@
         </div>
       </div>
     </div>
-    <table class="min-w-full border border-gray-200">
+    <div id="ipTableWrap" class="overflow-x-auto">
+    <table class="min-w-[900px] md:min-w-full border border-gray-200">
       <thead class="bg-gray-100">
         <tr>
           <th class="px-4 py-2 text-center text-sm font-semibold text-gray-700 border-b">No.</th>
@@ -117,7 +129,7 @@
             }
           @endphp
           <tr class="hover:bg-gray-50 ip-row" data-semester="{{ $row['semester'] ?? '' }}">
-            <td class="px-4 py-2 text-center text-sm text-gray-700">{{ $i + 1 }}</td>
+            <td class="px-4 py-2 text-center text-sm text-gray-700 ip-no-cell">{{ $i + 1 }}</td>
             <td class="px-4 py-2 text-sm text-gray-700">{{ $row['kode_mata_kuliah'] ?? '-' }}</td>
             <td class="px-4 py-2 text-sm text-gray-700">{{ $row['mata_kuliah'] ?? '-' }}</td>
             <td class="px-4 py-2 text-center text-sm text-gray-700">{{ $row['sks'] ?? '-' }}</td>
@@ -129,13 +141,27 @@
         @endforeach
       </tbody>
     </table>
+    </div>
   </div>
 
 
 <div class="bg-white rounded-lg shadow-md overflow-hidden w-full">
-  <div class="px-4 py-3 border-b">
-    <h3 class="text-sm font-semibold text-slate-800">Nilai</h3>
-    <p class="text-xs text-slate-500">Rekap nilai tugas, kuis, dan ujian.</p>
+  <div class="px-4 py-3 border-b flex items-start justify-between gap-3">
+    <div>
+      <h3 class="text-sm font-semibold text-slate-800">Nilai</h3>
+      <p class="text-xs text-slate-500">Rekap nilai tugas, kuis, dan ujian.</p>
+    </div>
+    <button
+      type="button"
+      id="btnToggleNilaiTable"
+      class="inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-semibold transition bg-blue-100 text-blue-700 border-blue-200"
+      title="Sembunyikan/Tampilkan tabel Nilai"
+    >
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    </button>
   </div>
   <div class="px-4 py-3 border-b">
     <div class="flex flex-wrap items-center gap-3">
@@ -164,7 +190,8 @@
       </div>
     </div>
   </div>
-  <table class="min-w-full border border-gray-200">
+  <div id="nilaiTableWrap" class="overflow-x-auto">
+  <table class="min-w-[900px] md:min-w-full border border-gray-200">
       <thead class="bg-gray-100">
           <tr>
               <th class="px-4 py-2 text-center text-sm font-semibold text-gray-700 border-b">
@@ -228,7 +255,7 @@
                 data-semester="{{ $semesterValue !== '-' ? $semesterValue : '' }}"
                 data-nilai="{{ is_null($nilaiRaw) ? '' : $nilaiRaw }}"
             >
-                <td class="px-4 py-2 text-center text-sm text-gray-700">
+                <td class="px-4 py-2 text-center text-sm text-gray-700 nilai-no-cell">
                     {{ $loop->iteration }}
                 </td>
                 <td class="px-4 py-2 text-sm text-gray-700">
@@ -255,6 +282,7 @@
           @endforeach
       </tbody>
   </table>
+  </div>
 </div>
 
 <script>
@@ -264,6 +292,10 @@
   const ipSemesterSelect = document.getElementById('ip_semester_filter');
   const ipRows = Array.from(document.querySelectorAll('.ip-row'));
   const ipSemesterValue = document.getElementById('ipSemesterValue');
+  const btnToggleIpTable = document.getElementById('btnToggleIpTable');
+  const ipTableWrap = document.getElementById('ipTableWrap');
+  const btnToggleNilaiTable = document.getElementById('btnToggleNilaiTable');
+  const nilaiTableWrap = document.getElementById('nilaiTableWrap');
 
   const getMatkul = (row) => {
     const cell = row.querySelectorAll('td')[1];
@@ -298,6 +330,7 @@
   const applyFilter = () => {
     const selected = (filterSelect?.value || '').toLowerCase();
     const selectedSemester = (semesterSelect?.value || '').toLowerCase();
+    let visibleNo = 1;
     rows.forEach((row) => {
       const matkul = getMatkul(row).toLowerCase();
       const semester = getSemester(row).toLowerCase();
@@ -305,6 +338,8 @@
       const matchSemester = !selectedSemester || semester === selectedSemester;
       if (matchMatkul && matchSemester) {
         row.classList.remove('hidden');
+        const noCell = row.querySelector('.nilai-no-cell');
+        if (noCell) noCell.textContent = visibleNo++;
       } else {
         row.classList.add('hidden');
       }
@@ -314,13 +349,19 @@
   buildOptions();
   filterSelect?.addEventListener('change', applyFilter);
   semesterSelect?.addEventListener('change', applyFilter);
+  applyFilter();
 
   const applyIpFilter = () => {
     const selected = (ipSemesterSelect?.value || '').toLowerCase();
+    let visibleNo = 1;
     ipRows.forEach((row) => {
       const sem = (row.dataset.semester || '').toLowerCase();
       const match = !selected || sem === selected;
       row.style.display = match ? '' : 'none';
+      if (match) {
+        const noCell = row.querySelector('.ip-no-cell');
+        if (noCell) noCell.textContent = visibleNo++;
+      }
     });
 
     const selectedRows = ipRows.filter((row) => row.style.display !== 'none');
@@ -344,6 +385,41 @@
 
   ipSemesterSelect?.addEventListener('change', applyIpFilter);
   applyIpFilter();
+
+  const setEyeButtonState = (button, isActive) => {
+    if (!button) return;
+    button.classList.remove('bg-blue-100', 'text-blue-700', 'border-blue-200', 'bg-red-100', 'text-red-700', 'border-red-200');
+    if (isActive) {
+      button.classList.add('bg-blue-100', 'text-blue-700', 'border-blue-200');
+      button.innerHTML = `
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      `;
+    } else {
+      button.classList.add('bg-red-100', 'text-red-700', 'border-red-200');
+      button.innerHTML = `
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17.94 17.94A10.6 10.6 0 0 1 12 20c-7 0-11-8-11-8a21.8 21.8 0 0 1 5.06-5.94"></path>
+          <path d="M9.9 4.24A10.9 10.9 0 0 1 12 4c7 0 11 8 11 8a21.7 21.7 0 0 1-4.13 5.36"></path>
+          <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"></path>
+          <path d="M1 1l22 22"></path>
+        </svg>
+      `;
+    }
+  };
+
+  const toggleTableVisibility = (button, wrapEl) => {
+    if (!button || !wrapEl) return;
+    const hidden = wrapEl.classList.toggle('hidden');
+    setEyeButtonState(button, !hidden);
+  };
+
+  btnToggleIpTable?.addEventListener('click', () => toggleTableVisibility(btnToggleIpTable, ipTableWrap));
+  btnToggleNilaiTable?.addEventListener('click', () => toggleTableVisibility(btnToggleNilaiTable, nilaiTableWrap));
+  setEyeButtonState(btnToggleIpTable, true);
+  setEyeButtonState(btnToggleNilaiTable, true);
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -385,15 +461,19 @@
     });
     const labels = [];
     const ipsList = [];
-    const optionEls = Array.from(document.querySelectorAll('#semester_filter option'))
-      .filter((opt) => opt.value);
-    optionEls.forEach((opt) => {
-      const sem = opt.value;
+    const semesters = Array.from(grouped.keys())
+      .map((v) => Number(v))
+      .filter((v) => !Number.isNaN(v))
+      .sort((a, b) => a - b);
+
+    semesters.forEach((semNum) => {
+      const sem = String(semNum);
       const list = grouped.get(sem) || [];
       const sum = list.reduce((acc, v) => acc + v, 0);
       labels.push(`Semester ${sem}`);
       ipsList.push(list.length ? sum / list.length : 0);
     });
+
     return { labels, ips: ipsList };
   };
 

@@ -1,7 +1,7 @@
 <div id="{{ $id }}"
   class="modal-overlay hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 
-  <div class="bg-white rounded-xl w-full max-w-md p-6">
+  <div class="bg-white rounded-xl w-full max-w-md p-6 max-h-[85vh] overflow-y-auto">
 
     <h2 class="modal-title text-lg font-bold mb-4">
       {{ $title }}

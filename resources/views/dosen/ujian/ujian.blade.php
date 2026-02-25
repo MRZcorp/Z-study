@@ -87,7 +87,44 @@
               ];
           })->values();
         @endphp
+        @php
+          $kelasRef = $ujian->kelas;
+          $dosenRef = $kelasRef?->dosens;
+          $chatUserMap = collect();
+          if ($dosenRef && $dosenRef->user_id) {
+              $chatUserMap[(string) $dosenRef->user_id] = [
+                  'name' => $dosenRef->user->name ?? '-',
+                  'foto' => $dosenRef->poto_profil ? asset('storage/' . $dosenRef->poto_profil) : asset('img/default_profil.jpg'),
+                  'phone' => $dosenRef->no_hp ?? '-',
+                  'role' => 'dosen',
+                  'gelar' => $dosenRef->gelar ?? '',
+                  'fakultas' => $dosenRef->fakultas->fakultas ?? '-',
+                  'prodi' => $dosenRef->programStudi->nama_prodi ?? '-',
+              ];
+          }
+          foreach (($kelasRef?->mahasiswas ?? collect()) as $mhsRef) {
+              $chatUserMap[(string) ($mhsRef->user_id ?? '')] = [
+                  'name' => $mhsRef->user->name ?? '-',
+                  'foto' => $mhsRef->poto_profil ? asset('storage/' . $mhsRef->poto_profil) : asset('img/default_profil.jpg'),
+                  'phone' => $mhsRef->no_hp ?? '-',
+                  'role' => 'mahasiswa',
+                  'nim' => $mhsRef->nim ?? '-',
+                  'fakultas' => $mhsRef->fakultas->fakultas ?? '-',
+                  'prodi' => $mhsRef->programStudi->nama_prodi ?? '-',
+              ];
+          }
+        @endphp
         <div class="absolute bottom-4 right-4 flex items-center gap-2">
+          <button
+            type="button"
+            onclick="openChatModal(this)"
+            data-kelas-id="{{ $ujian->id }}"
+            data-kelas-nama="{{ $ujian->nama_ujian ?? 'Ujian' }}"
+            data-user-map='@json($chatUserMap)'
+            class="rounded-full bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+          >
+            <span class="material-symbols-rounded text-base">chat</span>
+          </button>
           <button
             type="button"
             class="btn-preview-ujian rounded-full bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700"
@@ -341,7 +378,14 @@
 </div>
 
 <script>
-  (() => {
+  window.__chatContextType = 'ujian';
+  window.__chatBaseUrlTemplate = @json(route('dosen.ujian.diskusi.index', ['ujian' => '__CTX_ID__']));
+  window.__chatMessageUrlTemplate = @json(route('dosen.ujian.diskusi.update', ['ujian' => '__CTX_ID__', 'diskusi' => '__DISKUSI_ID__']));
+</script>
+@include('dosen.kelas.partials.chat_modal')
+
+<script>
+(() => {
   const ujianModal = document.getElementById('ujianModal');
   const btnOpenUjian = document.getElementById('btnOpenUjian');
   const btnCloseUjian = document.getElementById('btnCloseUjian');

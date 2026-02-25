@@ -90,18 +90,53 @@
           $dinilaiCount = $pengumpulanList->whereNotNull('nilai')->count();
           $persenKoreksi = $kumpulCount > 0 ? (int) round(($dinilaiCount / $kumpulCount) * 100) : 0;
           $btnKoreksiClass = $persenKoreksi >= 100 ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200';
-          $mahasiswaList = $pengumpulanList->map(function ($row) {
-              $foto = $row->mahasiswa->poto_profil ?? '';
-              return [
-                  'nama' => $row->mahasiswa->user->name ?? '-',
-                  'foto' => $foto ? asset('storage/' . $foto) : asset('img/default_profil.jpg'),
-                  'submitted_at' => $row->submitted_at ? \Carbon\Carbon::parse($row->submitted_at)->toIso8601String() : null,
-              ];
-          })->values();
-        @endphp
+        $mahasiswaList = $pengumpulanList->map(function ($row) {
+            $foto = $row->mahasiswa->poto_profil ?? '';
+            return [
+                'nama' => $row->mahasiswa->user->name ?? '-',
+                'foto' => $foto ? asset('storage/' . $foto) : asset('img/default_profil.jpg'),
+                'submitted_at' => $row->submitted_at ? \Carbon\Carbon::parse($row->submitted_at)->toIso8601String() : null,
+            ];
+        })->values();
+        $kelasRef = $tugas->kelas;
+        $dosenRef = $kelasRef?->dosens;
+        $chatUserMap = collect();
+        if ($dosenRef && $dosenRef->user_id) {
+            $chatUserMap[(string) $dosenRef->user_id] = [
+                'name' => $dosenRef->user->name ?? '-',
+                'foto' => $dosenRef->poto_profil ? asset('storage/' . $dosenRef->poto_profil) : asset('img/default_profil.jpg'),
+                'phone' => $dosenRef->no_hp ?? '-',
+                'role' => 'dosen',
+                'gelar' => $dosenRef->gelar ?? '',
+                'fakultas' => $dosenRef->fakultas->fakultas ?? '-',
+                'prodi' => $dosenRef->programStudi->nama_prodi ?? '-',
+            ];
+        }
+        foreach (($kelasRef?->mahasiswas ?? collect()) as $mhsRef) {
+            $chatUserMap[(string) ($mhsRef->user_id ?? '')] = [
+                'name' => $mhsRef->user->name ?? '-',
+                'foto' => $mhsRef->poto_profil ? asset('storage/' . $mhsRef->poto_profil) : asset('img/default_profil.jpg'),
+                'phone' => $mhsRef->no_hp ?? '-',
+                'role' => 'mahasiswa',
+                'nim' => $mhsRef->nim ?? '-',
+                'fakultas' => $mhsRef->fakultas->fakultas ?? '-',
+                'prodi' => $mhsRef->programStudi->nama_prodi ?? '-',
+            ];
+        }
+      @endphp
         <div class="absolute bottom-4 right-4 flex flex-col items-end gap-2">
           <div class="flex flex-col items-end gap-2">
             <div class="flex items-center gap-2">
+              <button
+                type="button"
+                onclick="openChatModal(this)"
+                data-kelas-id="{{ $tugas->id }}"
+                data-kelas-nama="{{ $tugas->nama_tugas ?? 'Tugas' }}"
+                data-user-map='@json($chatUserMap)'
+                class="rounded-full bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+              >
+                <span class="material-symbols-rounded text-base">chat</span>
+              </button>
               <a href="{{ url('/dosen/koreksi_tugas') }}?matkul_id={{ $tugas->mata_kuliah_id }}&kelas_id={{ $tugas->nama_kelas_id }}&tugas_id={{ $tugas->id }}"
                  class="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-semibold {{ $btnKoreksiClass }}">
                 <span class="material-symbols-rounded text-base">fact_check</span>

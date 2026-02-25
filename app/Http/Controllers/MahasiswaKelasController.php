@@ -34,12 +34,35 @@ class MahasiswaKelasController extends Controller
             ->when($semesterAktifRaw, fn($q) => $q->where('semester', $semesterAktifRaw))
             ->pluck('id');
 
-        $sksDitempuh = $kelasIds->isNotEmpty()
-            ? Kelas::with('mataKuliah')
-                ->whereIn('id', $kelasIds)
-                ->get()
-                ->sum(fn($kelas) => (int) ($kelas->mataKuliah->sks ?? 0))
-            : 0;
+        $approvedKelasAll = Kelas::with('mataKuliah:id,sks')
+            ->select(['id', 'tahun_ajar', 'semester', 'mata_kuliah_id', 'status'])
+            ->when($mahasiswaId, fn($q) => $q->whereHas('mahasiswas', function ($mq) use ($mahasiswaId) {
+                $mq->where('mahasiswa_id', $mahasiswaId)
+                    ->where('kelas_mahasiswa.status', 'disetujui');
+            }))
+            ->whereIn('status', ['aktif', 'selesai'])
+            ->get();
+
+        $sksDitempuh = $approvedKelasAll->sum(fn($kelas) => (int) ($kelas->mataKuliah?->sks ?? 0));
+
+        $normalizedTahunAjarAktif = preg_replace('/\s+/', '', (string) $tahunAjarAktif);
+        $hasActiveKrsPeriod = !empty($semesterAktifRaw) && !empty($normalizedTahunAjarAktif) && $normalizedTahunAjarAktif !== '-';
+        $approvedKelasAktif = $hasActiveKrsPeriod
+            ? $approvedKelasAll->filter(function ($k) use ($semesterAktifRaw, $normalizedTahunAjarAktif) {
+                $statusMatch = strtolower((string) ($k->status ?? '')) === 'aktif';
+                if (!$statusMatch) {
+                    return false;
+                }
+                $semesterMatch = strtolower((string) ($k->semester ?? '')) === strtolower((string) $semesterAktifRaw);
+                if (!$semesterMatch) {
+                    return false;
+                }
+                $tahunKelas = preg_replace('/\s+/', '', (string) ($k->tahun_ajar ?? ''));
+                return $tahunKelas === $normalizedTahunAjarAktif;
+            })
+            : collect();
+
+        $sksDiambilSemester = $approvedKelasAktif->sum(fn($kelas) => (int) ($kelas->mataKuliah?->sks ?? 0));
 
         $jenjang = strtolower((string) ($mahasiswa?->jenjang ?? 's1'));
         $sksMaks = $jenjang === 'd3'
@@ -65,6 +88,35 @@ class MahasiswaKelasController extends Controller
 
             $ipsTerakhir = (float) (Mahasiswa::where('id', $mahasiswaId)->value('ips_terakhir') ?? 0);
             $semesterAktifMhs = (int) (Mahasiswa::where('id', $mahasiswaId)->value('semester_aktif') ?? 1);
+
+            $semesterOrder = ['ganjil' => 1, 'genap' => 2];
+            $semesterRiwayat = Kelas::query()
+                ->whereHas('mahasiswas', function ($q) use ($mahasiswaId) {
+                    $q->where('mahasiswa_id', $mahasiswaId)
+                      ->where('kelas_mahasiswa.status', 'disetujui');
+                })
+                ->whereIn('status', ['aktif', 'selesai'])
+                ->get(['tahun_ajar', 'semester'])
+                ->sort(function ($a, $b) use ($semesterOrder) {
+                    preg_match('/\d{4}/', (string) ($a->tahun_ajar ?? ''), $aMatch);
+                    preg_match('/\d{4}/', (string) ($b->tahun_ajar ?? ''), $bMatch);
+                    $yearA = (int) ($aMatch[0] ?? 0);
+                    $yearB = (int) ($bMatch[0] ?? 0);
+                    if ($yearA !== $yearB) {
+                        return $yearA <=> $yearB;
+                    }
+                    $semA = $semesterOrder[strtolower((string) ($a->semester ?? ''))] ?? 99;
+                    $semB = $semesterOrder[strtolower((string) ($b->semester ?? ''))] ?? 99;
+                    return $semA <=> $semB;
+                })
+                ->map(fn($k) => (($k->tahun_ajar ?? '-') . '|' . strtolower((string) ($k->semester ?? '-'))))
+                ->unique()
+                ->values();
+
+            $semesterRiwayatCount = $semesterRiwayat->count();
+            if ($semesterRiwayatCount > 0) {
+                $semesterAktifMhs = max($semesterAktifMhs, $semesterRiwayatCount);
+            }
 
             if (!$pernahAmbilKelas || $semesterAktifMhs <= 1) {
                 $sksMaksIps = 24;
@@ -94,6 +146,7 @@ class MahasiswaKelasController extends Controller
             'semesterAktifMhs' => $semesterAktifMhs,
             'namaDosenWali' => $namaDosenWali,
             'sksDitempuh' => $sksDitempuh,
+            'sksDiambilSemester' => $sksDiambilSemester,
             'sksMaks' => $sksMaks,
             'ipsTerakhir' => $ipsTerakhir,
             'sksMaksIps' => $sksMaksIps,
@@ -132,6 +185,7 @@ class MahasiswaKelasController extends Controller
         $userId = session('user_id');
         $mahasiswa = Mahasiswa::where('user_id', $userId)->first();
         $mahasiswaId = $mahasiswa?->id;
+        $isKrsActive = strtolower((string) ($mahasiswa?->status_krs ?? 'nonaktif')) === 'aktif';
         $prodiId = $mahasiswa?->nama_prodi_id;
         $angkatanId = $mahasiswa?->angkatan_id;
 
@@ -328,7 +382,7 @@ class MahasiswaKelasController extends Controller
         $profile = $this->buildProfileData($userId);
 
         return view('mahasiswa.kelas.kelas_tersedia', array_merge(
-            compact('pilih_kelas', 'dosenWaliKontak'),
+            compact('pilih_kelas', 'dosenWaliKontak', 'isKrsActive'),
             $profile
         ));
     }
@@ -345,7 +399,12 @@ class MahasiswaKelasController extends Controller
             ->latest()
             ->get();
 
-        return view('mahasiswa.kelas.riwayat_kelas', compact('riwayat_kelas'));
+        $profile = $this->buildProfileData($userId);
+
+        return view('mahasiswa.kelas.riwayat_kelas', array_merge(
+            compact('riwayat_kelas'),
+            $profile
+        ));
     }
 
     public function riwayatDetail(Kelas $kelas)
@@ -463,6 +522,9 @@ class MahasiswaKelasController extends Controller
 
         if (($mahasiswa->status_akademik ?? 'AKTIF') === 'DO') {
             return redirect()->back()->with('error', 'Status akademik DO. Tidak dapat mengikuti kelas.');
+        }
+        if (strtolower((string) ($mahasiswa->status_krs ?? 'nonaktif')) !== 'aktif') {
+            return redirect()->back()->with('error', 'Status KRS nonaktif. Harap konsultasi ke bagian akademik.');
         }
 
         $kelas->load('mataKuliah');
