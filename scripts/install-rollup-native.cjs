@@ -15,26 +15,29 @@ function isMuslLinux() {
   return false;
 }
 
-function ensurePackage(pkg) {
-  try {
-    require.resolve(pkg);
-    return;
-  } catch {
-    // continue
-  }
-
-  execSync(`npm i --no-save ${pkg}`, { stdio: "inherit" });
-}
-
 if (!isLinuxX64()) {
   process.exit(0);
 }
 
 const libc = isMuslLinux() ? "musl" : "gnu";
+const packages = [
+  `@rollup/rollup-linux-x64-${libc}`,
+  `lightningcss-linux-x64-${libc}`,
+];
+
+const missing = packages.filter((pkg) => {
+  try {
+    require.resolve(pkg);
+    return false;
+  } catch {
+    return true;
+  }
+});
 
 try {
-  ensurePackage(`@rollup/rollup-linux-x64-${libc}`);
-  ensurePackage(`lightningcss-linux-x64-${libc}`);
+  if (missing.length > 0) {
+    execSync(`npm i --no-save ${missing.join(" ")}`, { stdio: "inherit" });
+  }
 } catch (error) {
   console.error(
     "Failed to install Linux native deps for Rollup/LightningCSS. " +
